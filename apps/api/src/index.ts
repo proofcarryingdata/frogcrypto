@@ -1,12 +1,12 @@
 import { log } from "@repo/logger";
 import { createServer } from "./server";
 
-const isVercel = process.env.DEPLOYMENT_ENV === "vercel";
+const isProduction = process.env.NODE_ENV === "production";
 
 const port = process.env.PORT || 5001;
 const server = createServer();
 
-if (!isVercel) {
+if (!isProduction) {
   server.listen(port, () => {
     log(`api running on ${port}`);
   });

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "tsup --watch --onSuccess \"node dist/index.js\"",
-    "build": "tsup --format cjs --env.NODE_ENV production --env.DEPLOYMENT_ENV vercel",
+    "build": "tsup",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
