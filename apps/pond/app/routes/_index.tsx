@@ -5,7 +5,7 @@ export default function Index(): JSX.Element {
   return (
     <div className="container">
       <h1 className="title">
-        Blog <br />
+        Pond <br />
         <span>Kitchen Sink</span>
       </h1>
       <CounterButton />

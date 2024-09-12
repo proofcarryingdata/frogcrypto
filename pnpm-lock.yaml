@@ -110,7 +110,7 @@ importers:
         specifier: ^5.3.3
         version: 5.6.2
 
-  apps/blog:
+  apps/pond:
     dependencies:
       '@remix-run/node':
         specifier: ^2.9.2
