@@ -1,9 +1,13 @@
 {
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
       "src": "/(.*)",
-      "dest": "api"
+      "dest": "api/index.js"
     }
-  ]
+  ],
+  "functions": {
+    "api/*.js": {
+    }
+  }
 }
