@@ -5,8 +5,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "tsup --watch --onSuccess \"node dist/index.js\"",
-    "build": "tsup --format cjs --env.NODE_ENV production --env.DEPLOYMENT_ENV vercel --out-dir api",
-    "clean": "rm -rf dist api",
+    "build": "tsup --format cjs --env.NODE_ENV production --env.DEPLOYMENT_ENV vercel",
+    "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "jest --detectOpenHandles"
