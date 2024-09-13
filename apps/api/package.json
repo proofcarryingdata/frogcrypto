@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "jest --detectOpenHandles",
-    "vercel-build": "pnpm run build && mkdir -p public/node_modules/@pcd && cp -r node_modules/@pcd/proto-pod-gpc-artifacts public/node_modules/@pcd"
+    "vercel-build": "pnpm run build && mkdir -p public/node_modules/@pcd && cp -r node_modules/@pcd/proto-pod-gpc-artifacts public/node_modules/@pcd && ls -la public/node_modules/@pcd/proto-pod-gpc-artifacts"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"
