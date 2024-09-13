@@ -3,7 +3,7 @@ import { createServer } from "./server";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 3001;
 const server = createServer();
 
 if (!isProduction) {
