@@ -7,11 +7,6 @@ import React, {
   useState,
 } from "react";
 
-export const ZUPASS_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://staging.zupass.org";
-
 enum EmbeddedZupassState {
   CONNECTING,
   CONNECTED,

@@ -2,10 +2,11 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { EmbeddedZupassProvider, ZUPASS_URL } from "./hooks/useZapp.tsx";
+import { EmbeddedZupassProvider } from "./hooks/useZapp.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "jotai";
 import { ErrorBoundary } from "react-error-boundary";
+import { ZUPASS_URL } from "./constants.ts";
 
 const queryClient = new QueryClient();
 
