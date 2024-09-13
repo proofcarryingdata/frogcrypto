@@ -1,15 +1,17 @@
 import { log } from "@repo/logger";
-import { createServer } from "./server";
+import { createServer, initializePCDs } from "./server";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 4001;
 const server = createServer();
 
-if (!isProduction) {
-  server.listen(port, () => {
-    log(`api running on ${port}`);
-  });
-}
+initializePCDs().then(() => {
+  if (!isProduction) {
+    server.listen(port, () => {
+      log(`api running on ${port}`);
+    });
+  }
+});
 
 export default server;

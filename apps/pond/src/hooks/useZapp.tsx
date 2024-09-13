@@ -1,5 +1,11 @@
 import { Zapp, ZupassAPIWrapper, connect } from "@pcd/zupass-client";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export const ZUPASS_URL =
   process.env.NODE_ENV === "development"
@@ -63,25 +69,16 @@ export function EmbeddedZupassProvider({
   );
 }
 
-type UseEmbeddedZupass =
-  | {
-      connected: true;
-      z: ZupassAPIWrapper;
-    }
-  | {
-      connected: false;
-      z: unknown;
-    };
-
-export function useEmbeddedZupass(): UseEmbeddedZupass {
+export function useMaybeZupassAPI() {
   const context = useContext(EmbeddedZupassContext);
-  return context.state === EmbeddedZupassState.CONNECTED
-    ? {
-        connected: true,
-        z: context.z,
-      }
-    : {
-        connected: false,
-        z: {},
-      };
+  return context.state === EmbeddedZupassState.CONNECTED ? context : null;
+}
+
+export function useZupassAPI() {
+  const context = useContext(EmbeddedZupassContext);
+  if (context.state === EmbeddedZupassState.CONNECTING) {
+    throw new Error("Zupass is not connected");
+  }
+
+  return context.z;
 }

@@ -1,11 +1,24 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { FROGCRYPTO_FOLDER_NAME } from "./constants";
 import Intro from "./components/Intro";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import GetFrogTab from "./components/GetFrogTab";
+import { EmbeddedZupassProvider, useMaybeZupassAPI } from "./hooks/useZapp";
+import { useAtom } from "jotai";
+import useInitializeUser from "./hooks/useInitializeUser";
+import Loader from "./components/Loader";
+
+function FrogCrypto() {
+  const hasFrog = false;
+
+  return <>{hasFrog ? <Intro hasFrog={hasFrog} /> : <GetFrogTab />}</>;
+}
 
 function App() {
-  const hasFrog = false;
+  const maybeZupassAPI = useMaybeZupassAPI();
+  // TODO: this may need a more robust check that our identity is still valid
+  const hasIdentity = useInitializeUser();
+  const isReady = maybeZupassAPI && hasIdentity;
 
   return (
     <main className="flex justify-center w-screen h-screen pt-8">
@@ -14,7 +27,7 @@ function App() {
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>
 
-        {hasFrog ? <Intro hasFrog={hasFrog} /> : <GetFrogTab />}
+        {isReady ? <FrogCrypto /> : <Loader className="w-16 h-16 mt-8" />}
       </div>
     </main>
   );

@@ -2,7 +2,7 @@
 module.exports = {
   extends: [
     "@repo/eslint-config/react.js",
-    "@tanstack/eslint-plugin-query/flat/recommended",
+    "plugin:@tanstack/eslint-plugin-query/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {

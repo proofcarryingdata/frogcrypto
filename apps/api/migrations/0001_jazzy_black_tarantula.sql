@@ -1,0 +1,2 @@
+ALTER TABLE "user_ids" RENAME COLUMN "auth_semaphore_id" TO "signer_pk";--> statement-breakpoint
+ALTER TABLE "user_ids" ADD CONSTRAINT "user_ids_semaphore_id_signer_pk_unique" UNIQUE("semaphore_id","signer_pk");

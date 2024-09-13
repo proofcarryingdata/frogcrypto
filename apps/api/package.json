@@ -9,15 +9,22 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "vercel-build": "pnpm run build && cp -r node_modules/@pcd/proto-pod-gpc-artifacts public/node_modules/@pcd/proto-pod-gpc-artifacts"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"
   },
   "dependencies": {
+    "@pcd/gpc-pcd": "^0.0.6",
+    "@pcd/pcd-types": "^0.11.4",
+    "@pcd/proto-pod-gpc-artifacts": "^0.9.0",
     "@repo/logger": "workspace:*",
+    "@vercel/postgres": "^0.10.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.33.0",
     "express": "^4.18.3",
     "morgan": "^1.10.0"
   },
@@ -32,6 +39,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.11.24",
     "@types/supertest": "^6.0.2",
+    "drizzle-kit": "^0.24.2",
     "jest": "^29.7.0",
     "supertest": "^6.3.4",
     "tsup": "^8.0.2",
