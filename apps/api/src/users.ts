@@ -1,9 +1,24 @@
 import { GPCPCD, GPCPCDPackage, GPCPCDTypeName } from "@pcd/gpc-pcd";
 import { SerializedPCD } from "@pcd/pcd-types";
-import { log } from "@repo/logger";
+import { log } from "@frogcrypto/logger";
 import { Router } from "express";
-import { userIdsTable } from "./db/schema";
+import {
+  UserFeed,
+  userFeedsTable,
+  userIdsTable,
+  userScoresTable,
+} from "./db/schema";
 import { db } from "./db";
+import { POD } from "@pcd/pod";
+import {
+  FrogCryptoUserStateResponseValue,
+  FrogCryptoFeed,
+  FrogCryptoComputedUserState,
+} from "@pcd/passport-interface";
+import { userPublicKeyToUserId } from "@frogcrypto/shared";
+import { eq } from "drizzle-orm";
+import _ from "lodash";
+import { FEEDS } from "./feeds";
 
 export const usersRouter: Router = Router();
 
@@ -39,4 +54,53 @@ usersRouter.post("/auth", async (req, res) => {
     .onConflictDoNothing();
 
   return res.json({ ok: true });
+});
+
+function computeUserFeedState(
+  state: UserFeed | undefined,
+  feed: FrogCryptoFeed
+): FrogCryptoComputedUserState {
+  const lastFetchedAt = state?.lastFetchedAt?.getTime() ?? 0;
+  const nextFetchAt = lastFetchedAt + feed.cooldown * 1000;
+
+  return {
+    feedId: feed.id,
+    lastFetchedAt,
+    nextFetchAt,
+    active: feed.activeUntil > Date.now() / 1000,
+  };
+}
+
+usersRouter.post("/me", async (req, res) => {
+  const pod = req.body as POD;
+  const semaphoreId = userPublicKeyToUserId(pod.signerPublicKey);
+  const feedIds = JSON.parse(
+    String(pod.content.getValue("feedIds")?.value ?? "[]")
+  );
+
+  const userFeeds = _.keyBy(
+    await db
+      .select()
+      .from(userFeedsTable)
+      .where(eq(userFeedsTable.semaphoreId, semaphoreId)),
+    "feedId"
+  );
+
+  const scores = await db
+    .select({ score: userScoresTable.score })
+    .from(userScoresTable)
+    .where(eq(userScoresTable.semaphoreId, semaphoreId));
+
+  const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
+
+  return res.json({
+    feeds: FEEDS.map((feed) => computeUserFeedState(userFeeds[feed.id], feed)),
+    possibleFrogs: [],
+    myScore: scores.map((score) => ({
+      score: score.score,
+      semaphore_id_hash: semaphoreId,
+      has_telegram_username: false,
+      rank: 0,
+    }))[0],
+  } satisfies FrogCryptoUserStateResponseValue);
 });

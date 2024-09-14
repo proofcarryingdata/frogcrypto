@@ -1,0 +1,1 @@
+ALTER TABLE "user_scores" ADD COLUMN "semaphore_id" text NOT NULL;

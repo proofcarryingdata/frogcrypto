@@ -15,6 +15,13 @@
       "when": 1726253465478,
       "tag": "0001_jazzy_black_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1726299492294,
+      "tag": "0002_daily_the_order",
+      "breakpoints": true
     }
   ]
 }

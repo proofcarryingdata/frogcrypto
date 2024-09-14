@@ -1,4 +1,4 @@
-import { log } from "@repo/logger";
+import { log } from "@frogcrypto/logger";
 import { createServer, initializePCDs } from "./server";
 
 const isProduction = process.env.NODE_ENV === "production";
