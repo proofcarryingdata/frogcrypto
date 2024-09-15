@@ -14,6 +14,7 @@ import { useSubscriptions } from "./useSubscriptions";
 import { SERVER_URL } from "../constants";
 import React from "react";
 import useSearchParams from "./useSearchParams";
+import axios from "axios";
 
 export const DEFAULT_FROG_SUBSCRIPTION_PROVIDER_URL = `${SERVER_URL}/feeds`;
 
@@ -91,11 +92,11 @@ export function useInitializeFrogSubscriptions(): (
         return false;
       }
 
-      const { feeds } = {
-        providerUrl: DEFAULT_FROG_SUBSCRIPTION_PROVIDER_URL,
-        providerName: FrogCryptoFolderName,
-        feeds: [DEFAULT_FROG_FEED],
-      } satisfies ListFeedsResponseValue;
+      const {
+        data: { feeds },
+      } = await axios.get<ListFeedsResponseValue>(
+        DEFAULT_FROG_SUBSCRIPTION_PROVIDER_URL
+      );
       if (!feedId && feeds.length === 0) {
         toast.error(
           "Hop, hop, hooray! But wait – the adventure isn't ready to ignite just yet. The fireflies haven't finished their dance. Come back shortly, and we'll leap into the fun together!"

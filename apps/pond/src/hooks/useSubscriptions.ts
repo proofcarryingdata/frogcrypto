@@ -27,22 +27,3 @@ export function useSubscriptions() {
     ),
   };
 }
-
-// export function useGetOrAddSubscription(
-//   provider: string,
-//   subscription: Subscription
-// ) {
-//   const [subscriptions, setSubscriptions] = useAtom(subscriptionsAtom);
-
-//   return useCallback(
-//     (provider: string, subscription: Subscription) => {
-//       if (subscriptions[provider]) {
-//         return subscriptions[provider];
-//       }
-//       setSubscriptions((draft) => {
-//         draft[provider] = subscription;
-//       });
-//     },
-//     [subscriptions, setSubscriptions]
-//   );
-// }

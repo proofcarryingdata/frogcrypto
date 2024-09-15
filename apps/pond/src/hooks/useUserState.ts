@@ -54,12 +54,12 @@ export function useUserState() {
 
   return useQuery({
     queryKey: ["user"],
-    queryFn: () => {
+    queryFn: async () => {
       if (!userIdentity) {
         return null;
       }
 
-      return axios.post<FrogCryptoUserStateResponseValue>(
+      const { data } = await axios.post<FrogCryptoUserStateResponseValue>(
         `${SERVER_URL}/users/me`,
         POD.sign(
           {
@@ -85,6 +85,8 @@ export function useUserState() {
           },
         }
       );
+
+      return data;
     },
     enabled: !!userIdentity,
   });

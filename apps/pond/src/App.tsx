@@ -21,7 +21,7 @@ function FrogCrypto() {
   }
 
   const hasFrog = frogs.length > 0;
-  return <>{hasFrog ? <Intro hasFrog={hasFrog} /> : <GetFrogTab />}</>;
+  return <>{hasFrog ? <GetFrogTab /> : <Intro hasFrog={hasFrog} />}</>;
 }
 
 function App() {
