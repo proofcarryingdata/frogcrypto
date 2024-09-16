@@ -13,15 +13,25 @@ import { useUserState } from "./hooks/useUserState";
 function FrogCrypto() {
   // TODO: handle error state
   const { frogs } = useFrogs();
-  const user = useUserState();
-  console.log({ user });
+  const { data: userState } = useUserState();
 
   if (!frogs) {
     return <Loader className="w-16 h-16 mt-8" />;
   }
 
   const hasFrog = frogs.length > 0;
-  return <>{hasFrog ? <GetFrogTab /> : <Intro hasFrog={hasFrog} />}</>;
+  if (!hasFrog) {
+    return <Intro hasFrog={!!userState?.myScore?.score} />;
+  }
+
+  return (
+    <>
+      <span className="text-frog-score">
+        {userState?.myScore?.score ?? "?"} 🐸
+      </span>
+      <GetFrogTab />
+    </>
+  );
 }
 
 function App() {
@@ -32,7 +42,7 @@ function App() {
 
   return (
     <main className="flex justify-center w-screen h-screen pt-8">
-      <div className="flex flex-col gap-4 w-full max-w-md items-center">
+      <div className="flex flex-col gap-6 w-full max-w-sm items-center">
         <h1 className="font-superfunky text-2xl">
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>

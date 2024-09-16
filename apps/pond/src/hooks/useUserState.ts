@@ -1,29 +1,18 @@
+import { FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
+import { POD } from "@pcd/pod";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { useAtom } from "jotai/react";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import {
-  useMaybeZupassAPI,
-  useZupassAPIContext,
-  useZupassAPIOptional,
-} from "./useZapp";
-import { useEffect, useMemo } from "react";
-import {
-  decodePublicKey,
-  encodePrivateKey,
-  encodePublicKey,
-  POD,
-} from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
-import {
-  compressBigInt,
-  decompressBigInt,
-  semaphoreIdToUserId,
-} from "../utils";
-import { POD_TYPE_FROGCRYPTO_PLAYER_ID, SERVER_URL } from "../constants";
-import { createStore } from "jotai";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
-import { useSubscriptions } from "./useSubscriptions";
+  POD_TYPE_FROGCRYPTO_REQUEST,
+  POD_TYPE_FROGCRYPTO_PLAYER_ID,
+  SERVER_URL,
+} from "../constants";
+import { decompressBigInt } from "../utils";
+import { useFeedIds } from "./useSubscriptions";
+import { useMemo } from "react";
+import _ from "lodash";
 
 export type UserIdentity = {
   commitment: string; // bigint as base64 encoded string
@@ -45,15 +34,11 @@ export const rootIdAtom = atomWithStorage<string | null>("rootId", null);
 export const QUERY_KEY_USER = "user";
 
 export function useUserState() {
-  const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
-  const { subscriptions } = useSubscriptions();
-  const feedIds = useMemo(
-    () => subscriptions.map((sub) => sub.feed.id),
-    [subscriptions]
-  );
+  const [userIdentity] = useAtom(userIdentityAtom);
+  const feedIds = useFeedIds();
 
   return useQuery({
-    queryKey: ["user"],
+    queryKey: ["user", feedIds],
     queryFn: async () => {
       if (!userIdentity) {
         return null;
@@ -63,7 +48,7 @@ export function useUserState() {
         `${SERVER_URL}/users/me`,
         POD.sign(
           {
-            pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
+            pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_REQUEST },
             feedIds: {
               type: "string",
               value: JSON.stringify(feedIds),
@@ -72,7 +57,7 @@ export function useUserState() {
               type: "cryptographic",
               value: decompressBigInt(userIdentity.commitment),
             },
-            watermarks: {
+            watermark: {
               type: "int",
               value: BigInt(Date.now()),
             },
@@ -90,4 +75,12 @@ export function useUserState() {
     },
     enabled: !!userIdentity,
   });
+}
+
+export function useUserStateByFeedId() {
+  const { data: userState } = useUserState();
+
+  return useMemo(() => {
+    return _.keyBy(userState?.feeds || [], (feed) => feed.feedId);
+  }, [userState]);
 }

@@ -8,6 +8,10 @@ const subscriptionsAtom = withImmer(
   atomWithStorage<Subscription[]>("subscriptions", [])
 );
 
+const feedIdsAtom = atom<string[]>((get) =>
+  get(subscriptionsAtom).map((sub) => sub.feed.id)
+);
+
 export function useSubscriptions() {
   const [subscriptions, setSubscriptions] = useAtom(subscriptionsAtom);
 
@@ -26,4 +30,8 @@ export function useSubscriptions() {
       [setSubscriptions]
     ),
   };
+}
+
+export function useFeedIds() {
+  return useAtomValue(feedIdsAtom);
 }

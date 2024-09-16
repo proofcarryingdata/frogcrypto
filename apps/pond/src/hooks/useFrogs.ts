@@ -3,7 +3,8 @@ import { useZupassAPI } from "./useZapp";
 import p from "@pcd/podspec";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { POD_TYPE_FROGCRYPTO_FROG } from "@frogcrypto/shared";
+import { parseFrogPOD, POD_TYPE_FROGCRYPTO_FROG } from "@frogcrypto/shared";
+import _ from "lodash";
 
 export const QUERY_KEY_FROGS = "frogs";
 
@@ -17,11 +18,18 @@ const useFrogs = () => {
   } = useQuery({
     queryKey: [QUERY_KEY_FROGS],
     queryFn: () =>
-      z.pod.query(
-        p.pod({
-          pod_type: p.string().list([POD_TYPE_FROGCRYPTO_FROG]),
-        })
-      ),
+      z.pod
+        .query(
+          p.pod({
+            pod_type: p.string().list([POD_TYPE_FROGCRYPTO_FROG]),
+          })
+        )
+        .then((frogs) =>
+          _.sortBy(
+            frogs.map((frog) => parseFrogPOD(frog)),
+            (frog) => -frog.timestampSigned
+          )
+        ),
   });
 
   useEffect(() => {

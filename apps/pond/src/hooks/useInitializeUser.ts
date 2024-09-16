@@ -130,8 +130,7 @@ function useInitializeUser() {
       }
 
       const gpc = await z.gpc.prove(gpcArgs);
-
-      const res = await axios.post(`${SERVER_URL}/users/auth`, {
+      await axios.post(`${SERVER_URL}/users/auth`, {
         gpc,
       });
 
