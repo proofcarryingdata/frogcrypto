@@ -1,13 +1,12 @@
-import { EdDSAFrogPCD, IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
-import { DexFrog } from "@pcd/passport-interface";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { FrogsModal } from "./FrogsModal";
-import Loader from "./Loader";
+import { EdDSAFrogPCD, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
+import { type DexFrog } from "@pcd/passport-interface";
+import React, { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import { type FrogPOD } from "@frogcrypto/shared";
+import { List, LayoutGrid } from "lucide-react";
 import { usePossibleFrogs } from "../hooks/useUserState";
 import useFrogs from "../hooks/useFrogs";
-import { FrogPOD } from "@frogcrypto/shared";
-import React from "react";
-import { List, LayoutGrid } from "lucide-react";
+import { FrogsModal } from "./FrogsModal";
+import Loader from "./Loader";
 
 const RARITIES: Record<Rarity, { label: string; color: string }> = {
   [Rarity.Common]: {
@@ -85,14 +84,14 @@ export function DexTab() {
         </span>
         <button
           className="btn"
-          onClick={(): void => setMode("list")}
+          onClick={(): void => { setMode("list"); }}
           disabled={mode === "list"}
         >
           <List />
         </button>
         <button
           className="btn"
-          onClick={(): void => setMode("grid")}
+          onClick={(): void => { setMode("grid"); }}
           disabled={mode === "grid"}
         >
           <LayoutGrid />
@@ -116,7 +115,7 @@ export function DexTab() {
       {focusedFrogs.length > 0 && (
         <FrogsModal
           pods={focusedFrogs}
-          onClose={(): void => setFocusedFrogs([])}
+          onClose={(): void => { setFocusedFrogs([]); }}
           color={RARITIES[focusedFrogs[0].rarity].color}
         />
       )}
@@ -124,7 +123,7 @@ export function DexTab() {
   );
 }
 
-const DexList = ({
+function DexList({
   possibleFrogs,
   pods,
   onClick,
@@ -132,7 +131,7 @@ const DexList = ({
   possibleFrogs: DexFrog[];
   pods: FrogsById;
   onClick: Dispatch<SetStateAction<FrogPOD[]>>;
-}): JSX.Element => {
+}): JSX.Element {
   return (
     <table className="min-w-full divide-y divide-gray-200">
       <tbody className="bg-white divide-y divide-gray-200">
@@ -162,7 +161,7 @@ const DexList = ({
           return (
             <tr
               key={id}
-              onClick={(): void => onClick(frogPODs.pods)}
+              onClick={(): void => { onClick(frogPODs.pods); }}
               className="cursor-pointer hover:bg-gray-100"
             >
               <td className="px-4 py-2">{id}</td>
@@ -185,9 +184,9 @@ const DexList = ({
       </tbody>
     </table>
   );
-};
+}
 
-const DexGrid = ({
+function DexGrid({
   possibleFrogs,
   pods,
   onClick,
@@ -195,7 +194,7 @@ const DexGrid = ({
   possibleFrogs: DexFrog[];
   pods: FrogsById;
   onClick: Dispatch<SetStateAction<FrogPOD[]>>;
-}): JSX.Element => {
+}): JSX.Element {
   return (
     <div className="grid grid-cols-3 gap-4">
       {possibleFrogs.map(({ id, rarity }) => {
@@ -218,7 +217,7 @@ const DexGrid = ({
                   draggable={false}
                 />
               </div>
-              <span className="mt-2"></span>
+              <span className="mt-2" />
             </div>
           );
         }
@@ -228,7 +227,7 @@ const DexGrid = ({
             <div
               className="w-full bg-green-600 text-white rounded-lg cursor-pointer flex flex-col items-stretch justify-center"
               style={{ borderColor: RARITIES[rarity].color }}
-              onClick={(): void => onClick(frogPODs.pods)}
+              onClick={(): void => { onClick(frogPODs.pods); }}
             >
               <span
                 className="px-2 py-1 text-center truncate"
@@ -249,17 +248,15 @@ const DexGrid = ({
       })}
     </div>
   );
-};
+}
 
-type FrogsById = {
-  [frogId: number]: {
+type FrogsById = Record<number, {
     pods: FrogPOD[];
     /**
      * An arbitrary PCD for the frog.
      */
     frog: IFrogData;
-  };
-};
+  }>;
 
 /**
  * Group PODs by frog ID.

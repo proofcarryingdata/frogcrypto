@@ -7,7 +7,7 @@ type URLSearchParamsInit =
   | string
   | Record<string, string | readonly string[]>
   | Iterable<[string, string]>
-  | ReadonlyArray<[string, string]>;
+  | readonly [string, string][];
 
 const useSearchParams: () => [
   URLSearchParams,
@@ -27,7 +27,7 @@ const useSearchParams: () => [
     const newSearchParams = new URLSearchParams(
       typeof nextInit === "function" ? nextInit(searchParams) : nextInit
     );
-    navigate("?" + newSearchParams, navOpts);
+    navigate(`?${  newSearchParams}`, navOpts);
   });
 
   return [searchParams, setSearchParams];

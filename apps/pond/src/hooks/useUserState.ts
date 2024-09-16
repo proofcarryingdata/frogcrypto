@@ -1,9 +1,11 @@
-import { FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
+import { type FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
 import { POD } from "@pcd/pod";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useAtom } from "jotai/react";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import { useMemo } from "react";
+import _ from "lodash";
 import {
   POD_TYPE_FROGCRYPTO_REQUEST,
   POD_TYPE_FROGCRYPTO_PLAYER_ID,
@@ -11,14 +13,12 @@ import {
 } from "../constants";
 import { decompressBigInt } from "../utils";
 import { useFeedIds } from "./useSubscriptions";
-import { useMemo } from "react";
-import _ from "lodash";
 
-export type UserIdentity = {
+export interface UserIdentity {
   commitment: string; // bigint as base64 encoded string
   privateKey: string; // 32 bytes as base64 encoded string
   publicKey: string; // 32 byte packed point as base64 encoded string
-};
+}
 
 export const userIdentityAtom = atomWithStorage<UserIdentity | null>(
   "userIdentity",
@@ -73,7 +73,7 @@ export function useUserState() {
 
       return data;
     },
-    enabled: !!userIdentity,
+    enabled: Boolean(userIdentity),
   });
 }
 

@@ -1,9 +1,8 @@
 import _ from "lodash";
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import ReactModal from "react-modal";
-import { FrogPOD } from "@frogcrypto/shared";
-import React from "react";
+import { type FrogPOD } from "@frogcrypto/shared";
 import FrogCard from "./FrogCard";
 
 export function FrogsModal({
@@ -46,7 +45,7 @@ export function FrogsModal({
 
   return (
     <ReactModal
-      isOpen={!!pods}
+      isOpen={Boolean(pods)}
       onRequestClose={onClose}
       className="absolute inset-0 flex items-center justify-center"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50"

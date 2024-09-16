@@ -1,26 +1,26 @@
 import React, { useCallback, useMemo } from "react";
-import { useSubscriptions } from "../hooks/useSubscriptions";
-import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
-import { FROG_FREEROLLS, Subscription } from "@pcd/passport-interface";
-import useCountDown from "../hooks/useCountDown";
+import { FROG_FREEROLLS, type Subscription } from "@pcd/passport-interface";
 import _ from "lodash";
-import { ActionButton, FrogSearchButton } from "./Button";
 import toast from "react-hot-toast";
-import LoadingMessages from "./LoadingMessages";
-import useGetFrog from "../hooks/useGetFrog";
 import { parseFrogPOD } from "@frogcrypto/shared";
 import axios from "axios";
 import { Biome } from "@pcd/eddsa-frog-pcd";
+import useGetFrog from "../hooks/useGetFrog";
+import useCountDown from "../hooks/useCountDown";
+import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
+import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useZupassAPI } from "../hooks/useZapp";
 import useFrogs from "../hooks/useFrogs";
-import FrogCard from "./FrogCard";
-import Divider from "./Divider";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
+import LoadingMessages from "./LoadingMessages";
+import { ActionButton, FrogSearchButton } from "./Button";
+import Divider from "./Divider";
+import FrogCard from "./FrogCard";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
  */
-const GetFrogTab = () => {
+function GetFrogTab() {
   const { subscriptions } = useSubscriptions();
   const { data: userState } = useUserState();
   const userStateByFeedId = useUserStateByFeedId();
@@ -36,15 +36,15 @@ const GetFrogTab = () => {
             <SearchButton
               key={sub.id}
               sub={sub}
-              nextFetchAt={userFeedState?.nextFetchAt}
+              nextFetchAt={userFeedState.nextFetchAt}
               score={userState?.myScore?.score}
-              active={!!userFeedState?.active}
+              active={Boolean(userFeedState.active)}
             />
           );
         })}
       </div>
 
-      {!!frogs?.length && (
+      {Boolean(frogs?.length) && (
         <>
           <Divider />
           <div className="flex flex-col gap-4 w-full pb-8">
@@ -56,13 +56,13 @@ const GetFrogTab = () => {
       )}
     </>
   );
-};
+}
 
 /**
  * Button to get a frog from a feed. It calls refreshUserState after each
  * request to ensure cooldown is updated.
  */
-const SearchButton = ({
+function SearchButton({
   sub: { id, feed },
   nextFetchAt,
   score,
@@ -72,7 +72,7 @@ const SearchButton = ({
   nextFetchAt?: number;
   score: number | undefined;
   active: boolean;
-}) => {
+}) {
   const countDown = useCountDown(nextFetchAt ?? 0);
   const canFetch = active && (!nextFetchAt || nextFetchAt < Date.now());
   const { mutateAsync: getFrogAsync } = useGetFrog({ feedId: feed.id });
@@ -98,7 +98,7 @@ const SearchButton = ({
             if (
               axios.isAxiosError<{ error: string }, Record<string, unknown>>(e)
             ) {
-              const fetchErrorMsg = e.response?.data?.error?.toLowerCase();
+              const fetchErrorMsg = e.response?.data.error.toLowerCase();
               if (fetchErrorMsg?.includes("not active")) {
                 return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
               }
@@ -128,8 +128,7 @@ const SearchButton = ({
       disabled={!canFetch}
       ButtonComponent={FrogSearchButton}
     >
-      {canFetch &&
-        (freerolls > 0 ? (
+      {canFetch ? freerolls > 0 ? (
           <div
             className={`
             text-sm font-mono ml-auto
@@ -140,11 +139,11 @@ const SearchButton = ({
           </div>
         ) : (
           name
-        ))}
+        ) : null}
 
       {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}
     </ActionButton>
   );
-};
+}
 
 export default GetFrogTab;

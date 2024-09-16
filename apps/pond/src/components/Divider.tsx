@@ -1,7 +1,7 @@
 import React from "react";
 
-const Divider = () => {
+function Divider() {
   return <div className="min-h-px max-h-px w-full bg-gray-300" />;
-};
+}
 
 export default Divider;

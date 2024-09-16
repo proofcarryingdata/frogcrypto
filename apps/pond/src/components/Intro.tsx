@@ -1,18 +1,18 @@
-import { TypewriterClass } from "typewriter-effect";
-import TypistText from "./TypistText";
+import { type TypewriterClass } from "typewriter-effect";
 import { useParams } from "wouter";
-import { Feed } from "@pcd/passport-interface";
+import { type Feed } from "@pcd/passport-interface";
 import React from "react";
 import { FROM_SUBSCRIPTION_PARAM_KEY } from "../constants";
-import { ActionButton } from "./Button";
 import { useInitializeFrogSubscriptions } from "../hooks/useFrogFeeds";
 import { useSubscriptions } from "../hooks/useSubscriptions";
+import { ActionButton } from "./Button";
+import TypistText from "./TypistText";
 import GetFrogTab from "./GetFrogTab";
 
-const Intro = ({ hasFrog }: { hasFrog: boolean }) => {
+function Intro({ hasFrog }: { hasFrog: boolean }) {
   const searchParams = useParams();
   const isFromSubscriptionRef = React.useRef<boolean>(
-    !!searchParams[FROM_SUBSCRIPTION_PARAM_KEY]
+    Boolean(searchParams[FROM_SUBSCRIPTION_PARAM_KEY])
   );
   const retreatRef = React.useRef<boolean>(false);
 
@@ -80,6 +80,6 @@ const Intro = ({ hasFrog }: { hasFrog: boolean }) => {
       </TypistText>
     </div>
   );
-};
+}
 
 export default Intro;

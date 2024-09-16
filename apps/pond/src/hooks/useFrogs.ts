@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { useZupassAPI } from "./useZapp";
 import p from "@pcd/podspec";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { parseFrogPOD, POD_TYPE_FROGCRYPTO_FROG } from "@frogcrypto/shared";
 import _ from "lodash";
+import { useZupassAPI } from "./useZapp";
 
 export const QUERY_KEY_FROGS = "frogs";
 

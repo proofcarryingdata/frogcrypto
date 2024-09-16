@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import Typewriter, { TypewriterClass } from "typewriter-effect";
+import Typewriter, { type TypewriterClass } from "typewriter-effect";
 
 /**
  * TypistText is a component that renders text with a typewriter effect. Any
  * children will be faded in after the typewriter effect is complete.
  */
-const TypistText = ({
+function TypistText({
   onInit,
   children,
 }: {
@@ -17,7 +17,7 @@ const TypistText = ({
    * Action button with the label will be rendered at the end of the adventure text.
    */
   children: React.ReactNode;
-}) => {
+}) {
   const [ready, setReady] = useState(false);
 
   return (
@@ -36,9 +36,9 @@ const TypistText = ({
           }}
         />
       </div>
-      {ready && <div className="animate-fadeIn w-full">{children}</div>}
+      {ready ? <div className="animate-fadeIn w-full">{children}</div> : null}
     </>
   );
-};
+}
 
 export default TypistText;

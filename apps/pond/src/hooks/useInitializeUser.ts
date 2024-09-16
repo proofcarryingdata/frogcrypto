@@ -1,4 +1,4 @@
-import { GPCPCDArgs, GPCProofConfig } from "@pcd/gpc-pcd";
+import { type GPCPCDArgs, type GPCProofConfig } from "@pcd/gpc-pcd";
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { POD } from "@pcd/pod";
 import { PODPCDPackage } from "@pcd/pod-pcd";
@@ -6,15 +6,15 @@ import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { Identity } from "@semaphore-protocol/identity";
 import { useAtom } from "jotai";
 import { useEffect } from "react";
-import { POD_TYPE_FROGCRYPTO_PLAYER_ID, SERVER_URL } from "../constants";
-import { useMaybeZupassAPI } from "./useZapp";
-import { rootIdAtom, userIdentityAtom } from "./useUserState";
-import { semaphoreIdToUserId, shortCommitment } from "../utils";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import p from "@pcd/podspec";
 import { crypto } from "@zk-kit/utils";
 import { produce } from "immer";
+import { semaphoreIdToUserId, shortCommitment } from "../utils";
+import { POD_TYPE_FROGCRYPTO_PLAYER_ID, SERVER_URL } from "../constants";
+import { rootIdAtom, userIdentityAtom } from "./useUserState";
+import { useMaybeZupassAPI } from "./useZapp";
 
 const ID_GPC_CONFIG = JSON.stringify({
   pods: {
@@ -85,7 +85,7 @@ function useInitializeUser() {
   const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
   const [rootId, setRootId] = useAtom(rootIdAtom);
   const zupassAPI = useMaybeZupassAPI();
-  const enabled = !rootId && !!zupassAPI && !!userIdentity;
+  const enabled = !rootId && Boolean(zupassAPI) && Boolean(userIdentity);
 
   useEffect(() => {
     if (!userIdentity) {
@@ -157,7 +157,7 @@ function useInitializeUser() {
     }
   }, [enabled, mutate]);
 
-  return !!rootId;
+  return Boolean(rootId);
 }
 
 export default useInitializeUser;

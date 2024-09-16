@@ -1,6 +1,5 @@
-import mediumZoom, { Zoom, ZoomOptions } from "medium-zoom";
-import React from "react";
-import { ComponentProps, useCallback, useRef } from "react";
+import mediumZoom, { type Zoom, type ZoomOptions } from "medium-zoom";
+import React, { type ComponentProps, useCallback, useRef } from "react";
 
 type ImageZoomProps = ComponentProps<"img"> & {
   options?: ZoomOptions;

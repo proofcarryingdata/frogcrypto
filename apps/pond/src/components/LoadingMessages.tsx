@@ -1,10 +1,9 @@
-import React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Returns a random loading message that changes every 3 seconds.
  */
-const LoadingMessages = ({ biome }: { biome: string }): JSX.Element => {
+function LoadingMessages({ biome }: { biome: string }): JSX.Element {
   const messages = useMemo(
     () => [
       `Searching ${biome}...`,
@@ -40,10 +39,10 @@ const LoadingMessages = ({ biome }: { biome: string }): JSX.Element => {
     const interval = setInterval(getRandomMessage, 3000);
 
     // Clean up interval on unmount
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [getRandomMessage]);
 
   return <>{currentMessage}</>;
-};
+}
 
 export default LoadingMessages;

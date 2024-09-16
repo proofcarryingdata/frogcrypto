@@ -1,4 +1,4 @@
-import { Zapp, ZupassAPIWrapper, connect } from "@pcd/zupass-client";
+import { type Zapp, type ZupassAPIWrapper, connect } from "@pcd/zupass-client";
 import React, {
   createContext,
   useContext,
@@ -58,7 +58,7 @@ export function EmbeddedZupassProvider({
 
   return (
     <EmbeddedZupassContext.Provider value={value}>
-      <div ref={ref}></div>
+      <div ref={ref} />
       {children}
     </EmbeddedZupassContext.Provider>
   );

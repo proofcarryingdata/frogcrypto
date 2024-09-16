@@ -4,9 +4,9 @@ import {
   encodePrivateKey,
   encodePublicKey,
 } from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
+import { type Identity } from "@semaphore-protocol/identity";
 import { bigIntToBuffer, bufferToBigInt } from "@zk-kit/utils";
-import { UserIdentity } from "./hooks/useUserState";
+import { type UserIdentity } from "./hooks/useUserState";
 
 // bounds are inclusive
 export function randomInRangeInclusive(minVal: number, maxVal: number): number {

@@ -1,4 +1,4 @@
-import { Subscription } from "@pcd/passport-interface";
+import { type Subscription } from "@pcd/passport-interface";
 import { atom, useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { withImmer } from "jotai-immer";

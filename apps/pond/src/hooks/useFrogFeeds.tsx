@@ -1,20 +1,19 @@
 import {
-  Feed,
-  FrogCryptoClientFeed,
+  type Feed,
+  type FrogCryptoClientFeed,
   FrogCryptoFolderName,
   IFrogCryptoClientFeedSchema,
-  ListFeedsResponseValue,
+  type ListFeedsResponseValue,
   requestListFeeds,
 } from "@pcd/passport-interface";
-import { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import urljoin from "url-join";
 import { validate } from "uuid";
-import { useSubscriptions } from "./useSubscriptions";
-import { SERVER_URL } from "../constants";
-import React from "react";
-import useSearchParams from "./useSearchParams";
 import axios from "axios";
+import { SERVER_URL } from "../constants";
+import { useSubscriptions } from "./useSubscriptions";
+import useSearchParams from "./useSearchParams";
 
 export const DEFAULT_FROG_SUBSCRIPTION_PROVIDER_URL = `${SERVER_URL}/feeds`;
 
@@ -85,7 +84,7 @@ export function useInitializeFrogSubscriptions(): (
           console.error(
             "Failed to parse feed as FrogFeed",
             feed,
-            parsed["error"]
+            parsed.error
           );
         }
 
@@ -116,12 +115,12 @@ export function useInitializeFrogSubscriptions(): (
               encodeURIComponent(feedId)
             )
           );
-          const feed = res?.value?.feeds?.[0];
+          const feed = res.value?.feeds[0];
           if (feed) {
             return parseAndAddFeed(feed, true) ? feed : null;
-          } else {
-            throw new Error(res?.error || "Feed not found");
-          }
+          } 
+            throw new Error(res.error || "Feed not found");
+          
         } catch (e) {
           console.error("Failed to fetch feed", feedId, e);
           throw new Error("Unable to fetch feed");

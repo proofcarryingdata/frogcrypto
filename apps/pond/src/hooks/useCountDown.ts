@@ -13,19 +13,19 @@ function useCountDown(timestamp: number): string {
     const diffMs = Math.ceil((end.getTime() - now.getTime()) / 1000) * 1000;
     if (diffMs <= 0) {
       return "";
-    } else {
+    } 
       const diffString = prettyMilliseconds(diffMs, {
         millisecondsDecimalDigits: 0,
         secondsDecimalDigits: 0,
         unitCount: 4,
       });
       return diffString;
-    }
+    
   }, []);
   const [diffText, setDiffText] = useState(() => getDiffText(end));
 
   useEffect(() => {
-    const interval = setInterval(() => setDiffText(getDiffText(end)), 500);
+    const interval = setInterval(() => { setDiffText(getDiffText(end)); }, 500);
 
     return () => {
       clearInterval(interval);

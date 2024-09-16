@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Container,
-  IMove,
-  IOpacity,
-  IRangedCoordinates,
-  IShape,
-  ParticlesOptions,
-  RecursivePartial,
+  type Container,
+  type IMove,
+  type IOpacity,
+  type IRangedCoordinates,
+  type IShape,
+  type ParticlesOptions,
+  type RecursivePartial,
   tsParticles,
 } from "tsparticles-engine";
 import type { EmitterContainer } from "tsparticles-plugin-emitters";
-import { Emitter } from "tsparticles-plugin-emitters/types/Options/Classes/Emitter";
+import { type Emitter } from "tsparticles-plugin-emitters/types/Options/Classes/Emitter";
 
 const fpsLimit = 120;
 
@@ -106,7 +106,7 @@ export function useFrogParticles(
           detectRetina: true,
         },
       })
-      .then((container) => setContainer(container ?? null));
+      .then((container) => { setContainer(container ?? null); });
   }, [ref]);
 
   return container;
@@ -316,7 +316,7 @@ export function useFrogConfetti(): () => Promise<void> {
           },
         },
       })
-      .then((container) => setContainer(container ?? null));
+      .then((container) => { setContainer(container ?? null); });
   }, [container]);
 
   return confetti;
@@ -416,7 +416,7 @@ export function useCelestialPondParticles(
           },
         },
       })
-      .then((container) => setContainer(container ?? null));
+      .then((container) => { setContainer(container ?? null); });
   }, [ref]);
 
   return container;

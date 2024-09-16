@@ -1,10 +1,10 @@
 import React, { useContext, useState } from "react";
+import { useAtom } from "jotai";
 import { FROGCRYPTO_FOLDER_NAME } from "./constants";
 import Intro from "./components/Intro";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import GetFrogTab from "./components/GetFrogTab";
 import { EmbeddedZupassProvider, useMaybeZupassAPI } from "./hooks/useZapp";
-import { useAtom } from "jotai";
 import useInitializeUser from "./hooks/useInitializeUser";
 import Loader from "./components/Loader";
 import useFrogs from "./hooks/useFrogs";
@@ -47,7 +47,7 @@ function FrogCrypto() {
   }
 
   if (subscriptions.length === 0) {
-    return <Intro hasFrog={!!myScore} />;
+    return <Intro hasFrog={Boolean(myScore)} />;
   }
 
   return (
@@ -64,7 +64,7 @@ function FrogCrypto() {
                 className="btn"
                 key={t}
                 disabled={tab === t || (t === "social" && !socialUnlocked)}
-                onClick={(): void => setTab(t)}
+                onClick={(): void => { setTab(t); }}
               >
                 {t === "social" && !socialUnlocked ? `??? (10 🐸)` : label}
               </button>

@@ -19,11 +19,8 @@ export {
 
 // Copied from:
 // https://github.com/facebook/react/blob/main/packages/shared/ExecutionEnvironment.js
-const canUseDOM = !!(
-  typeof window !== "undefined" &&
-  typeof window.document !== "undefined" &&
-  typeof window.document.createElement !== "undefined"
-);
+const canUseDOM = Boolean(typeof window !== "undefined" &&
+  typeof window.document.createElement !== "undefined");
 
 // Copied from:
 // https://github.com/reduxjs/react-redux/blob/master/src/utils/useIsomorphicLayoutEffect.ts

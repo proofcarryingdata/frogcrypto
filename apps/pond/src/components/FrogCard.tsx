@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import { IFrogData, Rarity, Temperament, Biome } from "@pcd/eddsa-frog-pcd";
+import { type IFrogData, Rarity, Temperament, Biome } from "@pcd/eddsa-frog-pcd";
 import ImageZoom from "./ImageZoom";
 
 const RARE_COLORS: Record<Rarity, string> = {
@@ -70,14 +70,13 @@ const FrogCard: React.FC<{ frog: IFrogData; expanded?: boolean }> = ({
         </div>
 
         <button
-          onClick={() => setShowMore(!showMore)}
+          onClick={() => { setShowMore(!showMore); }}
           className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
         >
           {showMore ? "Collapse" : "See more"}
         </button>
 
-        {showMore && (
-          <>
+        {showMore ? <>
             <p className="text-sm text-gray-700">{frog.description}</p>
             <div className="flex justify-between w-full mt-2">
               <FrogAttribute
@@ -91,8 +90,7 @@ const FrogCard: React.FC<{ frog: IFrogData; expanded?: boolean }> = ({
                 value={biomeValue(frog.biome)}
               />
             </div>
-          </>
-        )}
+          </> : null}
       </div>
     </div>
   );
