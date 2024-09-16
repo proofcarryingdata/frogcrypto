@@ -18,7 +18,7 @@ import {
 import { userPublicKeyToUserId } from "@frogcrypto/shared";
 import { eq, sql } from "drizzle-orm";
 import _ from "lodash";
-import { FEEDS } from "./feeds";
+import { FEEDS, testPossibleFrogs } from "./feeds";
 
 export const usersRouter: Router = Router();
 
@@ -113,7 +113,7 @@ usersRouter.post("/me", async (req, res) => {
     feeds: allFeeds.map((feed) =>
       computeUserFeedState(userFeeds[feed.id], feed)
     ),
-    possibleFrogs: [],
+    possibleFrogs: testPossibleFrogs,
     myScore: scores.map((score) => ({
       score: score.score,
       semaphore_id_hash: semaphoreId,

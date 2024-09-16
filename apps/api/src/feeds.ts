@@ -1,4 +1,5 @@
 import {
+  DexFrog,
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
   FrogCryptoClientFeed,
@@ -290,3 +291,8 @@ export const testFrogs: FrogCryptoFrogData[] = [
     uuid: "aef1c9f6-0c14-4ebb-99c7-951b23580970",
   },
 ];
+
+export const testPossibleFrogs: DexFrog[] = testFrogs.map((frog) => ({
+  id: frog.id,
+  rarity: parseFrogEnum(Rarity, frog.rarity),
+}));

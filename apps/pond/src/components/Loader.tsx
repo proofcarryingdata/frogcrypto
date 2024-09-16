@@ -2,11 +2,11 @@ import React from "react";
 import _ from "lodash";
 
 const Loader = ({
-  className,
+  className = "w-16 h-16 m-8",
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div {...props} className={`relative min-w-4 min-h-4 ${className}`}>
+    <div {...props} className={`relative mx-auto min-w-4 min-h-4 ${className}`}>
       {_.range(3).map((i) => (
         <div
           key={i}

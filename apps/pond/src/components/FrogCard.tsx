@@ -28,8 +28,11 @@ const biomeValue = (biome: Biome): string => {
   return _.startCase(Biome[biome]);
 };
 
-const FrogCard: React.FC<{ frog: IFrogData }> = ({ frog }) => {
-  const [showMore, setShowMore] = useState(false);
+const FrogCard: React.FC<{ frog: IFrogData; expanded?: boolean }> = ({
+  frog,
+  expanded,
+}) => {
+  const [showMore, setShowMore] = useState(expanded ?? false);
 
   return (
     <div className="w-full flex flex-col bg-white rounded-lg shadow-md">

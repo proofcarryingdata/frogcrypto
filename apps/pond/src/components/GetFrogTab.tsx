@@ -14,6 +14,8 @@ import { Biome } from "@pcd/eddsa-frog-pcd";
 import { useZupassAPI } from "../hooks/useZapp";
 import useFrogs from "../hooks/useFrogs";
 import FrogCard from "./FrogCard";
+import Divider from "./Divider";
+import { useFrogConfetti } from "../hooks/useFrogParticles";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
@@ -43,11 +45,14 @@ const GetFrogTab = () => {
       </div>
 
       {!!frogs?.length && (
-        <div className="flex flex-col gap-4 w-full">
-          {frogs.map((frog) => (
-            <FrogCard key={frog.contentID} frog={frog} />
-          ))}
-        </div>
+        <>
+          <Divider />
+          <div className="flex flex-col gap-4 w-full pb-8">
+            {frogs.map((frog) => (
+              <FrogCard key={frog.contentID} frog={frog} />
+            ))}
+          </div>
+        </>
       )}
     </>
   );
@@ -71,6 +76,7 @@ const SearchButton = ({
   const countDown = useCountDown(nextFetchAt ?? 0);
   const canFetch = active && (!nextFetchAt || nextFetchAt < Date.now());
   const { mutateAsync: getFrogAsync } = useGetFrog({ feedId: feed.id });
+  const confetti = useFrogConfetti();
 
   const onClick = useCallback(
     () =>
@@ -81,6 +87,7 @@ const SearchButton = ({
         {
           loading: <LoadingMessages biome={feed.name} />,
           success: (frogPOD) => {
+            confetti();
             const frog = parseFrogPOD(frogPOD);
             if (frog.biome === Biome.Unknown) {
               return `You found something strange in ${feed.name}. It doesn't appear to be a frog.`;

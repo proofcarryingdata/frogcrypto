@@ -15,7 +15,7 @@ import { Emitter } from "tsparticles-plugin-emitters/types/Options/Classes/Emitt
 const fpsLimit = 120;
 
 export function useFrogParticles(
-  ref: React.RefObject<HTMLDivElement> | null,
+  ref: React.RefObject<HTMLDivElement> | null
 ): Container | null {
   const [container, setContainer] = useState<Container | null>(null);
 
@@ -58,7 +58,7 @@ export function useFrogParticles(
               type: "image",
               image: {
                 replaceColor: true,
-                src: "/images/frogs/frog.svg",
+                src: "/images/frog.svg",
               },
             },
             opacity: {
@@ -323,7 +323,7 @@ export function useFrogConfetti(): () => Promise<void> {
 }
 
 export function useCelestialPondParticles(
-  ref: React.RefObject<HTMLDivElement> | null,
+  ref: React.RefObject<HTMLDivElement> | null
 ): Container | null {
   const [container, setContainer] = useState<Container | null>(null);
 
@@ -423,7 +423,7 @@ export function useCelestialPondParticles(
 }
 
 export function useWrithingVoidParticles(
-  ref: React.RefObject<HTMLDivElement> | null,
+  ref: React.RefObject<HTMLDivElement> | null
 ): () => Promise<Container | undefined> {
   const play = useCallback(async () => {
     if (!ref) {
@@ -437,7 +437,7 @@ export function useWrithingVoidParticles(
         type: "image",
         image: {
           replaceColor: true,
-          src: "/images/frogs/frog.svg",
+          src: "/images/frog.svg",
         },
       },
       color: {
@@ -483,7 +483,7 @@ export function useWrithingVoidParticles(
       },
     };
     const emitter = (
-      move: RecursivePartial<IMove>,
+      move: RecursivePartial<IMove>
     ): RecursivePartial<Emitter> => ({
       particles: {
         ...particles,

@@ -84,3 +84,11 @@ export function useUserStateByFeedId() {
     return _.keyBy(userState?.feeds || [], (feed) => feed.feedId);
   }, [userState]);
 }
+
+export function usePossibleFrogs() {
+  const { data: userState } = useUserState();
+
+  return useMemo(() => {
+    return userState?.possibleFrogs || [];
+  }, [userState]);
+}
