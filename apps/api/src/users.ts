@@ -16,7 +16,7 @@ import {
   FrogCryptoComputedUserState,
 } from "@pcd/passport-interface";
 import { userPublicKeyToUserId } from "@frogcrypto/shared";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import _ from "lodash";
 import { FEEDS } from "./feeds";
 
@@ -56,8 +56,8 @@ usersRouter.post("/auth", async (req, res) => {
   return res.json({ ok: true });
 });
 
-function computeUserFeedState(
-  state: UserFeed | undefined,
+export function computeUserFeedState(
+  state: Pick<UserFeed, "lastFetchedAt"> | undefined,
   feed: FrogCryptoFeed
 ): FrogCryptoComputedUserState {
   const lastFetchedAt = state?.lastFetchedAt?.getTime() ?? 0;
@@ -71,12 +71,21 @@ function computeUserFeedState(
   };
 }
 
+export async function getSemaphoreId(signerPk: string) {
+  const userId = await db
+    .select({ semaphoreId: userIdsTable.semaphoreId })
+    .from(userIdsTable)
+    .where(eq(userIdsTable.signerPk, signerPk));
+  return userId[0]?.semaphoreId;
+}
+
 usersRouter.post("/me", async (req, res) => {
   const pod = req.body as POD;
-  const semaphoreId = userPublicKeyToUserId(pod.signerPublicKey);
-  const feedIds = JSON.parse(
-    String(pod.content.getValue("feedIds")?.value ?? "[]")
-  );
+  const semaphoreId = await getSemaphoreId(pod.signerPublicKey);
+  if (!semaphoreId) {
+    return res.status(404).json({ error: "No semaphore ID found" });
+  }
+  // TODO: validate pod
 
   const userFeeds = _.keyBy(
     await db
@@ -87,20 +96,29 @@ usersRouter.post("/me", async (req, res) => {
   );
 
   const scores = await db
-    .select({ score: userScoresTable.score })
+    .select({
+      semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
+      score: userScoresTable.score,
+      rank: sql<number>`cast(rank() over (order by ${userScoresTable.score} desc) as int)`,
+    })
     .from(userScoresTable)
     .where(eq(userScoresTable.semaphoreId, semaphoreId));
 
+  const feedIds = JSON.parse(
+    String(pod.content.getValue("feedIds")?.value ?? "[]")
+  );
   const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
 
   return res.json({
-    feeds: FEEDS.map((feed) => computeUserFeedState(userFeeds[feed.id], feed)),
+    feeds: allFeeds.map((feed) =>
+      computeUserFeedState(userFeeds[feed.id], feed)
+    ),
     possibleFrogs: [],
     myScore: scores.map((score) => ({
       score: score.score,
       semaphore_id_hash: semaphoreId,
       has_telegram_username: false,
-      rank: 0,
+      rank: score.rank,
     }))[0],
   } satisfies FrogCryptoUserStateResponseValue);
 });

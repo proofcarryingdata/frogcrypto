@@ -46,15 +46,21 @@ export const userFeedsTable = pgTable(
 
 export type UserFeed = typeof userFeedsTable.$inferSelect;
 
-export const userScoresTable = pgTable("user_scores", {
-  id: serial("id").primaryKey(),
-  semaphoreId: text("semaphore_id").notNull(),
-  score: integer("score").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
+export const userScoresTable = pgTable(
+  "user_scores",
+  {
+    id: serial("id").primaryKey(),
+    semaphoreId: text("semaphore_id").notNull(),
+    score: integer("score").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    semaphoreId: unique().on(table.semaphoreId),
+  })
+);
 
 export const frogsTable = pgTable("frogs", {
   id: serial("id").primaryKey(),

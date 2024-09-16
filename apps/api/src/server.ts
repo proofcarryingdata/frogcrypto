@@ -10,6 +10,7 @@ import cors from "cors";
 import { usersRouter } from "./users";
 import { log } from "@frogcrypto/logger";
 import { POD } from "@pcd/pod";
+import { feedsRouter } from "./feeds";
 
 export const initializePCDs = async () => {
   await require("@pcd/gpc-pcd").init({
@@ -60,7 +61,8 @@ export const createServer = (): Express => {
     .get("/status", (_, res) => {
       return res.json({ ok: true });
     })
-    .use("/users", usersRouter);
+    .use("/users", usersRouter)
+    .use("/feeds", feedsRouter);
 
   return app;
 };

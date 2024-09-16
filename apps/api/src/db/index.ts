@@ -4,4 +4,6 @@ import { config } from "dotenv";
 
 config({ path: ".env" });
 
-export const db = drizzle(sql);
+export const db = drizzle(sql, { logger: true });
+
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
