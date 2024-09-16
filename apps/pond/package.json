@@ -26,6 +26,7 @@
     "@tanstack/react-query-devtools": "^5.56.2",
     "@zk-kit/utils": "^1.2.1",
     "axios": "^1.7.7",
+    "immer": "^10.1.1",
     "jotai": "^2.9.3",
     "jotai-immer": "^0.4.1",
     "lodash": "^4.17.21",

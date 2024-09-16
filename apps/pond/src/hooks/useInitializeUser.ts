@@ -14,6 +14,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import p from "@pcd/podspec";
 import { crypto } from "@zk-kit/utils";
+import { produce } from "immer";
 
 const ID_GPC_CONFIG = JSON.stringify({
   pods: {
@@ -114,6 +115,9 @@ function useInitializeUser() {
           {
             pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
             owner: { type: "cryptographic", value: rootId },
+            device: { type: "string", value: window.navigator.userAgent },
+            timestamp: { type: "int", value: BigInt(Date.now()) },
+            location: { type: "string", value: window.location.href },
             zupass_title: {
               type: "string",
               value: `Player ID (${shortID})`,
@@ -129,7 +133,16 @@ function useInitializeUser() {
         await z.pod.insert(pod);
       }
 
-      const gpc = await z.gpc.prove(gpcArgs);
+      const gpc = await z.gpc.prove(
+        produce(gpcArgs, (args) => {
+          if (!args.pods.validatorParams) {
+            args.pods.validatorParams = {};
+          }
+          args.pods.validatorParams.prescribedSignerPublicKeys = {
+            id: userIdentity.publicKey,
+          };
+        })
+      );
       await axios.post(`${SERVER_URL}/users/auth`, {
         gpc,
       });
