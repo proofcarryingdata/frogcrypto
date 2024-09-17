@@ -1,29 +1,22 @@
-import { GPCPCD, GPCPCDPackage, GPCPCDTypeName } from "@pcd/gpc-pcd";
-import { SerializedPCD } from "@pcd/pcd-types";
 import { log } from "@frogcrypto/logger";
-import { Router } from "express";
-import {
-  UserFeed,
-  userFeedsTable,
-  userIdsTable,
-  userScoresTable,
-} from "./db/schema";
-import { db } from "./db";
-import { POD } from "@pcd/pod";
-import {
-  FrogCryptoUserStateResponseValue,
-  FrogCryptoFeed,
-  FrogCryptoComputedUserState,
-} from "@pcd/passport-interface";
-import { userPublicKeyToUserId } from "@frogcrypto/shared";
+import { type GPCPCD, GPCPCDPackage, GPCPCDTypeName } from "@pcd/gpc-pcd";
+import { type FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
+import { type SerializedPCD } from "@pcd/pcd-types";
+import { type POD } from "@pcd/pod";
 import { eq, sql } from "drizzle-orm";
+import { Router } from "express";
 import _ from "lodash";
-import { FEEDS, testPossibleFrogs } from "./feeds";
+import { db } from "./db";
+import { testPossibleFrogs } from "./db/mock";
+import { userFeedsTable, userIdsTable, userScoresTable } from "./db/schema";
+import { getSemaphoreId } from "./db/users";
+import { FEEDS } from "./feeds";
+import { computeUserFeedState } from "./utils";
 
 export const usersRouter: Router = Router();
 
 usersRouter.post("/auth", async (req, res) => {
-  const { gpc } = req.body as { gpc: SerializedPCD<GPCPCD> };
+  const { gpc } = req.body as { gpc?: SerializedPCD<GPCPCD> };
   if (!gpc) {
     return res.status(400).json({ error: "No GPC provided" });
   }
@@ -56,29 +49,6 @@ usersRouter.post("/auth", async (req, res) => {
   return res.json({ ok: true });
 });
 
-export function computeUserFeedState(
-  state: Pick<UserFeed, "lastFetchedAt"> | undefined,
-  feed: FrogCryptoFeed
-): FrogCryptoComputedUserState {
-  const lastFetchedAt = state?.lastFetchedAt?.getTime() ?? 0;
-  const nextFetchAt = lastFetchedAt + feed.cooldown * 1000;
-
-  return {
-    feedId: feed.id,
-    lastFetchedAt,
-    nextFetchAt,
-    active: feed.activeUntil > Date.now() / 1000,
-  };
-}
-
-export async function getSemaphoreId(signerPk: string) {
-  const userId = await db
-    .select({ semaphoreId: userIdsTable.semaphoreId })
-    .from(userIdsTable)
-    .where(eq(userIdsTable.signerPk, signerPk));
-  return userId[0]?.semaphoreId;
-}
-
 usersRouter.post("/me", async (req, res) => {
   const pod = req.body as POD;
   const semaphoreId = await getSemaphoreId(pod.signerPublicKey);
@@ -104,9 +74,10 @@ usersRouter.post("/me", async (req, res) => {
     .from(userScoresTable)
     .where(eq(userScoresTable.semaphoreId, semaphoreId));
 
+  // FIXME: validate feedIds
   const feedIds = JSON.parse(
     String(pod.content.getValue("feedIds")?.value ?? "[]")
-  );
+  ) as string[];
   const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
 
   return res.json({

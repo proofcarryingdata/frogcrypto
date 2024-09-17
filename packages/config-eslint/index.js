@@ -11,6 +11,7 @@ module.exports = {
     JSX: true,
   },
   env: {
+    es2020: true,
     node: true,
   },
   settings: {

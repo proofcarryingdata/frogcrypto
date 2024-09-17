@@ -1,6 +1,11 @@
-import { EdDSAFrogPCD, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
+import { type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import { type DexFrog } from "@pcd/passport-interface";
-import React, { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useMemo,
+  useState,
+} from "react";
 import { type FrogPOD } from "@frogcrypto/shared";
 import { List, LayoutGrid } from "lucide-react";
 import { usePossibleFrogs } from "../hooks/useUserState";
@@ -84,14 +89,18 @@ export function DexTab() {
         </span>
         <button
           className="btn"
-          onClick={(): void => { setMode("list"); }}
+          onClick={(): void => {
+            setMode("list");
+          }}
           disabled={mode === "list"}
         >
           <List />
         </button>
         <button
           className="btn"
-          onClick={(): void => { setMode("grid"); }}
+          onClick={(): void => {
+            setMode("grid");
+          }}
           disabled={mode === "grid"}
         >
           <LayoutGrid />
@@ -115,7 +124,9 @@ export function DexTab() {
       {focusedFrogs.length > 0 && (
         <FrogsModal
           pods={focusedFrogs}
-          onClose={(): void => { setFocusedFrogs([]); }}
+          onClose={(): void => {
+            setFocusedFrogs([]);
+          }}
           color={RARITIES[focusedFrogs[0].rarity].color}
         />
       )}
@@ -161,7 +172,9 @@ function DexList({
           return (
             <tr
               key={id}
-              onClick={(): void => { onClick(frogPODs.pods); }}
+              onClick={(): void => {
+                onClick(frogPODs.pods);
+              }}
               className="cursor-pointer hover:bg-gray-100"
             >
               <td className="px-4 py-2">{id}</td>
@@ -227,7 +240,9 @@ function DexGrid({
             <div
               className="w-full bg-green-600 text-white rounded-lg cursor-pointer flex flex-col items-stretch justify-center"
               style={{ borderColor: RARITIES[rarity].color }}
-              onClick={(): void => { onClick(frogPODs.pods); }}
+              onClick={(): void => {
+                onClick(frogPODs.pods);
+              }}
             >
               <span
                 className="px-2 py-1 text-center truncate"
@@ -250,13 +265,16 @@ function DexGrid({
   );
 }
 
-type FrogsById = Record<number, {
+type FrogsById = Record<
+  number,
+  {
     pods: FrogPOD[];
     /**
      * An arbitrary PCD for the frog.
      */
     frog: IFrogData;
-  }>;
+  }
+>;
 
 /**
  * Group PODs by frog ID.

@@ -24,9 +24,9 @@ const useFrogs = () => {
             pod_type: p.string().list([POD_TYPE_FROGCRYPTO_FROG]),
           })
         )
-        .then((frogs) =>
+        .then((pods) =>
           _.sortBy(
-            frogs.map((frog) => parseFrogPOD(frog)),
+            pods.map((pod) => parseFrogPOD(pod)),
             (frog) => -frog.timestampSigned
           )
         ),
@@ -34,6 +34,7 @@ const useFrogs = () => {
 
   useEffect(() => {
     if (error) {
+      console.error(error);
       toast.error("Error fetching frogs");
     }
   }, [error]);

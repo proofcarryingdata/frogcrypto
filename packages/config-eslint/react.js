@@ -23,6 +23,9 @@ module.exports = {
   globals: {
     JSX: true,
   },
+  env: {
+    es2020: true,
+  },
   plugins: ["only-warn"],
   settings: {
     "import/resolver": {
@@ -35,5 +38,7 @@ module.exports = {
   // add rules configurations here
   rules: {
     "import/no-default-export": "off",
+    "unicorn/filename-case": "off",
+    "no-console": ["error", { allow: ["debug"] }],
   },
 };

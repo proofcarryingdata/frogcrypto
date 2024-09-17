@@ -1,13 +1,13 @@
-import { sql, SQL, and, eq } from "drizzle-orm";
-import { db, Transaction } from ".";
-import { userScoresTable } from "./schema";
+import { sql, eq } from "drizzle-orm";
+import { userIdsTable, userScoresTable } from "./schema";
+import { db, type Transaction } from ".";
 
 export const incrementScore = async (
-  db: Transaction,
+  tx: Transaction,
   semaphoreId: string,
-  increment: number = 1
-) => {
-  const result = await db
+  increment = 1
+): Promise<typeof userScoresTable.$inferInsert> => {
+  const result = await tx
     .insert(userScoresTable)
     .values({
       semaphoreId,
@@ -23,3 +23,13 @@ export const incrementScore = async (
 
   return result[0];
 };
+
+export async function getSemaphoreId(
+  signerPk: string
+): Promise<string | undefined> {
+  const userId = await db
+    .select({ semaphoreId: userIdsTable.semaphoreId })
+    .from(userIdsTable)
+    .where(eq(userIdsTable.signerPk, signerPk));
+  return userId[0]?.semaphoreId;
+}

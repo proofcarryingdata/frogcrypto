@@ -1,28 +1,32 @@
+import { log } from "@frogcrypto/logger";
 import {
-  DexFrog,
+  compressBigInt,
+  POD_TYPE_FROGCRYPTO_FROG,
+  toFrogPODEntries,
+} from "@frogcrypto/shared";
+import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
+import {
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
-  FrogCryptoClientFeed,
-  FrogCryptoFeed,
-  FrogCryptoFrogData,
-  ListFeedsResponseValue,
+  type FrogCryptoClientFeed,
+  type FrogCryptoFeed,
+  type FrogCryptoFrogData,
+  type ListFeedsResponseValue,
 } from "@pcd/passport-interface";
-import { Router } from "express";
-import { db } from "./db";
-import { incrementScore } from "./db/users";
-import { userFeedsTable } from "./db/schema";
-import { updateUserFeedState } from "./db/feeds";
 import { POD } from "@pcd/pod";
-import { computeUserFeedState, getSemaphoreId } from "./users";
-import { log } from "@frogcrypto/logger";
-import { Biome, IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
+import { Router } from "express";
 import _ from "lodash";
+import { db } from "./db";
+import { updateUserFeedState } from "./db/feeds";
+import { testFrogs } from "./db/mock";
+import { userFeedsTable } from "./db/schema";
+import { getSemaphoreId, incrementScore } from "./db/users";
 import {
+  computeUserFeedState,
   parseFrogEnum,
   parseFrogTemperament,
   sampleFrogAttribute,
 } from "./utils";
-import { decompressBigInt, POD_TYPE_FROGCRYPTO_FROG } from "@frogcrypto/shared";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -66,8 +70,8 @@ function sanitizeFeed(feed: FrogCryptoFeed): FrogCryptoClientFeed {
 
 export const feedsRouter: Router = Router();
 
-feedsRouter.get("/", async (req, res) => {
-  return res.json({
+feedsRouter.get("/", (_req, res) => {
+  res.json({
     providerUrl: "https://api.getfrogs.xyz",
     providerName: "FrogCrypto",
     feeds: FEEDS.map(sanitizeFeed),
@@ -116,7 +120,7 @@ feedsRouter.post("/:feedId", async (req, res) => {
       if (nextFetchAt > Date.now()) {
         return res
           .status(403)
-          .json({ error: `Next fetch available at ${nextFetchAt}` });
+          .json({ error: `Next fetch available at ${String(nextFetchAt)}` });
       }
 
       const frogDataSpec = _.sample(testFrogs);
@@ -124,7 +128,7 @@ feedsRouter.post("/:feedId", async (req, res) => {
         return res.status(404).json({ error: "Frog Not Found" });
       }
 
-      const frogData = generateFrogData(frogDataSpec, semaphoreId);
+      const frogData = generateFrogData(frogDataSpec, BigInt(semaphoreId));
 
       const { score: scoreAfterRoll } = await incrementScore(
         tx,
@@ -149,8 +153,8 @@ feedsRouter.post("/:feedId", async (req, res) => {
         pod: frogPOD.serialize(),
       });
     })
-    .catch((e) => {
-      if (e.message.includes("could not obtain lock")) {
+    .catch((e: unknown) => {
+      if (e instanceof Error && e.message.includes("could not obtain lock")) {
         return res
           .status(429)
           .json({ error: "There is another frog request in flight!" });
@@ -161,7 +165,7 @@ feedsRouter.post("/:feedId", async (req, res) => {
 
 function generateFrogData(
   frogData: FrogCryptoFrogData,
-  ownerSemaphoreId: string
+  ownerSemaphoreId: bigint
 ): IFrogData {
   const rarity = parseFrogEnum(Rarity, frogData.rarity);
 
@@ -185,114 +189,16 @@ function generateFrogData(
       rarity
     ),
     timestampSigned: Date.now(),
-    ownerSemaphoreId,
+    ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
   };
 }
 
 function signFrogData(frogData: IFrogData): POD {
   return POD.sign(
     {
+      ...toFrogPODEntries(frogData),
       pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_FROG },
-      name: { type: "string", value: frogData.name },
-      description: { type: "string", value: frogData.description },
-      imageUrl: { type: "string", value: frogData.imageUrl },
-      frogId: { type: "int", value: BigInt(frogData.frogId) },
-      biome: { type: "int", value: BigInt(frogData.biome) },
-      rarity: { type: "int", value: BigInt(frogData.rarity) },
-      temperament: { type: "int", value: BigInt(frogData.temperament) },
-      jump: { type: "int", value: BigInt(frogData.jump) },
-      speed: { type: "int", value: BigInt(frogData.speed) },
-      intelligence: { type: "int", value: BigInt(frogData.intelligence) },
-      beauty: { type: "int", value: BigInt(frogData.beauty) },
-      timestampSigned: {
-        type: "int",
-        value: BigInt(frogData.timestampSigned),
-      },
-      owner: {
-        type: "cryptographic",
-        value: BigInt(frogData.ownerSemaphoreId),
-      },
     },
-    ISSUER_PRIVATE_KEY!
+    ISSUER_PRIVATE_KEY
   );
 }
-
-export const testFrogs: FrogCryptoFrogData[] = [
-  {
-    id: 1,
-    name: "Purple Fluorescent Frog",
-    biome: "Jungle",
-    rarity: "common",
-    drop_weight: 50,
-    description:
-      "The purple fluorescent frog is a rare species found in the jungles of India.",
-    jump_min: 0,
-    jump_max: 7,
-    speed_min: 0,
-    speed_max: 7,
-    intelligence_min: 0,
-    intelligence_max: 7,
-    beauty_min: 0,
-    beauty_max: 7,
-    uuid: "b5af0796-c038-4f47-9aa2-1cff2b005ad7",
-  },
-  {
-    id: 2,
-    name: "Mossy Frog",
-    biome: "Jungle",
-    rarity: "common",
-    drop_weight: 50,
-    description:
-      "The mossy frog is a rare species found in the jungles of Vietnam.",
-    jump_min: 0,
-    jump_max: 7,
-    speed_min: 0,
-    speed_max: 7,
-    intelligence_min: 0,
-    intelligence_max: 7,
-    beauty_min: 0,
-    beauty_max: 7,
-    uuid: "78c8c92e-466b-49f8-b82f-b0b29dccb567",
-  },
-  {
-    id: 3,
-    name: "Black Rain Frog",
-    biome: "Desert",
-    rarity: "common",
-    drop_weight: 50,
-    description:
-      "The black rain frog is a rare species found in the deserts of South Africa.",
-    jump_min: 0,
-    jump_max: 7,
-    speed_min: 0,
-    speed_max: 7,
-    intelligence_min: 0,
-    intelligence_max: 7,
-    beauty_min: 0,
-    beauty_max: 7,
-    uuid: "b5ce3905-4ac7-4b46-9d9d-f9b816de9fae",
-  },
-  {
-    id: 4,
-    name: "Goliath Frog",
-    biome: "Desert",
-    rarity: "common",
-    drop_weight: 50,
-    description:
-      "The Goliath frog is a rare species found in the deserts of West Africa.",
-    jump_min: 0,
-    jump_max: 7,
-    speed_min: 0,
-    speed_max: 7,
-    intelligence_min: 0,
-    intelligence_max: 7,
-    beauty_min: 0,
-    beauty_max: 7,
-    uuid: "aef1c9f6-0c14-4ebb-99c7-951b23580970",
-  },
-];
-
-export const testPossibleFrogs: DexFrog[] = testFrogs.map((frog) => ({
-  id: frog.id,
-  rarity: parseFrogEnum(Rarity, frog.rarity),
-}));

@@ -23,6 +23,7 @@
     "@pcd/passport-interface": "^0.11.7",
     "@pcd/pcd-types": "^0.11.4",
     "@pcd/pod": "^0.1.5",
+    "@pcd/podspec": "^0.0.2",
     "@pcd/proto-pod-gpc-artifacts": "^0.9.0",
     "@semaphore-protocol/identity": "^4.0.3",
     "@vercel/postgres": "^0.10.0",

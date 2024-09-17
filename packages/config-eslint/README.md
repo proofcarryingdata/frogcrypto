@@ -1,3 +1,3 @@
-# `@turbo/eslint-config`
+# `@frogcrypto/eslint-config`
 
 Collection of internal eslint configurations.

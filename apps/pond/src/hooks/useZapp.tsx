@@ -36,7 +36,7 @@ export function EmbeddedZupassProvider({
   zapp: Zapp;
   zupassUrl: string;
   children: React.ReactNode;
-}) {
+}): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
 
   const [value, setValue] = useState<EmbeddedZupass>({
@@ -46,7 +46,7 @@ export function EmbeddedZupassProvider({
 
   useEffect(() => {
     if (ref.current) {
-      connect(zapp, ref.current, zupassUrl).then((zupass) => {
+      void connect(zapp, ref.current, zupassUrl).then((zupass) => {
         setValue({
           state: EmbeddedZupassState.CONNECTED,
           z: zupass,
@@ -54,7 +54,7 @@ export function EmbeddedZupassProvider({
         });
       });
     }
-  }, []);
+  }, [zapp, zupassUrl]);
 
   return (
     <EmbeddedZupassContext.Provider value={value}>

@@ -82,8 +82,8 @@ export function ActionButton({
       setLoading(true);
       onClickRef
         .current()
-        .catch((e) => {
-          console.error(e);
+        .catch((e: unknown) => {
+          console.debug(e);
         })
         .finally(() => {
           // aborted means a newer onClick action is triggered and we should
@@ -140,7 +140,7 @@ export const FrogSearchButton = forwardRef(
       }
 
       if (disabled && !pending) {
-        container.start();
+        void container.start();
       }
 
       // nb: we always need this so we can disable animation when button starts as
@@ -170,6 +170,7 @@ export const FrogSearchButton = forwardRef(
     );
   }
 );
+FrogSearchButton.displayName = "FrogSearchButton";
 
 export type FrogSearchButtonType = typeof FrogSearchButton;
 
@@ -185,7 +186,8 @@ const Button = forwardRef(
   ) => {
     return (
       <button
-        className={`btn ${pending ? "cursor-wait" : ""} ${className}`}
+        type="button"
+        className={`btn ${pending ? "cursor-wait" : ""} ${className ?? ""}`}
         {...props}
         ref={buttonRef}
       >
@@ -194,3 +196,4 @@ const Button = forwardRef(
     );
   }
 );
+Button.displayName = "Button";

@@ -1,6 +1,6 @@
 import { type FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
 import { POD } from "@pcd/pod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import axios from "axios";
 import { useAtom } from "jotai/react";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
@@ -33,7 +33,7 @@ export const rootIdAtom = atomWithStorage<string | null>("rootId", null);
 
 export const QUERY_KEY_USER = "user";
 
-export function useUserState() {
+export function useUserState(): UseQueryResult<FrogCryptoUserStateResponseValue> {
   const [userIdentity] = useAtom(userIdentityAtom);
   const feedIds = useFeedIds();
 

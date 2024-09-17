@@ -1,40 +1,78 @@
-# Turborepo kitchen sink starter
+# FrogCrypto
 
-This is an official starter Turborepo with multiple meta-frameworks all working in harmony and sharing packages.
+FrogCrypto is a monorepo managed with Turborepo, designed to create an interactive and engaging experience for Devcon attendees through the collection of virtual and physical frogs. The project integrates multiple frameworks and packages to deliver a seamless experience across web and mobile platforms, leveraging technologies like Express, Next.js, and Vite.
 
-This example also shows how to use [Workspace Configurations](https://turbo.build/repo/docs/core-concepts/monorepos/configuring-workspaces).
+## Table of Contents
 
-## Using this example
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
-Run the following command:
+## Installation
+
+1. **Clone the Repository**
+
+   ```sh
+   git clone https://github.com/yourusername/frogcrypto.git
+   cd frogcrypto
+   ```
+
+2. **Install Dependencies**
+
+   Ensure you have [Node.js](https://nodejs.org/) installed (version >= 18).
+
+   ```sh
+   pnpm install
+   ```
+
+## Usage
+
+### Development
+
+Run all services in development mode:
 
 ```sh
-npx create-turbo@latest -e kitchen-sink
+pnpm dev
 ```
 
-## What's inside?
+This command starts the API server, admin panel, and client app simultaneously with hot-reloading enabled.
 
-This Turborepo includes the following packages and apps:
+### Building for Production
 
-### Apps and Packages
+Build all packages and applications:
 
-- `api`: an [Express](https://expressjs.com/) server
-- `storefront`: a [Next.js](https://nextjs.org/) app
-- `admin`: a [Vite](https://vitejs.dev/) single page app
-- `blog`: a [Remix](https://remix.run/) blog
-- `@frogcrypto/eslint-config`: ESLint configurations used throughout the monorepo
-- `@frogcrypto/jest-presets`: Jest configurations
-- `@frogcrypto/logger`: isomorphic logger (a small wrapper around console.log)
-- `@frogcrypto/ui`: a dummy React UI library (which contains `<CounterButton>` and `<Link>` components)
-- `@frogcrypto/typescript-config`: tsconfig.json's used throughout the monorepo
+```sh
+pnpm build
+```
 
-Each package and app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Cleaning Build Artifacts
 
-### Utilities
+Remove all `dist` directories:
 
-This Turborepo has some additional tools already setup for you:
+```sh
+pnpm clean
+```
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Jest](https://jestjs.io) test runner for all things JavaScript
-- [Prettier](https://prettier.io) for code formatting
+### Linting
+
+Check the code for linting errors:
+
+```sh
+pnpm lint
+```
+
+### Testing
+
+Run all tests:
+
+```sh
+pnpm test
+```
+
+## Project Structure
+
+- **apps/**: Contains all the applications (API server, admin panel, client app, etc.).
+- **packages/**: Houses shared packages and utilities used across different applications.
+- **docs/**: Documentation and planning materials.

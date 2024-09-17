@@ -3,8 +3,28 @@ import {
   Rarity,
   Temperament,
 } from "@pcd/eddsa-frog-pcd";
-import { FrogCryptoClientFeed, FrogCryptoFeed } from "@pcd/passport-interface";
+import type {
+  FrogCryptoClientFeed,
+  FrogCryptoComputedUserState,
+  FrogCryptoFeed,
+} from "@pcd/passport-interface";
 import _ from "lodash";
+import type { UserFeed } from "./db/schema";
+
+export function computeUserFeedState(
+  state: Pick<UserFeed, "lastFetchedAt"> | undefined,
+  feed: FrogCryptoFeed
+): FrogCryptoComputedUserState {
+  const lastFetchedAt = state?.lastFetchedAt?.getTime() ?? 0;
+  const nextFetchAt = lastFetchedAt + feed.cooldown * 1000;
+
+  return {
+    feedId: feed.id,
+    lastFetchedAt,
+    nextFetchAt,
+    active: feed.activeUntil > Date.now() / 1000,
+  };
+}
 
 export function sampleFrogAttribute(
   min?: number,

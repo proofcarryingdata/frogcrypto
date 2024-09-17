@@ -12,14 +12,17 @@ import App from "./App.tsx";
 
 const queryClient = new QueryClient();
 
-createRoot(document.getElementById("root")!).render(
+const root = document.getElementById("root");
+if (!root) {
+  throw new Error("No root element found");
+}
+const zapp = { name: "frogcrypto", permissions: ["read", "write"] };
+
+createRoot(root).render(
   <StrictMode>
     <Provider>
       <QueryClientProvider client={queryClient}>
-        <EmbeddedZupassProvider
-          zapp={{ name: "frogcrypto", permissions: ["read", "write"] }}
-          zupassUrl={ZUPASS_URL}
-        >
+        <EmbeddedZupassProvider zapp={zapp} zupassUrl={ZUPASS_URL}>
           <ErrorBoundary fallback={<div>Something went wrong</div>}>
             <App />
             <Toaster />
