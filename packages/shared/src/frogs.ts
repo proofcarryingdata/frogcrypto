@@ -1,7 +1,8 @@
-import { POD, PODValue } from "@pcd/pod";
+import { POD, PODIntValue } from "@pcd/pod";
 import { IFrogData, Biome, Rarity, Temperament } from "@pcd/eddsa-frog-pcd";
-import { p } from "@pcd/podspec";
+import * as p from "@parcnet-js/podspec";
 import { compressBigInt, decompressBigInt } from "./bigint";
+import _ from "lodash";
 
 export type FrogPOD = IFrogData & {
   contentID: bigint;
@@ -13,28 +14,30 @@ export const POD_TYPE_FROGCRYPTO_FROG = "frogcrypto.frog";
 
 function enumToEntryList<T extends Record<string, number | string>>(
   enumObj: T
-): bigint[] {
+): PODIntValue[] {
   return Object.values(enumObj)
     .filter((x) => typeof x === "number")
-    .map((x) => BigInt(x));
+    .map((x) => ({ type: "int", value: BigInt(x) }));
 }
 
-const FrogSpec = p.entries({
-  name: p.string({ coerce: true }),
-  description: p.string({ coerce: true }),
-  imageUrl: p.string({ coerce: true }),
+export const FrogSpec = p.entries({
+  podType: { type: "string", value: POD_TYPE_FROGCRYPTO_FROG },
 
-  frogId: p.int({ coerce: true }),
-  biome: p.int({ coerce: true }).list(enumToEntryList(Biome)),
-  rarity: p.int({ coerce: true }).list(enumToEntryList(Rarity)),
-  temperament: p.int({ coerce: true }).list(enumToEntryList(Temperament)),
-  jump: p.int({ coerce: true }),
-  speed: p.int({ coerce: true }),
-  intelligence: p.int({ coerce: true }),
-  beauty: p.int({ coerce: true }),
+  name: { type: "string" },
+  description: { type: "string" },
+  imageUrl: { type: "string" },
 
-  timestampSigned: p.int({ coerce: true }),
-  owner: p.cryptographic({ coerce: true }),
+  frogId: { type: "int", isMemberOf: enumToEntryList(Biome) },
+  biome: { type: "int", isMemberOf: enumToEntryList(Biome) },
+  rarity: { type: "int", isMemberOf: enumToEntryList(Rarity) },
+  temperament: { type: "int", isMemberOf: enumToEntryList(Temperament) },
+  jump: { type: "int" },
+  speed: { type: "int" },
+  intelligence: { type: "int" },
+  beauty: { type: "int" },
+
+  timestampSigned: { type: "int" },
+  owner: { type: "cryptographic" },
 });
 
 // bounds are inclusive
@@ -68,20 +71,23 @@ export function parseFrogPOD(pod: POD): FrogPOD {
     timestampSigned: Number(parsed.timestampSigned.value),
     ownerSemaphoreId: compressBigInt(parsed.owner.value),
 
-    contentID: pod.contentID,
-    signature: pod.signature,
-    signerPublicKey: pod.signerPublicKey,
-  };
+    ..._.pick(pod, ["contentID", "signature", "signerPublicKey"]),
+  } satisfies FrogPOD;
 }
 
-export function toFrogPODEntries(frog: IFrogData): Record<string, PODValue> {
-  const res = FrogSpec.safeParse({
-    ...frog,
-    owner: decompressBigInt(frog.ownerSemaphoreId),
-  });
+export function signFrogData(frog: IFrogData, privateKey: string): POD {
+  const res = FrogSpec.safeParse(
+    {
+      ...frog,
+      podType: POD_TYPE_FROGCRYPTO_FROG,
+      owner: decompressBigInt(frog.ownerSemaphoreId),
+    },
+    { coerce: true }
+  );
   if (!res.isValid) {
     console.debug("Invalid frog data", res.issues);
     throw new Error("Invalid frog data");
   }
-  return res.value;
+
+  return POD.sign(res.value, privateKey);
 }

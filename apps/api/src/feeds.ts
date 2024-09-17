@@ -194,11 +194,5 @@ function generateFrogData(
 }
 
 function signFrogData(frogData: IFrogData): POD {
-  return POD.sign(
-    {
-      ...toFrogPODEntries(frogData),
-      pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_FROG },
-    },
-    ISSUER_PRIVATE_KEY
-  );
+  return POD.sign(toFrogPODEntries(frogData), ISSUER_PRIVATE_KEY);
 }

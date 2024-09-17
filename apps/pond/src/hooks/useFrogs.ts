@@ -21,7 +21,7 @@ const useFrogs = () => {
       z.pod
         .query(
           p.pod({
-            pod_type: p.string().list([POD_TYPE_FROGCRYPTO_FROG]),
+            podType: p.string().list([POD_TYPE_FROGCRYPTO_FROG]),
           })
         )
         .then((pods) =>
