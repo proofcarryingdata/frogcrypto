@@ -12,5 +12,4 @@ export const ZUPASS_URL =
     ? "http://localhost:3000"
     : "https://staging.zupass.org";
 
-export const POD_TYPE_FROGCRYPTO_PLAYER_ID = "frogcrypto.playerId";
 export const POD_TYPE_FROGCRYPTO_REQUEST = "frogcrypto.request";

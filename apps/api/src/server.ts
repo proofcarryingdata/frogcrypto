@@ -4,7 +4,7 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { json, text, urlencoded } from "body-parser";
 import cors from "cors";
 import express, {
-  NextFunction,
+  type NextFunction,
   type Express,
   type Request,
   type Response,
@@ -13,9 +13,9 @@ import morgan from "morgan";
 import { createContext } from "./context";
 import { appRouter } from "./routers";
 import { feedsRouter } from "./routers/feeds";
-import { usersRouter } from "./routers/users";
 
 export const initializePCDs = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-member-access -- we need this to be dynamic
   await require("@pcd/gpc-pcd").init({
     zkArtifactPath: "node_modules/@pcd/proto-pod-gpc-artifacts",
   });
@@ -61,7 +61,6 @@ export const createServer = (): Express => {
     .use(cors({ origin: true, credentials: true }))
     .use(text({ type: "application/x.pod+json" }))
     .use(podMiddleware)
-    .use("/users", usersRouter)
     .use("/feeds", feedsRouter)
     .use(
       "/trpc",

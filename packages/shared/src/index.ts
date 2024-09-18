@@ -7,3 +7,4 @@ export * from "./frogs";
 export * from "./semaphore";
 export * from "./bigint";
 export * from "./logger";
+export * from "./auth";
