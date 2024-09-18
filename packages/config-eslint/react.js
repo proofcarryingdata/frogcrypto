@@ -40,5 +40,7 @@ module.exports = {
     "import/no-default-export": "off",
     "unicorn/filename-case": "off",
     "no-console": ["error", { allow: ["debug"] }],
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "import/no-named-as-default": "off",
   },
 };

@@ -1,41 +1,28 @@
 import { logger } from "@frogcrypto/shared";
-import { GPCPCDPackage, GPCPCDTypeName, type GPCPCD } from "@pcd/gpc-pcd";
-import { type FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
-import { type SerializedPCD } from "@pcd/pcd-types";
-import { type POD } from "@pcd/pod";
+import { type GPCRevealedClaims } from "@pcd/gpc-pcd";
+import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
-import { Router } from "express";
 import _ from "lodash";
 import { z } from "zod";
 import { db } from "../db";
 import { testPossibleFrogs } from "../db/mock";
 import { userFeedsTable, userIdsTable, userScoresTable } from "../db/schema";
-import { getSemaphoreId } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
 import { FEEDS } from "./feeds";
-import { TRPCError } from "@trpc/server";
 
 export const trpcUsersRouter = router({
   auth: publicProcedure
     .input(
       z.object({
-        gpc: z.object({
-          type: z.string(),
-          pcd: z.string(),
-        }),
+        proof: z.any(),
+        boundConfig: z.any(),
+        revealedClaims: z.any(),
       })
     )
-    .mutation(async ({ input: { gpc } }) => {
-      if (gpc.type !== GPCPCDTypeName) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid PCD type",
-        });
-      }
-      const pcd = await GPCPCDPackage.deserialize(gpc.pcd);
+    .mutation(async ({ input: { revealedClaims } }) => {
       // TODO: validate pcd proof config
-      const playerIDPOD = pcd.claim.revealed.pods.id;
+      const playerIDPOD = (revealedClaims as GPCRevealedClaims).pods.id;
       if (!playerIDPOD) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -92,7 +79,7 @@ export const trpcUsersRouter = router({
             score: z.number(),
             rank: z.number(),
           })
-          .nullable(),
+          .optional(),
       })
     )
     .query(async ({ input: { feedIds }, ctx }) => {

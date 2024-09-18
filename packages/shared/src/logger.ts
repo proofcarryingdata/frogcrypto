@@ -1,4 +1,5 @@
 import { createLogger, format, transports } from "winston";
+import "setimmediate";
 
 export const logger = createLogger({
   level: "info",

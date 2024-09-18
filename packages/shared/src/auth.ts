@@ -33,8 +33,8 @@ export const signPlayerID = (
   privateKey: string
 ) => {
   return POD.sign(
-    {
-      pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
+    PlayerIDSpec.parse({
+      podType: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
       owner: { type: "cryptographic", value: owner },
       device: { type: "string", value: device },
       timestamp: { type: "int", value: BigInt(Date.now()) },
@@ -48,7 +48,7 @@ export const signPlayerID = (
         value: `Ribbit! Frog ${playerId} croaks consent for FrogCrypto to use my lily pad identity in this ribbeting pond adventure!`,
       },
       zupass_display: { type: "string", value: "collectable" },
-    },
+    }),
     privateKey
   );
 };

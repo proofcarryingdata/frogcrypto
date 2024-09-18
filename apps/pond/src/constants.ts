@@ -9,7 +9,7 @@ export const SERVER_URL =
 
 export const ZUPASS_URL =
   process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://staging.zupass.org";
+    ? "http://localhost:5173"
+    : "https://parcnet-client-ivory.vercel.app";
 
 export const POD_TYPE_FROGCRYPTO_REQUEST = "frogcrypto.request";

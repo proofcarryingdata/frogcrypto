@@ -1,93 +1,23 @@
 import { PwtSpec } from "@frogcrypto/api/src/auth";
 import {
   decompressBigInt,
+  logger,
+  PlayerIDSpec,
   semaphoreIdToUserId,
   shortCommitment,
-  PlayerIDSpec,
   signPlayerID,
 } from "@frogcrypto/shared";
-import { type GPCPCDArgs, type GPCProofConfig } from "@pcd/gpc-pcd";
-import { ArgumentTypeName } from "@pcd/pcd-types";
-import { POD } from "@pcd/pod";
-import { PODPCDPackage } from "@pcd/pod-pcd";
-import p from "@pcd/podspec";
-import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
+import * as p from "@parcnet-js/podspec";
+import { POD, type PODCryptographicValue } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 import { useMutation } from "@tanstack/react-query";
 import { crypto } from "@zk-kit/utils";
-import axios from "axios";
 import { produce } from "immer";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { SERVER_URL } from "../constants";
 import { setToken, trpc } from "../trpc";
 import { rootIdAtom, userIdentityAtom } from "./useUserState";
 import { useMaybeZupassAPI } from "./useZapp";
-
-const ID_GPC_CONFIG = JSON.stringify({
-  pods: {
-    id: {
-      entries: {
-        pod_type: {
-          isRevealed: true,
-        },
-        owner: {
-          isRevealed: true,
-          // TODO: add this back in once semaphore v4 change released
-          //   isOwnerID: true,
-        },
-      },
-    },
-  },
-} satisfies GPCProofConfig);
-
-const gpcArgs: GPCPCDArgs = {
-  proofConfig: {
-    argumentType: ArgumentTypeName.String,
-    value: ID_GPC_CONFIG,
-    userProvided: false,
-  },
-  pods: {
-    argumentType: ArgumentTypeName.RecordContainer,
-    value: {
-      id: {
-        argumentType: ArgumentTypeName.PCD,
-        pcdType: PODPCDPackage.name,
-        value: undefined,
-        userProvided: true,
-        displayName: "Player ID",
-      },
-    },
-    validatorParams: {
-      proofConfig: ID_GPC_CONFIG,
-      membershipLists: undefined,
-      prescribedEntries: undefined,
-      prescribedSignerPublicKeys: undefined,
-    },
-  },
-  identity: {
-    argumentType: ArgumentTypeName.PCD,
-    pcdType: SemaphoreIdentityPCDPackage.name,
-    value: undefined,
-    userProvided: true,
-  },
-  externalNullifier: {
-    argumentType: ArgumentTypeName.String,
-    value: undefined,
-    userProvided: false,
-  },
-  membershipLists: {
-    argumentType: ArgumentTypeName.String,
-    value: undefined,
-    userProvided: false,
-  },
-  // TODO: watermark should be a timestamp
-  watermark: {
-    argumentType: ArgumentTypeName.String,
-    value: "watermark",
-    userProvided: false,
-  },
-};
 
 function useInitializeUser() {
   const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
@@ -109,15 +39,20 @@ function useInitializeUser() {
       if (!zupassAPI || !userIdentity) return;
 
       const z = zupassAPI.z;
-      const semaphoreId = await z.identity.getIdentityCommitment();
+      const semaphoreId = await z.identity.getSemaphoreV4Commitment();
 
-      const q = p
-        .pod({
-          podType: p.string().list([PlayerIDSpec.schema.podType.value]),
-          owner: p.cryptographic().list([semaphoreId]),
-        })
-        .signer(userIdentity.publicKey);
-      const pods = await z.pod.query(q);
+      const myPlayerIDSpec = p.pod({
+        entries: produce(PlayerIDSpec.schema, (draft) => {
+          // @ts-expect-error draft.owner is typed as ReadOnly
+          draft.owner.isMemberOf = [
+            {
+              type: "cryptographic",
+              value: semaphoreId,
+            },
+          ] satisfies PODCryptographicValue[];
+        }),
+      });
+      const pods = await z.pod.query(myPlayerIDSpec);
       if (pods.length === 0) {
         const shortID = shortCommitment(userIdentity.commitment);
         const pod = signPlayerID(
@@ -132,20 +67,32 @@ function useInitializeUser() {
         await z.pod.insert(pod);
       }
 
-      const gpc = await z.gpc.prove(
-        produce(gpcArgs, (args) => {
-          if (!args.pods.validatorParams) {
-            args.pods.validatorParams = {};
-          }
-          args.pods.validatorParams.prescribedSignerPublicKeys = {
-            id: userIdentity.publicKey,
-          };
-        })
-      );
-      await auth({ gpc });
+      const gpc = await z.gpc.prove({
+        pods: {
+          id: {
+            pod: myPlayerIDSpec.schema,
+            // owner: {
+            //   entry: "owner",
+            //   protocol: "SemaphoreV4",
+            // },
+            revealed: {
+              podType: true,
+              owner: true, // TODO: we need to check this manually for now
+            },
+          },
+        },
+        watermark: { type: "int", value: BigInt(Date.now()) },
+      });
+      console.log("gpc", gpc);
+      if (!gpc.success) {
+        logger.error(`Failed to prove GPC: ${gpc.error}`);
+        throw new Error("Failed to prove GPC");
+      }
+      await auth(gpc);
 
       setRootId(semaphoreId.toString());
     },
+    onError: logger.error,
   });
 
   useEffect(() => {

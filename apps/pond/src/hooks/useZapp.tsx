@@ -1,4 +1,4 @@
-import { type Zapp, type ZupassAPIWrapper, connect } from "@pcd/zupass-client";
+import { type Zapp, type ParcnetAPI, connect } from "@parcnet-js/app-connector";
 import React, {
   createContext,
   useContext,
@@ -24,7 +24,7 @@ type EmbeddedZupass =
     }
   | {
       state: EmbeddedZupassState.CONNECTED;
-      z: ZupassAPIWrapper;
+      z: ParcnetAPI;
       ref: React.RefObject<HTMLDivElement>;
     };
 

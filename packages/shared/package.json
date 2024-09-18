@@ -41,13 +41,14 @@
     "typescript": "~5.5.4"
   },
   "dependencies": {
-    "@parcnet-js/podspec": "^0.0.1",
+    "@parcnet-js/podspec": "^0.0.2",
     "@pcd/eddsa-frog-pcd": "^0.3.4",
     "@pcd/pod": "^0.1.7",
     "@semaphore-protocol/identity": "^4.0.3",
     "@zk-kit/utils": "^1.2.1",
     "lodash": "^4.17.21",
     "poseidon-lite": "^0.3.0",
+    "setimmediate": "^1.0.5",
     "winston": "^3.14.2"
   }
 }
