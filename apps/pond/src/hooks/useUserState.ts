@@ -32,7 +32,7 @@ export const QUERY_KEY_USER = "user";
 
 export function useUserState() {
   const feedIds = useFeedIds();
-  return trpc.users.query.useQuery({ feedIds });
+  return trpc.users.me.useQuery({ feedIds });
 }
 
 export function useUserStateByFeedId() {

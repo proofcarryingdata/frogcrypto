@@ -1,68 +1,31 @@
-import { decompressBigInt, parseFrogPOD } from "@frogcrypto/shared";
+import { parseFrogPOD } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { useAtom } from "jotai";
-import { POD_TYPE_FROGCRYPTO_REQUEST, SERVER_URL } from "../constants";
+import { useQueryClient } from "@tanstack/react-query";
+import { trpc } from "../trpc";
 import { QUERY_KEY_FROGS } from "./useFrogs";
-import { QUERY_KEY_USER, userIdentityAtom, useUserState } from "./useUserState";
 import { useZupassAPI } from "./useZapp";
 
-const useGetFrog = ({ feedId }: { feedId: string }) => {
-  const [userIdentity] = useAtom(userIdentityAtom);
-  const { refetch: refetchUserState } = useUserState();
+const useGetFrog = () => {
   const queryClient = useQueryClient();
   const z = useZupassAPI();
+  const utils = trpc.useUtils();
 
-  return useMutation({
-    mutationKey: ["getFrog", feedId],
-    mutationFn: async () => {
-      if (!userIdentity) {
-        throw new Error("User identity not found");
-      }
-
-      const { data } = await axios.post<{ pod: string }>(
-        `${SERVER_URL}/feeds/${feedId}`,
-        POD.sign(
-          {
-            pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_REQUEST },
-            feedId: {
-              type: "string",
-              value: feedId,
-            },
-            owner: {
-              type: "cryptographic",
-              value: decompressBigInt(userIdentity.commitment),
-            },
-            watermark: {
-              type: "int",
-              value: BigInt(Date.now()),
-            },
-          },
-          userIdentity.privateKey
-        ).serialize(),
-        {
-          headers: {
-            "Content-Type": "application/x.pod+json",
-          },
-        }
-      );
-
+  return trpc.feeds.search.useMutation({
+    onSuccess: async (data) => {
       const pod = POD.deserialize(data.pod);
       await z.pod.insert(pod);
 
       // TODO: optimize
-      await refetchUserState();
+      await utils.users.me.refetch();
 
-      return pod;
-    },
-    onSuccess: (pod) => {
       queryClient.setQueryData([QUERY_KEY_FROGS], (frogs: POD[]) => {
         return [parseFrogPOD(pod), ...frogs];
       });
+
+      return pod;
     },
-    onError: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY_USER] });
+    onError: async () => {
+      await utils.users.me.invalidate();
     },
   });
 };

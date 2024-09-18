@@ -56,7 +56,7 @@ export const trpcUsersRouter = router({
         .values({ semaphoreId: owner, signerPk: signer })
         .onConflictDoNothing();
     }),
-  query: authedProcedure
+  me: authedProcedure
     .input(z.object({ feedIds: z.array(z.string()) }))
     .output(
       z.object({

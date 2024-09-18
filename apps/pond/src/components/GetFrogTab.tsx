@@ -15,6 +15,7 @@ import { ActionButton, FrogSearchButton } from "./Button";
 import Divider from "./Divider";
 import FrogCard from "./FrogCard";
 import LoadingMessages from "./LoadingMessages";
+import { POD } from "@pcd/pod";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
@@ -74,7 +75,7 @@ function SearchButton({
 }) {
   const countDown = useCountDown(nextFetchAt ?? 0);
   const canFetch = active && (!nextFetchAt || nextFetchAt < Date.now());
-  const { mutateAsync: getFrogAsync } = useGetFrog({ feedId: feed.id });
+  const { mutateAsync: getFrogAsync } = useGetFrog();
   const confetti = useFrogConfetti();
 
   const onClick = useCallback(
@@ -82,11 +83,12 @@ function SearchButton({
       toast.promise(
         new Promise<void>((resolve) => {
           setTimeout(resolve, 4000);
-        }).then(getFrogAsync),
+        }).then(() => getFrogAsync({ feedId: feed.id })),
         {
           loading: <LoadingMessages biome={feed.name} />,
-          success: (frogPOD) => {
-            confetti();
+          success: ({ pod }) => {
+            void confetti();
+            const frogPOD = POD.deserialize(pod);
             const frog = parseFrogPOD(frogPOD);
             if (frog.biome === Biome.Unknown) {
               return `You found something strange in ${feed.name}. It doesn't appear to be a frog.`;
@@ -115,7 +117,7 @@ function SearchButton({
           },
         }
       ),
-    [feed.name, getFrogAsync]
+    [confetti, feed.id, feed.name, getFrogAsync]
   );
   const name = useMemo(() => `search ${_.upperCase(feed.name)}`, [feed.name]);
   const freerolls = FROG_FREEROLLS + 1 - (score ?? 0);
