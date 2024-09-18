@@ -134,12 +134,27 @@ export const FrogSearchButton = forwardRef(
     const ref = useRef<HTMLDivElement>(null);
     const container = useFrogParticles(ref);
 
+    const [enableParticles, setEnableParticles] = useState(false);
+    useEffect(() => {
+      if (disabled) {
+        const timeout = setTimeout(() => {
+          setEnableParticles(true);
+        }, 1000);
+
+        return () => {
+          clearTimeout(timeout);
+        };
+      }
+
+      setEnableParticles(false);
+    }, [disabled, pending]);
+
     useEffect(() => {
       if (!container) {
         return;
       }
 
-      if (disabled && !pending) {
+      if (enableParticles && !pending) {
         void container.start();
       }
 
@@ -148,7 +163,7 @@ export const FrogSearchButton = forwardRef(
       return (): void => {
         container.stop();
       };
-    }, [container, disabled, pending]);
+    }, [container, enableParticles, pending]);
 
     return (
       <div

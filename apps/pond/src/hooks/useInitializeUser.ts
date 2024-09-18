@@ -83,7 +83,6 @@ function useInitializeUser() {
         },
         watermark: { type: "int", value: BigInt(Date.now()) },
       });
-      console.log("gpc", gpc);
       if (!gpc.success) {
         logger.error(`Failed to prove GPC: ${gpc.error}`);
         throw new Error("Failed to prove GPC");

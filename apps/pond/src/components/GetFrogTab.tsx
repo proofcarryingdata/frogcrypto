@@ -1,21 +1,20 @@
-import React, { useCallback, useMemo } from "react";
-import { FROG_FREEROLLS, type Subscription } from "@pcd/passport-interface";
-import _ from "lodash";
-import toast from "react-hot-toast";
-import { parseFrogPOD } from "@frogcrypto/shared";
-import axios from "axios";
+import { Feed, parseFrogPOD } from "@frogcrypto/shared";
 import { Biome } from "@pcd/eddsa-frog-pcd";
-import useGetFrog from "../hooks/useGetFrog";
+import { FROG_FREEROLLS } from "@pcd/passport-interface";
+import axios from "axios";
+import _ from "lodash";
+import React, { useCallback, useMemo } from "react";
+import toast from "react-hot-toast";
 import useCountDown from "../hooks/useCountDown";
-import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
-import { useSubscriptions } from "../hooks/useSubscriptions";
-import { useZupassAPI } from "../hooks/useZapp";
-import useFrogs from "../hooks/useFrogs";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
-import LoadingMessages from "./LoadingMessages";
+import useFrogs from "../hooks/useFrogs";
+import useGetFrog from "../hooks/useGetFrog";
+import { useSubscriptions } from "../hooks/useSubscriptions";
+import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
 import { ActionButton, FrogSearchButton } from "./Button";
 import Divider from "./Divider";
 import FrogCard from "./FrogCard";
+import LoadingMessages from "./LoadingMessages";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
@@ -29,13 +28,13 @@ function GetFrogTab() {
   return (
     <>
       <div className="flex flex-col gap-2 w-full">
-        {subscriptions.map((sub) => {
-          const userFeedState = userStateByFeedId[sub.feed.id];
+        {subscriptions.map((feed) => {
+          const userFeedState = userStateByFeedId[feed.id];
 
           return (
             <SearchButton
-              key={sub.id}
-              sub={sub}
+              key={feed.id}
+              feed={feed}
               nextFetchAt={userFeedState.nextFetchAt}
               score={userState?.myScore?.score}
               active={Boolean(userFeedState.active)}
@@ -48,7 +47,7 @@ function GetFrogTab() {
         <>
           <Divider />
           <div className="flex flex-col gap-4 w-full pb-8">
-            {frogs.map((frog) => (
+            {frogs?.map((frog) => (
               <FrogCard key={frog.contentID} frog={frog} />
             ))}
           </div>
@@ -63,12 +62,12 @@ function GetFrogTab() {
  * request to ensure cooldown is updated.
  */
 function SearchButton({
-  sub: { id, feed },
+  feed,
   nextFetchAt,
   score,
   active,
 }: {
-  sub: Subscription;
+  feed: Feed;
   nextFetchAt?: number;
   score: number | undefined;
   active: boolean;
@@ -123,12 +122,13 @@ function SearchButton({
 
   return (
     <ActionButton
-      key={id}
+      key={feed.id}
       onClick={onClick}
       disabled={!canFetch}
       ButtonComponent={FrogSearchButton}
     >
-      {canFetch ? freerolls > 0 ? (
+      {canFetch ? (
+        freerolls > 0 ? (
           <div
             className={`
             text-sm font-mono ml-auto
@@ -139,7 +139,8 @@ function SearchButton({
           </div>
         ) : (
           name
-        ) : null}
+        )
+      ) : null}
 
       {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}
     </ActionButton>

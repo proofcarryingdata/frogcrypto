@@ -1,15 +1,15 @@
-import { type Subscription } from "@pcd/passport-interface";
 import { atom, useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { withImmer } from "jotai-immer";
 import { useCallback } from "react";
+import { Feed } from "@frogcrypto/shared";
 
 const subscriptionsAtom = withImmer(
-  atomWithStorage<Subscription[]>("subscriptions", [])
+  atomWithStorage<Feed[]>("subscriptions", [])
 );
 
 const feedIdsAtom = atom<string[]>((get) =>
-  get(subscriptionsAtom).map((sub) => sub.feed.id)
+  get(subscriptionsAtom).map((sub) => sub.id)
 );
 
 export function useSubscriptions() {
@@ -18,7 +18,7 @@ export function useSubscriptions() {
   return {
     subscriptions,
     addSubscription: useCallback(
-      (subscription: Subscription) => {
+      (subscription: Feed) => {
         setSubscriptions((draft) => {
           const index = draft.findIndex((sub) => sub.id === subscription.id);
           if (index !== -1) {

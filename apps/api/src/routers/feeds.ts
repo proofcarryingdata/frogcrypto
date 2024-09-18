@@ -1,9 +1,13 @@
-import { logger, compressBigInt, signFrogData } from "@frogcrypto/shared";
+import {
+  compressBigInt,
+  FeedSchema,
+  logger,
+  signFrogData,
+} from "@frogcrypto/shared";
 import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import {
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
-  type FrogCryptoClientFeed,
   type FrogCryptoFeed,
   type FrogCryptoFrogData,
   type ListFeedsResponseValue,
@@ -11,11 +15,13 @@ import {
 import { POD } from "@pcd/pod";
 import { Router } from "express";
 import _ from "lodash";
+import { z } from "zod";
 import { db } from "../db";
 import { updateUserFeedState } from "../db/feeds";
 import { testFrogs } from "../db/mock";
 import { userFeedsTable } from "../db/schema";
 import { getSemaphoreId, incrementScore } from "../db/users";
+import { publicProcedure, router } from "../trpc";
 import {
   computeUserFeedState,
   parseFrogEnum,
@@ -49,14 +55,11 @@ export const FEEDS = [
 /**
  * Sanitize a feed object to return only feed data to the client.
  */
-function sanitizeFeed(feed: FrogCryptoFeed): FrogCryptoClientFeed {
+function sanitizeFeed(feed: FrogCryptoFeed): z.infer<typeof FeedSchema> {
   return {
     id: feed.id,
     name: feed.name,
     description: feed.description,
-    permissions: feed.permissions,
-    credentialRequest: feed.credentialRequest,
-    autoPoll: feed.autoPoll,
     private: feed.private,
     activeUntil: feed.activeUntil,
     cooldown: feed.cooldown,
@@ -64,14 +67,6 @@ function sanitizeFeed(feed: FrogCryptoFeed): FrogCryptoClientFeed {
 }
 
 export const feedsRouter: Router = Router();
-
-feedsRouter.get("/", (_req, res) => {
-  res.json({
-    providerUrl: "https://api.getfrogs.xyz",
-    providerName: "FrogCrypto",
-    feeds: FEEDS.map(sanitizeFeed),
-  } satisfies ListFeedsResponseValue);
-});
 
 feedsRouter.post("/:feedId", async (req, res) => {
   const { feedId } = req.params;
@@ -187,3 +182,9 @@ function generateFrogData(
     ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
   };
 }
+
+export const trpcFeedsRouter = router({
+  list: publicProcedure.output(z.array(FeedSchema)).query(() => {
+    return FEEDS.map(sanitizeFeed);
+  }),
+});

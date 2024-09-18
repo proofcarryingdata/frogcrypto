@@ -40,7 +40,7 @@ function FrogCrypto() {
 
   const [tab, setTab] = useState<TabId>("get");
   const TabComponent = TABS.find((t) => t.tab === tab)?.component;
-  const socialUnlocked = false;
+  const socialUnlocked = myScore && myScore >= 10;
 
   if (!frogs || !userState) {
     return <Loader />;
@@ -61,6 +61,7 @@ function FrogCrypto() {
           <div className="flex gap-2 items-stretch h-min">
             {TABS.map(({ tab: t, label }) => (
               <button
+                type="button"
                 className="btn"
                 key={t}
                 disabled={tab === t || (t === "social" && !socialUnlocked)}
