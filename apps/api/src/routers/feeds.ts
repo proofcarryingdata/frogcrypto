@@ -1,4 +1,4 @@
-import logger, { compressBigInt, signFrogData } from "@frogcrypto/shared";
+import { logger, compressBigInt, signFrogData } from "@frogcrypto/shared";
 import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import {
   FROG_FREEROLLS,
@@ -102,7 +102,7 @@ feedsRouter.post("/:feedId", async (req, res) => {
       const lastFetchedAt = await updateUserFeedState(tx, semaphoreId, feedId);
       if (!lastFetchedAt) {
         const e = new Error("User feed state unexpectedly not found!");
-        logger.error("Error encountered while serving feed:", e);
+        logger.error("Error encountered while serving feed", e);
         throw e;
       }
 

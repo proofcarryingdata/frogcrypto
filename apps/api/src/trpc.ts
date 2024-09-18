@@ -1,10 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { SuperJSON } from "superjson";
 import type { Context } from "./context";
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment -- https://github.com/flightcontrolhq/superjson/issues/268
-const fixESM = require("fix-esm");
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- https://github.com/flightcontrolhq/superjson/issues/268
-const superjson = fixESM.require("superjson") as SuperJSON;
+import superjson from "superjson";
 
 const t = initTRPC.context<Context>().create({
   /**
