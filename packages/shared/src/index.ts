@@ -6,3 +6,4 @@ export const log = (...args: unknown[]): void => {
 export * from "./frogs";
 export * from "./semaphore";
 export * from "./bigint";
+export * from "./logger";

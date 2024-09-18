@@ -25,3 +25,7 @@ export function semaphoreIdToUserId(id: Identity): {
 export function userPublicKeyToUserId(publicKey: string): string {
   return compressBigInt(poseidon2(decodePublicKey(publicKey)));
 }
+
+export function shortCommitment(commitment: string): string {
+  return commitment.slice(0, 6);
+}

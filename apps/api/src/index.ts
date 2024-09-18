@@ -1,4 +1,4 @@
-import { log } from "@frogcrypto/logger";
+import { logger } from "@frogcrypto/shared";
 import { createServer, initializePCDs } from "./server";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -9,7 +9,7 @@ const server = createServer();
 initializePCDs().then(() => {
   if (!isProduction) {
     server.listen(port, () => {
-      log(`api running on ${port}`);
+      logger.info(`api running on ${port}`);
     });
   }
 });

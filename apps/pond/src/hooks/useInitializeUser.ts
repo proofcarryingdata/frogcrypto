@@ -1,18 +1,24 @@
+import { PwtSpec } from "@frogcrypto/api/src/auth";
+import {
+  decompressBigInt,
+  semaphoreIdToUserId,
+  shortCommitment,
+} from "@frogcrypto/shared";
 import { type GPCPCDArgs, type GPCProofConfig } from "@pcd/gpc-pcd";
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { POD } from "@pcd/pod";
 import { PODPCDPackage } from "@pcd/pod-pcd";
+import p from "@pcd/podspec";
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { Identity } from "@semaphore-protocol/identity";
-import { useAtom } from "jotai";
-import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import p from "@pcd/podspec";
 import { crypto } from "@zk-kit/utils";
+import axios from "axios";
 import { produce } from "immer";
-import { semaphoreIdToUserId, shortCommitment } from "../utils";
+import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { POD_TYPE_FROGCRYPTO_PLAYER_ID, SERVER_URL } from "../constants";
+import { setToken } from "../trpc";
 import { rootIdAtom, userIdentityAtom } from "./useUserState";
 import { useMaybeZupassAPI } from "./useZapp";
 
@@ -157,7 +163,40 @@ function useInitializeUser() {
     }
   }, [enabled, mutate]);
 
-  return Boolean(rootId);
+  const [ready, setReady] = useState<boolean>(false);
+  useEffect(() => {
+    if (userIdentity && rootId) {
+      const refreshToken = () => {
+        setToken(
+          POD.sign(
+            PwtSpec.parse({
+              aud: { type: "string", value: "frogcrypto" },
+              exp: {
+                type: "int",
+                value: BigInt(Date.now() + 1000 * 60 * 60 * 24),
+              },
+              iss: {
+                type: "cryptographic",
+                value: decompressBigInt(userIdentity.commitment),
+              },
+              sub: { type: "cryptographic", value: BigInt(rootId) },
+            }),
+            userIdentity.privateKey
+          ).serialize()
+        );
+      };
+      const interval = setInterval(refreshToken, 1000 * 60 * 60);
+
+      refreshToken();
+      setReady(true);
+
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [rootId, userIdentity]);
+
+  return ready;
 }
 
 export default useInitializeUser;

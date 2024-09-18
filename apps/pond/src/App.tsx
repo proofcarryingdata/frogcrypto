@@ -64,7 +64,9 @@ function FrogCrypto() {
                 className="btn"
                 key={t}
                 disabled={tab === t || (t === "social" && !socialUnlocked)}
-                onClick={(): void => { setTab(t); }}
+                onClick={(): void => {
+                  setTab(t);
+                }}
               >
                 {t === "social" && !socialUnlocked ? `??? (10 🐸)` : label}
               </button>

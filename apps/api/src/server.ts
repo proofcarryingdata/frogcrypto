@@ -1,4 +1,8 @@
+import { logger } from "@frogcrypto/shared";
+import { POD } from "@pcd/pod";
+import * as trpcExpress from "@trpc/server/adapters/express";
 import { json, text, urlencoded } from "body-parser";
+import cors from "cors";
 import express, {
   NextFunction,
   type Express,
@@ -6,17 +10,16 @@ import express, {
   type Response,
 } from "express";
 import morgan from "morgan";
-import cors from "cors";
-import { usersRouter } from "./users";
-import { log } from "@frogcrypto/logger";
-import { POD } from "@pcd/pod";
-import { feedsRouter } from "./feeds";
+import { createContext } from "./context";
+import { appRouter } from "./routers";
+import { feedsRouter } from "./routers/feeds";
+import { usersRouter } from "./routers/users";
 
 export const initializePCDs = async () => {
   await require("@pcd/gpc-pcd").init({
     zkArtifactPath: "node_modules/@pcd/proto-pod-gpc-artifacts",
   });
-  log("PCD packages initialized");
+  logger.info("PCD packages initialized");
 };
 
 const podMiddleware = async (
@@ -58,11 +61,12 @@ export const createServer = (): Express => {
     .use(cors())
     .use(text({ type: "application/x.pod+json" }))
     .use(podMiddleware)
-    .get("/status", (_, res) => {
-      return res.json({ ok: true });
-    })
     .use("/users", usersRouter)
-    .use("/feeds", feedsRouter);
+    .use("/feeds", feedsRouter)
+    .use(
+      "/trpc",
+      trpcExpress.createExpressMiddleware({ router: appRouter, createContext })
+    );
 
   return app;
 };

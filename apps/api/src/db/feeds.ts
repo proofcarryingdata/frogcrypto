@@ -1,7 +1,6 @@
 import { sql, SQL, and, eq } from "drizzle-orm";
 import { db, Transaction } from ".";
 import { userFeedsTable } from "./schema";
-import { log } from "@frogcrypto/logger";
 
 /**
  * Update the last time a user has polled a feed.
@@ -80,7 +79,7 @@ export const updateUserFeedState = async (
 
   if (result.length === 0) {
     throw new Error(
-      `could not find user feed row for ${semaphoreId} ${feedId} at #${locks[0].id}`
+      `could not find user feed row for ${semaphoreId} ${feedId} at #${String(locks[0].id)}`
     );
   }
 

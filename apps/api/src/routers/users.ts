@@ -1,17 +1,19 @@
-import { log } from "@frogcrypto/logger";
-import { type GPCPCD, GPCPCDPackage, GPCPCDTypeName } from "@pcd/gpc-pcd";
+import { logger } from "@frogcrypto/shared";
+import { GPCPCDPackage, GPCPCDTypeName, type GPCPCD } from "@pcd/gpc-pcd";
 import { type FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
 import { type SerializedPCD } from "@pcd/pcd-types";
 import { type POD } from "@pcd/pod";
 import { eq, sql } from "drizzle-orm";
 import { Router } from "express";
 import _ from "lodash";
-import { db } from "./db";
-import { testPossibleFrogs } from "./db/mock";
-import { userFeedsTable, userIdsTable, userScoresTable } from "./db/schema";
-import { getSemaphoreId } from "./db/users";
+import { z } from "zod";
+import { db } from "../db";
+import { testPossibleFrogs } from "../db/mock";
+import { userFeedsTable, userIdsTable, userScoresTable } from "../db/schema";
+import { getSemaphoreId } from "../db/users";
+import { authedProcedure, router } from "../trpc";
+import { computeUserFeedState } from "../utils";
 import { FEEDS } from "./feeds";
-import { computeUserFeedState } from "./utils";
 
 export const usersRouter: Router = Router();
 
@@ -33,7 +35,7 @@ usersRouter.post("/auth", async (req, res) => {
   if (!owner) {
     return res.status(400).json({ error: "No owner found in GPC" });
   }
-  log(`Got GPC for user ${owner} with signer ${signer}`);
+  logger.info(`Got GPC for user ${owner} with signer ${signer}`);
 
   // FIXME: GPC verification is disabled until we can get it working
   //   const isValid = await GPCPCDPackage.verify(pcd);
@@ -92,4 +94,62 @@ usersRouter.post("/me", async (req, res) => {
       rank: score.rank,
     }))[0],
   } satisfies FrogCryptoUserStateResponseValue);
+});
+
+export const trpcUsersRouter = router({
+  query: authedProcedure
+    .input(z.object({ feedIds: z.array(z.string()) }))
+    .output(
+      z.object({
+        feeds: z.array(
+          z.object({
+            feedId: z.string(),
+            nextFetchAt: z.number(),
+            lastFetchedAt: z.number(),
+            active: z.boolean(),
+          })
+        ),
+        possibleFrogs: z.array(
+          z.object({
+            id: z.number(),
+            rarity: z.number(),
+          })
+        ),
+        myScore: z
+          .object({
+            score: z.number(),
+            rank: z.number(),
+          })
+          .nullable(),
+      })
+    )
+    .query(async ({ input: { feedIds }, ctx }) => {
+      const semaphoreId = ctx.user.semaphoreId;
+      const userFeeds = _.keyBy(
+        await db
+          .select()
+          .from(userFeedsTable)
+          .where(eq(userFeedsTable.semaphoreId, String(semaphoreId))),
+        "feedId"
+      );
+
+      const scores = await db
+        .select({
+          semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
+          score: userScoresTable.score,
+          rank: sql<number>`cast(rank() over (order by ${userScoresTable.score} desc) as int)`,
+        })
+        .from(userScoresTable)
+        .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));
+
+      const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
+
+      return {
+        feeds: allFeeds.map((feed) =>
+          computeUserFeedState(userFeeds[feed.id], feed)
+        ),
+        possibleFrogs: testPossibleFrogs,
+        myScore: scores[0],
+      };
+    }),
 });

@@ -1,9 +1,4 @@
-import { log } from "@frogcrypto/logger";
-import {
-  compressBigInt,
-  POD_TYPE_FROGCRYPTO_FROG,
-  toFrogPODEntries,
-} from "@frogcrypto/shared";
+import logger, { compressBigInt, signFrogData } from "@frogcrypto/shared";
 import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import {
   FROG_FREEROLLS,
@@ -16,17 +11,17 @@ import {
 import { POD } from "@pcd/pod";
 import { Router } from "express";
 import _ from "lodash";
-import { db } from "./db";
-import { updateUserFeedState } from "./db/feeds";
-import { testFrogs } from "./db/mock";
-import { userFeedsTable } from "./db/schema";
-import { getSemaphoreId, incrementScore } from "./db/users";
+import { db } from "../db";
+import { updateUserFeedState } from "../db/feeds";
+import { testFrogs } from "../db/mock";
+import { userFeedsTable } from "../db/schema";
+import { getSemaphoreId, incrementScore } from "../db/users";
 import {
   computeUserFeedState,
   parseFrogEnum,
   parseFrogTemperament,
   sampleFrogAttribute,
-} from "./utils";
+} from "../utils";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -107,7 +102,7 @@ feedsRouter.post("/:feedId", async (req, res) => {
       const lastFetchedAt = await updateUserFeedState(tx, semaphoreId, feedId);
       if (!lastFetchedAt) {
         const e = new Error("User feed state unexpectedly not found!");
-        log(`Error encountered while serving feed:`, e);
+        logger.error("Error encountered while serving feed:", e);
         throw e;
       }
 
@@ -146,7 +141,7 @@ feedsRouter.post("/:feedId", async (req, res) => {
         await updateUserFeedState(tx, semaphoreId, feedId, lastFetchedAt);
       }
 
-      const frogPOD = signFrogData(frogData);
+      const frogPOD = signFrogData(frogData, ISSUER_PRIVATE_KEY);
 
       return res.json({
         success: true,
@@ -191,8 +186,4 @@ function generateFrogData(
     timestampSigned: Date.now(),
     ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
   };
-}
-
-function signFrogData(frogData: IFrogData): POD {
-  return POD.sign(toFrogPODEntries(frogData), ISSUER_PRIVATE_KEY);
 }

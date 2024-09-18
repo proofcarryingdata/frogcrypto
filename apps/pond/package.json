@@ -1,5 +1,5 @@
 {
-  "name": "pond",
+  "name": "@frogcrypto/pond",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -24,6 +24,8 @@
     "@semaphore-protocol/identity": "^4.0.3",
     "@tanstack/react-query": "^5.55.4",
     "@tanstack/react-query-devtools": "^5.56.2",
+    "@trpc/client": "11.0.0-rc.502",
+    "@trpc/react-query": "11.0.0-rc.502",
     "@zk-kit/utils": "^1.2.1",
     "axios": "^1.7.7",
     "immer": "^10.1.1",
@@ -40,6 +42,7 @@
     "react-intersection-observer": "^9.13.1",
     "react-modal": "^3.16.1",
     "react-swipeable": "^7.0.1",
+    "superjson": "^2.2.1",
     "tsparticles": "^2.12.0",
     "tsparticles-engine": "^2.12.0",
     "tsparticles-plugin-emitters": "^2.12.0",
@@ -49,6 +52,7 @@
     "wouter": "^3.3.5"
   },
   "devDependencies": {
+    "@frogcrypto/api": "workspace:*",
     "@frogcrypto/eslint-config": "workspace:*",
     "@frogcrypto/typescript-config": "workspace:*",
     "@tanstack/eslint-plugin-query": "5.35.6",

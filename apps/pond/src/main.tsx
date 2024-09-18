@@ -9,6 +9,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ZUPASS_URL } from "./constants.ts";
 import { EmbeddedZupassProvider } from "./hooks/useZapp.tsx";
 import App from "./App.tsx";
+import { trpc, trpcClient } from "./trpc.ts";
 
 const queryClient = new QueryClient();
 
@@ -21,15 +22,17 @@ const zapp = { name: "frogcrypto", permissions: ["read", "write"] };
 createRoot(root).render(
   <StrictMode>
     <Provider>
-      <QueryClientProvider client={queryClient}>
-        <EmbeddedZupassProvider zapp={zapp} zupassUrl={ZUPASS_URL}>
-          <ErrorBoundary fallback={<div>Something went wrong</div>}>
-            <App />
-            <Toaster />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </ErrorBoundary>
-        </EmbeddedZupassProvider>
-      </QueryClientProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <EmbeddedZupassProvider zapp={zapp} zupassUrl={ZUPASS_URL}>
+            <ErrorBoundary fallback={<div>Something went wrong</div>}>
+              <App />
+              <Toaster />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </ErrorBoundary>
+          </EmbeddedZupassProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
     </Provider>
   </StrictMode>
 );

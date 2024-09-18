@@ -1,17 +1,14 @@
+import { decompressBigInt } from "@frogcrypto/shared";
 import { type FrogCryptoUserStateResponseValue } from "@pcd/passport-interface";
 import { POD } from "@pcd/pod";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import axios from "axios";
 import { useAtom } from "jotai/react";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
-import { useMemo } from "react";
 import _ from "lodash";
-import {
-  POD_TYPE_FROGCRYPTO_REQUEST,
-  POD_TYPE_FROGCRYPTO_PLAYER_ID,
-  SERVER_URL,
-} from "../constants";
-import { decompressBigInt } from "../utils";
+import { useMemo } from "react";
+import { POD_TYPE_FROGCRYPTO_REQUEST, SERVER_URL } from "../constants";
+import { trpc } from "../trpc";
 import { useFeedIds } from "./useSubscriptions";
 
 export interface UserIdentity {
@@ -33,48 +30,9 @@ export const rootIdAtom = atomWithStorage<string | null>("rootId", null);
 
 export const QUERY_KEY_USER = "user";
 
-export function useUserState(): UseQueryResult<FrogCryptoUserStateResponseValue> {
-  const [userIdentity] = useAtom(userIdentityAtom);
+export function useUserState() {
   const feedIds = useFeedIds();
-
-  return useQuery({
-    queryKey: ["user", feedIds],
-    queryFn: async () => {
-      if (!userIdentity) {
-        return null;
-      }
-
-      const { data } = await axios.post<FrogCryptoUserStateResponseValue>(
-        `${SERVER_URL}/users/me`,
-        POD.sign(
-          {
-            pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_REQUEST },
-            feedIds: {
-              type: "string",
-              value: JSON.stringify(feedIds),
-            },
-            owner: {
-              type: "cryptographic",
-              value: decompressBigInt(userIdentity.commitment),
-            },
-            watermark: {
-              type: "int",
-              value: BigInt(Date.now()),
-            },
-          },
-          userIdentity.privateKey
-        ).serialize(),
-        {
-          headers: {
-            "Content-Type": "application/x.pod+json",
-          },
-        }
-      );
-
-      return data;
-    },
-    enabled: Boolean(userIdentity),
-  });
+  return trpc.users.query.useQuery({ feedIds });
 }
 
 export function useUserStateByFeedId() {
