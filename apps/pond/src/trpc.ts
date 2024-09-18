@@ -29,6 +29,12 @@ export const trpcClient = trpc.createClient({
           Authorization: `Bearer ${token}`,
         };
       },
+      fetch(url, options) {
+        return fetch(url, {
+          ...options,
+          credentials: "include",
+        });
+      },
     }),
   ],
 });
