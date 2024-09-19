@@ -88,8 +88,7 @@ function SearchButton({
           loading: <LoadingMessages biome={feed.name} />,
           success: ({ pod }) => {
             void confetti();
-            const frogPOD = POD.deserialize(pod);
-            const frog = parseFrogPOD(frogPOD);
+            const frog = parseFrogPOD(pod);
             if (frog.biome === Biome.Unknown) {
               return `You found something strange in ${feed.name}. It doesn't appear to be a frog.`;
             }

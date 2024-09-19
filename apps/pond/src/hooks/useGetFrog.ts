@@ -11,8 +11,7 @@ const useGetFrog = () => {
   const utils = trpc.useUtils();
 
   return trpc.feeds.search.useMutation({
-    onSuccess: async (data) => {
-      const pod = POD.deserialize(data.pod);
+    onSuccess: async ({ pod }) => {
       await z.pod.insert(pod);
 
       // TODO: optimize
@@ -21,8 +20,6 @@ const useGetFrog = () => {
       queryClient.setQueryData([QUERY_KEY_FROGS], (frogs: POD[]) => {
         return [parseFrogPOD(pod), ...frogs];
       });
-
-      return pod;
     },
     onError: async () => {
       await utils.users.me.invalidate();

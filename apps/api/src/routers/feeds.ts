@@ -26,7 +26,7 @@ import {
   parseFrogTemperament,
   sampleFrogAttribute,
 } from "../utils";
-import SuperJSON from "superjson";
+import { POD } from "@pcd/pod";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -105,7 +105,11 @@ export const trpcFeedsRouter = router({
         feedId: z.string(),
       })
     )
-    .output(z.object({ pod: z.string() }))
+    .output(
+      z.object({
+        pod: z.custom<POD>((x) => x instanceof POD && x.verifySignature()),
+      })
+    )
     .mutation(
       async ({
         input: { feedId },
@@ -201,7 +205,7 @@ export const trpcFeedsRouter = router({
             const frogPOD = signFrogData(frogData, ISSUER_PRIVATE_KEY);
 
             return {
-              pod: frogPOD.serialize(),
+              pod: frogPOD,
             };
           })
           .catch((e: unknown) => {

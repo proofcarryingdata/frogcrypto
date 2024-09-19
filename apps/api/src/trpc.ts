@@ -1,14 +1,24 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "./context";
-import superjson from "superjson";
+import { SuperJSON, registerCustom } from "superjson";
 import { logger } from "@frogcrypto/shared";
 import { ZodError } from "zod";
+import { POD } from "@pcd/pod";
+
+registerCustom<POD, string>(
+  {
+    isApplicable: (v): v is POD => v instanceof POD && v.verifySignature(),
+    serialize: (v) => v.serialize(),
+    deserialize: (v) => POD.deserialize(v),
+  },
+  "pcd-pod"
+);
 
 const t = initTRPC.context<Context>().create({
   /**
    * {@link https://trpc.io/docs/v11/data-transformers}
    */
-  transformer: superjson,
+  transformer: SuperJSON,
   /**
    * {@link https://trpc.io/docs/v11/error-formatting}
    */

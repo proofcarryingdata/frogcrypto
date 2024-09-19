@@ -1,8 +1,18 @@
 import type { AppRouter } from "@frogcrypto/api/src/routers";
+import { POD } from "@pcd/pod";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import SuperJSON from "superjson";
+import { SuperJSON, registerCustom } from "superjson";
 import { SERVER_URL } from "./constants";
+
+registerCustom<POD, string>(
+  {
+    isApplicable: (v): v is POD => v instanceof POD && v.verifySignature(),
+    serialize: (v) => v.serialize(),
+    deserialize: (v) => POD.deserialize(v),
+  },
+  "pcd-pod"
+);
 
 let token: string | undefined;
 export function setToken(newToken: string): void {
