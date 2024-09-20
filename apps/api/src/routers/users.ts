@@ -5,10 +5,10 @@ import { eq, sql } from "drizzle-orm";
 import _ from "lodash";
 import { z } from "zod";
 import { db } from "../db";
-import { testPossibleFrogs } from "../db/mock";
 import { userFeedsTable, userIdsTable, userScoresTable } from "../db/schema";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
+import { getPossibleFrogs } from "../db/frogs";
 import { FEEDS } from "./feeds";
 
 export const usersRouter = router({
@@ -107,7 +107,7 @@ export const usersRouter = router({
         feeds: allFeeds.map((feed) =>
           computeUserFeedState(userFeeds[feed.id], feed)
         ),
-        possibleFrogs: testPossibleFrogs,
+        possibleFrogs: await getPossibleFrogs(),
         myScore: scores[0],
       };
     }),

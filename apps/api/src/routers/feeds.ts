@@ -16,17 +16,17 @@ import _ from "lodash";
 import { z } from "zod";
 import { db } from "../db";
 import { updateUserFeedState } from "../db/feeds";
-import { testFrogs } from "../db/mock";
 import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
+import { parseFrogEnum } from "@frogcrypto/shared";
 import {
   computeUserFeedState,
-  parseFrogEnum,
   parseFrogTemperament,
   sampleFrogAttribute,
 } from "../utils";
 import { POD } from "@pcd/pod";
+import { sampleFrogData } from "../db/frogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -46,7 +46,13 @@ export const FEEDS = [
     activeUntil: 1893484800,
     cooldown: 15,
     biomes: {
-      1: { dropWeightScaler: 1 },
+      Jungle: { dropWeightScaler: 0.1 },
+      Desert: { dropWeightScaler: 0.1 },
+      Swamp: { dropWeightScaler: 1 },
+      TheCapital: { dropWeightScaler: 0.1 },
+      CelestialPond: { dropWeightScaler: 0.005 },
+      TheWrithingVoid: { dropWeightScaler: 0.005 },
+      Unknown: { dropWeightScaler: 0.2 },
     },
   },
 ] satisfies FrogCryptoFeed[];
@@ -165,7 +171,7 @@ export const feedsRouter = router({
               });
             }
 
-            const frogDataSpec = _.sample(testFrogs);
+            const frogDataSpec = await sampleFrogData(feed.biomes);
             if (!frogDataSpec) {
               throw new TRPCError({
                 code: "NOT_FOUND",

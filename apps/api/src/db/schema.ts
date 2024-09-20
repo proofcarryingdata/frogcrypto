@@ -1,3 +1,4 @@
+import { FrogCryptoFrogData } from "@pcd/passport-interface";
 import {
   boolean,
   integer,
@@ -69,7 +70,9 @@ export const frogsTable = pgTable(
   {
     id: integer("id").primaryKey(),
     uuid: uuid("uuid").notNull(),
-    frog: jsonb("frog").notNull(),
+    frog: jsonb("frog")
+      .$type<Omit<FrogCryptoFrogData, "id" | "uuid">>()
+      .notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

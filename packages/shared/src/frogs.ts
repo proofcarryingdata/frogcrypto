@@ -1,4 +1,4 @@
-import { POD, PODIntValue } from "@pcd/pod";
+import { POD, POD_INT_MAX, PODIntValue } from "@pcd/pod";
 import { IFrogData, Biome, Rarity, Temperament } from "@pcd/eddsa-frog-pcd";
 import * as p from "@parcnet-js/podspec";
 import { compressBigInt, decompressBigInt } from "./bigint";
@@ -27,7 +27,7 @@ export const FrogSpec = p.entries({
   description: { type: "string" },
   imageUrl: { type: "string" },
 
-  frogId: { type: "int", isMemberOf: enumToEntryList(Biome) },
+  frogId: { type: "int", inRange: { min: 0n, max: POD_INT_MAX } },
   biome: { type: "int", isMemberOf: enumToEntryList(Biome) },
   rarity: { type: "int", isMemberOf: enumToEntryList(Rarity) },
   temperament: { type: "int", isMemberOf: enumToEntryList(Temperament) },
@@ -90,4 +90,20 @@ export function signFrogData(frog: IFrogData, privateKey: string): POD {
   }
 
   return POD.sign(res.value, privateKey);
+}
+
+export function parseFrogEnum(
+  e: Record<number, string>,
+  value: string
+): number {
+  const key = _.findKey(
+    e,
+    (v) =>
+      typeof v === "string" &&
+      v.toLowerCase() === value.toLowerCase().replace(/ /g, "")
+  );
+  if (key === undefined) {
+    throw new Error(`invalid enum value ${value}`);
+  }
+  return parseInt(key);
 }

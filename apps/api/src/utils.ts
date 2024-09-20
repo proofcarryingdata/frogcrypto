@@ -10,6 +10,7 @@ import type {
 } from "@pcd/passport-interface";
 import _ from "lodash";
 import type { UserFeed } from "./db/schema";
+import { parseFrogEnum } from "@frogcrypto/shared";
 
 export function computeUserFeedState(
   state: Pick<UserFeed, "lastFetchedAt"> | undefined,
@@ -35,22 +36,6 @@ export function sampleFrogAttribute(
     Math.round(min ?? 0),
     Math.round(max ?? (rarity === Rarity.Common ? 7 : 15))
   );
-}
-
-export function parseFrogEnum(
-  e: Record<number, string>,
-  value: string
-): number {
-  const key = _.findKey(
-    e,
-    (v) =>
-      typeof v === "string" &&
-      v.toLowerCase() === value.toLowerCase().replace(/ /g, "")
-  );
-  if (key === undefined) {
-    throw new Error(`invalid enum value ${value}`);
-  }
-  return parseInt(key);
 }
 
 export function parseFrogTemperament(value?: string): Temperament {
