@@ -32,12 +32,6 @@ function useInitializeUser() {
     enabled: Boolean(zupassAPI),
   });
 
-  const enabled =
-    !rootId &&
-    Boolean(zupassAPI) &&
-    Boolean(userIdentity) &&
-    semaphoreId?.toString() === rootId;
-
   useEffect(() => {
     if (!userIdentity) {
       setUserIdentity(
@@ -55,7 +49,9 @@ function useInitializeUser() {
       String(semaphoreId),
     ],
     queryFn: async () => {
-      if (!zupassAPI || !userIdentity || !semaphoreId) return;
+      if (!zupassAPI || !userIdentity || !semaphoreId) {
+        throw new Error("Missing zupassAPI, userIdentity, or semaphoreId");
+      }
 
       const z = zupassAPI.z;
 
@@ -108,9 +104,18 @@ function useInitializeUser() {
       await auth(gpc);
 
       setRootId(semaphoreId.toString());
+
+      return {
+        rootId: semaphoreId.toString(),
+        userIdentity,
+      };
     },
     throwOnError: true,
-    enabled,
+    enabled:
+      !rootId &&
+      Boolean(zupassAPI) &&
+      Boolean(userIdentity) &&
+      Boolean(semaphoreId),
   });
 
   // reset rootId if it doesn't match semaphoreId
