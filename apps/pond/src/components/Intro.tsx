@@ -2,7 +2,7 @@ import { type TypewriterClass } from "typewriter-effect";
 import { useParams } from "wouter";
 import { type Feed } from "@pcd/passport-interface";
 import React from "react";
-import { FROM_SUBSCRIPTION_PARAM_KEY } from "../constants";
+import { FROM_SUBSCRIPTION_PARAM_KEY } from "@frogcrypto/shared";
 import { useInitializeFrogSubscriptions } from "../hooks/useFrogFeeds";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { ActionButton } from "./Button";

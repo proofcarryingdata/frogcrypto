@@ -8,7 +8,7 @@ import React, { useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import urljoin from "url-join";
 import { validate } from "uuid";
-import { SERVER_URL } from "../constants";
+import { SERVER_URL } from "@frogcrypto/shared";
 import { trpc } from "../trpc";
 import useSearchParams from "./useSearchParams";
 import { useSubscriptions } from "./useSubscriptions";

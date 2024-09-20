@@ -10,16 +10,34 @@
     "lint": "eslint src/"
   },
   "dependencies": {
+    "@frogcrypto/shared": "workspace:*",
+    "@frogcrypto/ui": "workspace:*",
+    "@parcnet-js/app-connector": "^0.0.2",
+    "@pcd/passport-interface": "^0.11.9",
+    "@pcd/pod": "^0.1.7",
+    "@tanstack/react-query": "^5.55.4",
+    "@tanstack/react-table": "^8.20.5",
+    "@trpc/client": "11.0.0-rc.502",
+    "@trpc/react-query": "11.0.0-rc.502",
+    "jotai": "^2.9.3",
+    "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@frogcrypto/ui": "workspace:*"
+    "react-hot-toast": "^2.4.1",
+    "superjson": "^1.13.3",
+    "vite-plugin-node-polyfills": "^0.22.0"
   },
   "devDependencies": {
+    "@frogcrypto/api": "workspace:*",
+    "@frogcrypto/eslint-config": "workspace:*",
+    "@frogcrypto/typescript-config": "workspace:*",
+    "@types/lodash": "^4.17.7",
     "@types/react": "^18.2.62",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
-    "@frogcrypto/eslint-config": "workspace:*",
-    "@frogcrypto/typescript-config": "workspace:*",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.45",
+    "tailwindcss": "^3.4.11",
     "typescript": "~5.5.4",
     "vite": "^5.1.4"
   }

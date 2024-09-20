@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   pgTable,
   serial,
@@ -16,6 +17,7 @@ export const userIdsTable = pgTable(
     semaphoreId: text("semaphore_id").notNull(),
     // a local signer public key that can be used to authenticate the user as its root semaphore id
     signerPk: text("signer_pk").notNull(),
+    isAdmin: boolean("is_admin").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
@@ -62,12 +64,18 @@ export const userScoresTable = pgTable(
   })
 );
 
-export const frogsTable = pgTable("frogs", {
-  id: serial("id").primaryKey(),
-  uuid: uuid("uuid").notNull(),
-  frog: jsonb("frog").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
+export const frogsTable = pgTable(
+  "frogs",
+  {
+    id: integer("id").primaryKey(),
+    uuid: uuid("uuid").notNull(),
+    frog: jsonb("frog").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    uuid: unique().on(table.uuid),
+  })
+);

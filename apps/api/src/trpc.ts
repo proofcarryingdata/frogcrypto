@@ -77,3 +77,22 @@ export const authedProcedure = t.procedure.use(function isAuthed(opts) {
     },
   });
 });
+
+/**
+ * Protected admin procedure
+ */
+export const adminProcedure = t.procedure.use(function isAuthed(opts) {
+  const user = opts.ctx.session?.user;
+
+  if (!user?.isAdmin) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  return opts.next({
+    ctx: {
+      user: {
+        ...user,
+      },
+    },
+  });
+});

@@ -18,9 +18,9 @@
   "dependencies": {
     "@frogcrypto/shared": "workspace:*",
     "@parcnet-js/podspec": "^0.0.2",
-    "@pcd/eddsa-frog-pcd": "^0.3.4",
+    "@pcd/eddsa-frog-pcd": "^0.3.5",
     "@pcd/gpc-pcd": "^0.0.8",
-    "@pcd/passport-interface": "^0.11.7",
+    "@pcd/passport-interface": "^0.11.9",
     "@pcd/pcd-types": "^0.11.4",
     "@pcd/pod": "^0.1.7",
     "@pcd/proto-pod-gpc-artifacts": "^0.9.0",

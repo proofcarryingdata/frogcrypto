@@ -95,7 +95,7 @@ function generateFrogData(
   };
 }
 
-export const trpcFeedsRouter = router({
+export const feedsRouter = router({
   list: publicProcedure.output(z.array(FeedSchema)).query(() => {
     return FEEDS.map(sanitizeFeed);
   }),

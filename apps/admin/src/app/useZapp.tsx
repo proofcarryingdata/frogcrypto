@@ -8,7 +8,8 @@ import React, {
   useState,
 } from "react";
 import { DEFAULT_ZUPASS_URL } from "@frogcrypto/shared";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
+import { setToken } from "../trpc";
 
 enum EmbeddedZupassState {
   CONNECTING,

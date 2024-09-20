@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useAtom } from "jotai";
-import { FROGCRYPTO_FOLDER_NAME } from "./constants";
+import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import Intro from "./components/Intro";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import GetFrogTab from "./components/GetFrogTab";

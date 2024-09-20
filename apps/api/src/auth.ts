@@ -1,8 +1,4 @@
-import {
-  decompressBigInt,
-  logger,
-  userPublicKeyToUserId,
-} from "@frogcrypto/shared";
+import { decompressBigInt, logger } from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { eq } from "drizzle-orm";
@@ -23,6 +19,7 @@ export interface AuthSession {
   user: {
     semaphoreId: bigint;
     signerPublicKey: bigint;
+    isAdmin: boolean;
   };
 }
 
@@ -45,11 +42,11 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   //   );
   // }
 
-  const user = await db
+  const [user] = await db
     .select()
     .from(userIdsTable)
     .where(eq(userIdsTable.signerPk, pod.signerPublicKey));
-  if (user.length === 0) {
+  if (!user) {
     logger.error("User not found for signer public key", pod.signerPublicKey);
     throw new Error("Invalid PWT: user not found");
   }
@@ -66,6 +63,7 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
     user: {
       semaphoreId,
       signerPublicKey,
+      isAdmin: user.isAdmin,
     },
   };
 }

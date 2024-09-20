@@ -11,7 +11,7 @@ import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
 import { FEEDS } from "./feeds";
 
-export const trpcUsersRouter = router({
+export const usersRouter = router({
   auth: publicProcedure
     .input(
       z.object({
