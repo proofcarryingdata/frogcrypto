@@ -42,5 +42,6 @@ module.exports = {
     "no-console": ["error", { allow: ["debug"] }],
     "@typescript-eslint/explicit-function-return-type": "off",
     "import/no-named-as-default": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
   },
 };

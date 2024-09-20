@@ -32,14 +32,12 @@ export function useUserStateByFeedId() {
   const { data: userState } = useUserState();
 
   return useMemo(() => {
-    return _.keyBy(userState?.feeds || [], (feed) => feed.feedId);
+    return _.keyBy(userState?.feeds ?? [], (feed) => feed.feedId);
   }, [userState]);
 }
 
 export function usePossibleFrogs() {
   const { data: userState } = useUserState();
 
-  return useMemo(() => {
-    return userState?.possibleFrogs || [];
-  }, [userState]);
+  return userState?.possibleFrogs;
 }

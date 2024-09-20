@@ -27,6 +27,7 @@ type EmbeddedZupass =
     }
   | {
       state: EmbeddedZupassState.CONNECTED;
+      url: string;
       z: ParcnetAPI;
       ref: React.RefObject<HTMLDivElement>;
     };
@@ -53,6 +54,7 @@ export function EmbeddedZupassProvider({
       void connect(zapp, ref.current, zupassUrl).then((zupass) => {
         setValue({
           state: EmbeddedZupassState.CONNECTED,
+          url: zupassUrl,
           z: zupass,
           ref,
         });

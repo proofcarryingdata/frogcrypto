@@ -10,7 +10,7 @@ import {
 import * as p from "@parcnet-js/podspec";
 import { POD, type PODCryptographicValue } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { crypto } from "@zk-kit/utils";
 import { produce } from "immer";
 import { useAtom } from "jotai";
@@ -18,13 +18,25 @@ import { useEffect, useState } from "react";
 import { setToken, trpc } from "../trpc";
 import { rootIdAtom, userIdentityAtom } from "./useUserState";
 import { useMaybeZupassAPI } from "./useZapp";
+import { stringify } from "superjson";
 
 function useInitializeUser() {
   const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
   const [rootId, setRootId] = useAtom(rootIdAtom);
   const zupassAPI = useMaybeZupassAPI();
   const { mutateAsync: auth } = trpc.users.auth.useMutation();
-  const enabled = !rootId && Boolean(zupassAPI) && Boolean(userIdentity);
+
+  const { data: semaphoreId } = useQuery({
+    queryKey: ["zupassId"],
+    queryFn: () => zupassAPI?.z.identity.getSemaphoreV4Commitment(),
+    enabled: Boolean(zupassAPI),
+  });
+
+  const enabled =
+    !rootId &&
+    Boolean(zupassAPI) &&
+    Boolean(userIdentity) &&
+    semaphoreId?.toString() === rootId;
 
   useEffect(() => {
     if (!userIdentity) {
@@ -34,12 +46,18 @@ function useInitializeUser() {
     }
   }, [setUserIdentity, userIdentity]);
 
-  const { mutate } = useMutation({
-    mutationFn: async () => {
-      if (!zupassAPI || !userIdentity) return;
+  useQuery({
+    queryKey: [
+      "initializeUser",
+      Boolean(zupassAPI),
+      zupassAPI?.url,
+      stringify(userIdentity),
+      String(semaphoreId),
+    ],
+    queryFn: async () => {
+      if (!zupassAPI || !userIdentity || !semaphoreId) return;
 
       const z = zupassAPI.z;
-      const semaphoreId = await z.identity.getSemaphoreV4Commitment();
 
       const myPlayerIDSpec = p.pod({
         entries: produce(PlayerIDSpec.schema, (draft) => {
@@ -91,14 +109,16 @@ function useInitializeUser() {
 
       setRootId(semaphoreId.toString());
     },
-    onError: logger.error,
+    throwOnError: true,
+    enabled,
   });
 
+  // reset rootId if it doesn't match semaphoreId
   useEffect(() => {
-    if (enabled) {
-      mutate();
+    if (semaphoreId && rootId && semaphoreId.toString() !== rootId) {
+      setRootId(null);
     }
-  }, [enabled, mutate]);
+  }, [rootId, semaphoreId, setRootId]);
 
   const [ready, setReady] = useState<boolean>(false);
   useEffect(() => {

@@ -64,6 +64,7 @@ export function DexTab() {
     <>
       <div className="flex">
         <button
+          type="button"
           className="btn"
           onClick={() => {
             const blob = new Blob([JSON.stringify(frogs)], {
@@ -73,7 +74,7 @@ export function DexTab() {
             const a = document.createElement("a");
             a.style.display = "none";
             a.href = url;
-            a.download = `frogcrypto-${Date.now()}.json`;
+            a.download = `frogcrypto-${String(Date.now())}.json`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -88,6 +89,7 @@ export function DexTab() {
           Owned: {Object.keys(groupedPODs).length.toString().padStart(3, "0")}
         </span>
         <button
+          type="button"
           className="btn"
           onClick={(): void => {
             setMode("list");
@@ -97,6 +99,7 @@ export function DexTab() {
           <List />
         </button>
         <button
+          type="button"
           className="btn"
           onClick={(): void => {
             setMode("grid");
@@ -213,51 +216,46 @@ function DexGrid({
       {possibleFrogs.map(({ id, rarity }) => {
         const frogPODs = pods[id];
 
-        if (!frogPODs) {
-          return (
-            <div key={id} className="flex flex-col items-center">
-              <div
-                className="w-full bg-gray-200 rounded-lg relative"
-                style={{ paddingBottom: "66.666%" }}
-              >
-                <span className="absolute inset-0 flex items-center justify-center text-gray-500">
-                  ???
-                </span>
-                <img
-                  src="/images/frogs/pixel_frog.png"
-                  alt="Skeleton Frog"
-                  className="absolute inset-0 w-full h-full object-cover opacity-20 rounded-lg"
-                  draggable={false}
-                />
-              </div>
-              <span className="mt-2" />
-            </div>
-          );
-        }
-
         return (
-          <div key={id} className="flex flex-col items-center">
+          <div key={id} className="flex flex-col items-center bg-white">
             <div
-              className="w-full bg-green-600 text-white rounded-lg cursor-pointer flex flex-col items-stretch justify-center"
-              style={{ borderColor: RARITIES[rarity].color }}
-              onClick={(): void => {
-                onClick(frogPODs.pods);
-              }}
+              className="w-full text-white rounded-lg cursor-pointer flex flex-col items-stretch justify-center border"
+              onClick={
+                frogPODs
+                  ? (): void => {
+                      onClick(frogPODs.pods);
+                    }
+                  : undefined
+              }
             >
               <span
-                className="px-2 py-1 text-center truncate"
-                title={frogPODs.frog.name}
+                className="px-2 py-1 text-center truncate text-sm rounded-t-lg"
+                style={{
+                  background: RARITIES[rarity].color,
+                }}
+                title={frogPODs ? frogPODs.frog.name : "???"}
               >
-                {frogPODs.frog.name}
+                {frogPODs ? frogPODs.frog.name : "???"}
               </span>
-              <img
-                src={frogPODs.frog.imageUrl}
-                alt={frogPODs.frog.name}
-                className="w-full h-auto object-cover rounded-b-lg"
-                draggable={false}
-              />
+              {frogPODs ? (
+                <img
+                  src={frogPODs.frog.imageUrl}
+                  alt={frogPODs.frog.name}
+                  className="w-full h-auto object-cover rounded-b-lg aspect-square"
+                  draggable={false}
+                />
+              ) : (
+                <img
+                  src="/images/pixel_frog.png"
+                  alt="???"
+                  className="w-full h-auto object-cover rounded-b-lg aspect-square opacity-20"
+                  draggable={false}
+                />
+              )}
             </div>
-            <span className="mt-2">x{frogPODs.pods.length}</span>
+            {frogPODs ? (
+              <span className="mt-2">x{frogPODs.pods.length}</span>
+            ) : null}
           </div>
         );
       })}
@@ -265,15 +263,17 @@ function DexGrid({
   );
 }
 
-type FrogsById = Record<
-  number,
-  {
-    pods: FrogPOD[];
-    /**
-     * An arbitrary PCD for the frog.
-     */
-    frog: IFrogData;
-  }
+type FrogsById = Partial<
+  Record<
+    number,
+    {
+      pods: FrogPOD[];
+      /**
+       * An arbitrary PCD for the frog.
+       */
+      frog: IFrogData;
+    }
+  >
 >;
 
 /**
@@ -283,13 +283,9 @@ const useGroupedPODs = (pods: FrogPOD[]): FrogsById => {
   return useMemo(
     () =>
       pods.reduce<FrogsById>((acc, pod) => {
-        if (!acc[pod.frogId]) {
-          acc[pod.frogId] = {
-            pods: [],
-            frog: pod,
-          };
-        }
-        acc[pod.frogId].pods.push(pod);
+        const entry = acc[pod.frogId] ?? { pods: [], frog: pod };
+        entry.pods.push(pod);
+        acc[pod.frogId] = entry;
         return acc;
       }, {}),
     [pods]
