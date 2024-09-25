@@ -9,6 +9,8 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "ESNext",
     "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
     "resolveJsonModule": true,
     "skipLibCheck": false,
     "target": "ESNext",

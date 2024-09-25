@@ -26,7 +26,7 @@ import {
   sampleFrogAttribute,
 } from "../utils";
 import { POD } from "@pcd/pod";
-import { sampleFrogData } from "../db/frogs";
+import { generateFrogData, sampleFrogData } from "../db/frogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -68,36 +68,6 @@ function sanitizeFeed(feed: FrogCryptoFeed): z.infer<typeof FeedSchema> {
     private: feed.private,
     activeUntil: feed.activeUntil,
     cooldown: feed.cooldown,
-  };
-}
-
-function generateFrogData(
-  frogData: FrogCryptoFrogData,
-  ownerSemaphoreId: bigint
-): IFrogData {
-  const rarity = parseFrogEnum(Rarity, frogData.rarity);
-
-  return {
-    ..._.pick(frogData, "name", "description"),
-    imageUrl: `${process.env.FROGCRYPTO_ASSETS_URL}/${frogData.uuid}`,
-    frogId: frogData.id,
-    biome: parseFrogEnum(Biome, frogData.biome),
-    rarity,
-    temperament: parseFrogTemperament(frogData.temperament),
-    jump: sampleFrogAttribute(frogData.jump_min, frogData.jump_max, rarity),
-    speed: sampleFrogAttribute(frogData.speed_min, frogData.speed_max, rarity),
-    intelligence: sampleFrogAttribute(
-      frogData.intelligence_min,
-      frogData.intelligence_max,
-      rarity
-    ),
-    beauty: sampleFrogAttribute(
-      frogData.beauty_min,
-      frogData.beauty_max,
-      rarity
-    ),
-    timestampSigned: Date.now(),
-    ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
   };
 }
 

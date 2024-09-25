@@ -3,7 +3,7 @@ import React, { useCallback, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import ReactModal from "react-modal";
 import { type FrogPOD } from "@frogcrypto/shared";
-import FrogCard from "../FrogCard";
+import FrogCard from "./FrogCard";
 
 export function FrogsModal({
   pods,

@@ -1,5 +1,5 @@
 import { parseFrogPOD } from "@frogcrypto/shared";
-import { POD } from "@pcd/pod";
+import { type POD } from "@pcd/pod";
 import { useQueryClient } from "@tanstack/react-query";
 import { trpc } from "../trpc";
 import { QUERY_KEY_FROGS } from "./useFrogs";

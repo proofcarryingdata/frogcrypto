@@ -11,11 +11,10 @@ import useFrogs from "../hooks/useFrogs";
 import useGetFrog from "../hooks/useGetFrog";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
-import { ActionButton, FrogSearchButton } from "./Button";
-import Divider from "./Divider";
-import FrogCard from "./FrogCard";
-import LoadingMessages from "./LoadingMessages";
-import { POD } from "@pcd/pod";
+import { ActionButton, FrogSearchButton } from "./shared/Button";
+import Divider from "./shared/Divider";
+import FrogCard from "./shared/FrogCard";
+import LoadingMessages from "./shared/LoadingMessages";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
@@ -31,6 +30,9 @@ function GetFrogTab() {
       <div className="flex flex-col gap-2 w-full">
         {subscriptions.map((feed) => {
           const userFeedState = userStateByFeedId[feed.id];
+          if (!userFeedState) {
+            return null;
+          }
 
           return (
             <SearchButton
@@ -55,6 +57,26 @@ function GetFrogTab() {
         </>
       )}
     </>
+  );
+}
+
+function frogSearchText({
+  freerolls,
+  name,
+}: {
+  freerolls: number;
+  name: string;
+}) {
+  return freerolls > 0 ? (
+    <div
+      className={`
+        text-sm font-mono ml-auto animate-color-change
+      `}
+    >
+      {name} ({freerolls} remaining)
+    </div>
+  ) : (
+    name
   );
 }
 
@@ -128,21 +150,7 @@ function SearchButton({
       disabled={!canFetch}
       ButtonComponent={FrogSearchButton}
     >
-      {canFetch ? (
-        freerolls > 0 ? (
-          <div
-            className={`
-            text-sm font-mono ml-auto
-            ${canFetch ? "animate-color-change" : "text-[#ff9900]"}
-          `}
-          >
-            {name} ({freerolls} remaining)
-          </div>
-        ) : (
-          name
-        )
-      ) : null}
-
+      {canFetch ? frogSearchText({ freerolls, name }) : null}
       {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}
     </ActionButton>
   );

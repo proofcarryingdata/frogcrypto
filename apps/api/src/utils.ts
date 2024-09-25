@@ -67,3 +67,16 @@ export function sanitizeFeed(feed: FrogCryptoFeed): FrogCryptoClientFeed {
     cooldown: feed.cooldown,
   };
 }
+
+/**
+ * Compares two semaphore IDs and returns a negative number if id1 < id2,
+ * a positive number if id1 > id2, or zero if they are equal.
+ */
+export function compareIds(id1: string, id2: string): number {
+  const bigInt1 = BigInt(id1);
+  const bigInt2 = BigInt(id2);
+
+  if (bigInt1 < bigInt2) return -1;
+  if (bigInt1 > bigInt2) return 1;
+  return 0;
+}

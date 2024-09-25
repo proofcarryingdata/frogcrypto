@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
@@ -28,8 +29,7 @@ function LoadingMessages({ biome }: { biome: string }): JSX.Element {
 
   // Function to get a random message
   const getRandomMessage = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * messages.length);
-    setCurrentMessage(messages[randomIndex]);
+    setCurrentMessage(_.sample(messages) ?? "");
   }, [messages]);
 
   useEffect(() => {
@@ -39,7 +39,9 @@ function LoadingMessages({ biome }: { biome: string }): JSX.Element {
     const interval = setInterval(getRandomMessage, 3000);
 
     // Clean up interval on unmount
-    return () => { clearInterval(interval); };
+    return () => {
+      clearInterval(interval);
+    };
   }, [getRandomMessage]);
 
   return <>{currentMessage}</>;

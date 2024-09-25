@@ -1,8 +1,10 @@
-import { POD, POD_INT_MAX, PODIntValue } from "@pcd/pod";
-import { IFrogData, Biome, Rarity, Temperament } from "@pcd/eddsa-frog-pcd";
-import * as p from "@parcnet-js/podspec";
-import { compressBigInt, decompressBigInt } from "./bigint";
-import _ from "lodash";
+import _ from 'lodash';
+
+import * as p from '@parcnet-js/podspec';
+import { Biome, IFrogData, Rarity, Temperament } from '@pcd/eddsa-frog-pcd';
+import { POD, POD_INT_MAX, PODIntValue } from '@pcd/pod';
+
+import { compressBigInt, decompressBigInt } from './bigint';
 
 export type FrogPOD = IFrogData & {
   contentID: bigint;
@@ -21,7 +23,10 @@ function enumToEntryList<T extends Record<string, number | string>>(
 }
 
 export const FrogSpec = p.entries({
-  podType: { type: "string", value: POD_TYPE_FROGCRYPTO_FROG },
+  podType: {
+    type: "string",
+    isMemberOf: [{ type: "string", value: POD_TYPE_FROGCRYPTO_FROG }],
+  },
 
   name: { type: "string" },
   description: { type: "string" },
@@ -37,7 +42,7 @@ export const FrogSpec = p.entries({
   beauty: { type: "int" },
 
   timestampSigned: { type: "int" },
-  owner: { type: "cryptographic" },
+  owner: { type: "cryptographic", isOwnerID: true },
 });
 
 // bounds are inclusive
@@ -81,6 +86,7 @@ export function signFrogData(frog: IFrogData, privateKey: string): POD {
       ...frog,
       podType: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
+      timestampSigned: Date.now(),
     },
     { coerce: true }
   );
@@ -106,4 +112,56 @@ export function parseFrogEnum(
     throw new Error(`invalid enum value ${value}`);
   }
   return parseInt(key);
+}
+
+export const ProfileFrogSpec = p.entries({
+  ...FrogSpec.schema,
+  profileId: { type: "cryptographic" },
+  telegramUsername: { type: "string" },
+  farcasterUsername: { type: "string" },
+});
+
+export type ProfileFrogPOD = FrogPOD & {
+  profileId: string;
+  telegramUsername: string;
+  farcasterUsername: string;
+};
+
+export function parseProfileFrogPOD(pod: POD): ProfileFrogPOD {
+  const entries = pod.content.asEntries();
+  const res = ProfileFrogSpec.safeParse(entries);
+  if (!res.isValid) {
+    console.debug("Invalid profile frog POD", res.issues);
+    throw new Error("Invalid profile frog POD");
+  }
+  const parsed = res.value;
+
+  return {
+    ...parseFrogPOD(pod),
+    profileId: compressBigInt(parsed.profileId.value),
+    telegramUsername: parsed.telegramUsername.value,
+    farcasterUsername: parsed.farcasterUsername.value,
+  };
+}
+
+export function signProfileFrogData(
+  frog: ProfileFrogPOD,
+  privateKey: string
+): POD {
+  const res = ProfileFrogSpec.safeParse(
+    {
+      ...frog,
+      podType: POD_TYPE_FROGCRYPTO_FROG,
+      owner: decompressBigInt(frog.ownerSemaphoreId),
+      profileId: decompressBigInt(frog.profileId),
+      timestampSigned: Date.now(),
+    },
+    { coerce: true }
+  );
+  if (!res.isValid) {
+    console.debug("Invalid profile frog data", res.issues);
+    throw new Error("Invalid profile frog data");
+  }
+
+  return POD.sign(res.value, privateKey);
 }

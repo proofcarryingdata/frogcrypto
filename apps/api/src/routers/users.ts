@@ -1,14 +1,16 @@
-import { logger } from "@frogcrypto/shared";
+import { FrogSpec, logger, signFrogData } from "@frogcrypto/shared";
+import { type IFrogData } from "@pcd/eddsa-frog-pcd";
 import { type GPCRevealedClaims } from "@pcd/gpc-pcd";
 import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
 import _ from "lodash";
 import { z } from "zod";
 import { db } from "../db";
+import { getAllFrogs } from "../db/frog-cache";
+import { getSpiritFrog } from "../db/frogs";
 import { userFeedsTable, userIdsTable, userScoresTable } from "../db/schema";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
-import { getPossibleFrogs } from "../db/frogs";
 import { FEEDS } from "./feeds";
 
 export const usersRouter = router({
@@ -36,7 +38,7 @@ export const usersRouter = router({
           message: "No signer found in GPC",
         });
       }
-      const owner = playerIDPOD.entries?.owner.value.toString();
+      const owner = playerIDPOD.entries?.owner?.value.toString();
       if (!owner) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -80,6 +82,8 @@ export const usersRouter = router({
             rank: z.number(),
           })
           .optional(),
+        // FIXME: add zod schema for IFrogData
+        spiritFrog: z.custom<IFrogData>().optional(),
       })
     )
     .query(async ({ input: { feedIds }, ctx }) => {
@@ -92,7 +96,7 @@ export const usersRouter = router({
         "feedId"
       );
 
-      const scores = await db
+      const [myScore] = await db
         .select({
           semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
           score: userScoresTable.score,
@@ -107,8 +111,9 @@ export const usersRouter = router({
         feeds: allFeeds.map((feed) =>
           computeUserFeedState(userFeeds[feed.id], feed)
         ),
-        possibleFrogs: await getPossibleFrogs(),
-        myScore: scores[0],
+        possibleFrogs: await getAllFrogs(),
+        myScore,
+        spiritFrog: await getSpiritFrog(myScore?.semaphoreIdHash),
       };
     }),
 });

@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import { type IFrogData, Rarity, Temperament, Biome } from "@pcd/eddsa-frog-pcd";
+import {
+  type IFrogData,
+  Rarity,
+  Temperament,
+  Biome,
+} from "@pcd/eddsa-frog-pcd";
+import { type ProfileFrogPOD } from "@frogcrypto/shared";
 import ImageZoom from "./ImageZoom";
 
 const RARE_COLORS: Record<Rarity, string> = {
@@ -28,18 +34,18 @@ const biomeValue = (biome: Biome): string => {
   return _.startCase(Biome[biome]);
 };
 
-const FrogCard: React.FC<{ frog: IFrogData; expanded?: boolean }> = ({
-  frog,
-  expanded,
-}) => {
-  const [showMore, setShowMore] = useState(expanded ?? false);
+function FrogCard({ frog, expanded }: { frog: IFrogData; expanded?: boolean }) {
+  const profileFrog =
+    // TODO: better type checking
+    "profileId" in frog ? (frog as ProfileFrogPOD) : undefined;
+  const [showMore, setShowMore] = useState(expanded ?? Boolean(profileFrog));
 
   return (
     <div className="w-full flex flex-col bg-white rounded-lg shadow-md">
       <div
         className={`${RARE_COLORS[frog.rarity] || "bg-gray-700"} text-white text-center py-2 px-4 w-full rounded-t-lg`}
       >
-        {`#${frog.frogId} ${frog.name}`}
+        {profileFrog ? frog.name : `#${String(frog.frogId)} ${frog.name}`}
       </div>
 
       <div className="w-full flex flex-col gap-4 items-center p-4">
@@ -69,19 +75,38 @@ const FrogCard: React.FC<{ frog: IFrogData; expanded?: boolean }> = ({
           <FrogAttribute label="BTY" title="Beauty" value={frog.beauty} />
         </div>
 
+        {profileFrog ? (
+          <div className="grid grid-cols-2 gap-4 w-full">
+            <FrogAttribute
+              label="TG"
+              title="Telegram"
+              value={profileFrog.telegramUsername || "???"}
+            />
+            <FrogAttribute
+              label="FC"
+              title="Farcaster"
+              value={profileFrog.farcasterUsername || "???"}
+            />
+          </div>
+        ) : null}
+
         <button
-          onClick={() => { setShowMore(!showMore); }}
+          type="button"
+          onClick={() => {
+            setShowMore(!showMore);
+          }}
           className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
         >
           {showMore ? "Collapse" : "See more"}
         </button>
 
-        {showMore ? <>
+        {showMore ? (
+          <>
             <p className="text-sm text-gray-700">{frog.description}</p>
             <div className="flex justify-between w-full mt-2">
               <FrogAttribute
                 label="Signed at"
-                title={`Signed at: ${frog.timestampSigned}`}
+                title={`Signed at: ${String(frog.timestampSigned)}`}
                 value={new Date(frog.timestampSigned).toLocaleDateString()}
               />
               <FrogAttribute
@@ -90,23 +115,22 @@ const FrogCard: React.FC<{ frog: IFrogData; expanded?: boolean }> = ({
                 value={biomeValue(frog.biome)}
               />
             </div>
-          </> : null}
+          </>
+        ) : null}
       </div>
     </div>
   );
-};
-
-interface FrogAttributeProps {
-  label: string;
-  title: string;
-  value: string | number | undefined;
 }
 
-const FrogAttribute: React.FC<FrogAttributeProps> = ({
+function FrogAttribute({
   label,
   title,
   value,
-}) => {
+}: {
+  label: string;
+  title: string;
+  value: string | number | undefined;
+}) {
   const attrColor = (val: string | number | undefined): string => {
     if (typeof val === "number") {
       if (val <= 3) return "text-red-600";
@@ -125,7 +149,7 @@ const FrogAttribute: React.FC<FrogAttributeProps> = ({
       </div>
     </div>
   );
-};
+}
 
 const formatAttrValue = (value: string | number | undefined): string => {
   if (typeof value === "number") {

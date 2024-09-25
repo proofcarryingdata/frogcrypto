@@ -10,8 +10,8 @@ import { type FrogPOD } from "@frogcrypto/shared";
 import { List, LayoutGrid } from "lucide-react";
 import { usePossibleFrogs } from "../hooks/useUserState";
 import useFrogs from "../hooks/useFrogs";
-import { FrogsModal } from "./FrogsModal";
-import Loader from "./Loader";
+import { FrogsModal } from "./shared/FrogsModal";
+import Loader from "./shared/Loader";
 
 const RARITIES: Record<Rarity, { label: string; color: string }> = {
   [Rarity.Common]: {

@@ -7,7 +7,7 @@ export const incrementScore = async (
   semaphoreId: string,
   increment = 1
 ): Promise<typeof userScoresTable.$inferInsert> => {
-  const result = await tx
+  const [result] = await tx
     .insert(userScoresTable)
     .values({
       semaphoreId,
@@ -21,7 +21,11 @@ export const incrementScore = async (
     })
     .returning();
 
-  return result[0];
+  if (!result) {
+    throw new Error("Failed to increment score");
+  }
+
+  return result;
 };
 
 export async function getSemaphoreId(

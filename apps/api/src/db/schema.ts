@@ -9,7 +9,15 @@ import {
   unique,
   uuid,
   jsonb,
+  pgEnum,
 } from "drizzle-orm/pg-core";
+
+// Define the enum
+export const socialRequestStatusEnum = pgEnum("social_request_status", [
+  "pending",
+  "connected",
+  "declined",
+]);
 
 export const userIdsTable = pgTable(
   "user_ids",
@@ -80,5 +88,43 @@ export const frogsTable = pgTable(
   },
   (table) => ({
     uuid: unique().on(table.uuid),
+  })
+);
+
+export const socialRequestsTable = pgTable(
+  "social_requests",
+  {
+    id: serial("id").primaryKey(),
+    party1: text("party1").notNull(),
+    party2: text("party2").notNull(),
+    party1POD: text("party1_pod"),
+    party1PODTimestamp: timestamp("party1_pod_timestamp"),
+    party2POD: text("party2_pod"),
+    party2PODTimestamp: timestamp("party2_pod_timestamp"),
+    status: socialRequestStatusEnum("status").notNull().default("pending"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .$onUpdate(() => new Date()),
+    version: integer("version").notNull().default(1),
+  },
+  (table) => ({
+    uniqueRequest: unique().on(table.party1, table.party2),
+  })
+);
+
+export const spiritFrogsTable = pgTable(
+  "spirit_frogs",
+  {
+    id: serial("id").primaryKey(),
+    frogId: integer("frog_id").notNull(),
+    pod: text("pod").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    uniqueFrogId: unique().on(table.frogId),
   })
 );

@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useInView } from "react-intersection-observer";
-import { useFrogParticles } from "../hooks/useFrogParticles";
+import { useFrogParticles } from "../../hooks/useFrogParticles";
 
 /**
  * A button that shows a loading spinner while the action is in progress.
@@ -189,7 +189,7 @@ FrogSearchButton.displayName = "FrogSearchButton";
 
 export type FrogSearchButtonType = typeof FrogSearchButton;
 
-const Button = forwardRef(
+export const Button = forwardRef(
   (
     {
       children,

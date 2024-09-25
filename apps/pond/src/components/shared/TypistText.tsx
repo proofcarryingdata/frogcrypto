@@ -16,7 +16,7 @@ function TypistText({
   /**
    * Action button with the label will be rendered at the end of the adventure text.
    */
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const [ready, setReady] = useState(false);
 
@@ -36,7 +36,9 @@ function TypistText({
           }}
         />
       </div>
-      {ready ? <div className="animate-fadeIn w-full">{children}</div> : null}
+      {ready && children ? (
+        <div className="animate-fadeIn w-full">{children}</div>
+      ) : null}
     </>
   );
 }
