@@ -8,6 +8,8 @@ import UnderConstruction from "./UnderConstruction";
 import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
 import ProfileSharer from "./social/ProfileSharer";
+import FrogProfile from "./social/FrogProfile";
+import OtherProfile from "./social/OtherProfile";
 
 function NavBar() {
   const [location] = useLocation();
@@ -44,7 +46,7 @@ function SocialTab() {
 
   useEffect(() => {
     if (!socialTabAvailable) {
-      setLocation("/", { replace: true });
+      setLocation("~/", { replace: true });
     } else if (!isLoadingMyProfilePOD && !myProfilePOD) {
       setLocation("/tadpole");
     }
@@ -63,6 +65,7 @@ function SocialTab() {
         <Route path="/friends" component={UnderConstruction} />
         <Route path="/scores" component={UnderConstruction} />
         <Route path="/share" component={ProfileSharer} />
+        <Route path="/:id" component={OtherProfile} />
 
         <Route component={NotFound} />
       </Switch>

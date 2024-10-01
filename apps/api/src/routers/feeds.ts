@@ -3,6 +3,7 @@ import {
   FeedSchema,
   logger,
   signFrogData,
+  parseFrogEnum,
 } from "@frogcrypto/shared";
 import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import {
@@ -14,18 +15,17 @@ import {
 import { TRPCError } from "@trpc/server";
 import _ from "lodash";
 import { z } from "zod";
+import { POD } from "@pcd/pod";
 import { db } from "../db";
 import { updateUserFeedState } from "../db/feeds";
 import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
-import { parseFrogEnum } from "@frogcrypto/shared";
 import {
   computeUserFeedState,
   parseFrogTemperament,
   sampleFrogAttribute,
 } from "../utils";
-import { POD } from "@pcd/pod";
 import { generateFrogData, sampleFrogData } from "../db/frogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
@@ -199,4 +199,22 @@ export const feedsRouter = router({
           });
       }
     ),
+  getCyberFrog: authedProcedure
+    .input(
+      z.object({
+        signature: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        pod: z
+          .custom<POD>((x) => x instanceof POD && x.verifySignature())
+          .optional(),
+      })
+    )
+    .mutation(async ({ input: { signature } }) => {
+      return {
+        pod: undefined,
+      };
+    }),
 });

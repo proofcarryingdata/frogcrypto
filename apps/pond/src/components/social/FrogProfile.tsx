@@ -2,9 +2,11 @@ import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
 import { QrCode } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "wouter";
+import { type IFrogData } from "@pcd/eddsa-frog-pcd";
 import { FrogAttributes, FrogSocialAttributes } from "../shared/FrogCard";
+import { isProfileFrogPOD } from "../../hooks/useFrogs";
 
-function FrogDescription({ frog }: { frog: ProfileFrogPOD }) {
+function FrogDescription({ frog }: { frog: IFrogData }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -24,7 +26,8 @@ function FrogDescription({ frog }: { frog: ProfileFrogPOD }) {
 }
 
 function FrogProfile({
-  profileFrog,
+  frog,
+  profileId,
   isMyProfile,
   friendStatus = "none",
   friendCount,
@@ -32,7 +35,8 @@ function FrogProfile({
   onAddFriend,
   onEditProfile,
 }: {
-  profileFrog: ProfileFrogPOD;
+  frog: IFrogData | ProfileFrogPOD;
+  profileId: string;
   isMyProfile: boolean;
   friendStatus?: "none" | "pending" | "friends";
   friendCount: number;
@@ -92,8 +96,8 @@ function FrogProfile({
       <div className="relative w-32 h-32 mx-auto">
         <div className="absolute inset-0 rounded-full overflow-hidden border shadow-lg">
           <img
-            src={profileFrog.imageUrl}
-            alt={profileFrog.name}
+            src={frog.imageUrl}
+            alt={frog.name}
             className="w-full h-full object-cover"
           />
         </div>
@@ -108,10 +112,10 @@ function FrogProfile({
 
       <div className="text-center px-6 py-4 flex flex-col gap-2">
         <h2 className="text-xl font-bold text-gray-800 mb-2">
-          {`0x${shortCommitment(profileFrog.profileId)}'s ${profileFrog.name}`}
+          {`0x${shortCommitment(profileId)}'s ${frog.name}`}
         </h2>
 
-        <FrogSocialAttributes frog={profileFrog} />
+        {isProfileFrogPOD(frog) ? <FrogSocialAttributes frog={frog} /> : null}
 
         <div className="flex justify-center space-x-4 mb-4 text-sm [&_button]:px-2 [&_button]:py-1 [&_button]:rounded-lg">
           {renderFriendButton()}
@@ -123,8 +127,8 @@ function FrogProfile({
           </button>
         </div>
 
-        <FrogAttributes frog={profileFrog} />
-        <FrogDescription frog={profileFrog} />
+        <FrogAttributes frog={frog} />
+        <FrogDescription frog={frog} />
       </div>
     </>
   );

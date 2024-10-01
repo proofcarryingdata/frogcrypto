@@ -1,4 +1,4 @@
-import { FrogCryptoFrogData } from "@pcd/passport-interface";
+import { type FrogCryptoFrogData } from "@pcd/passport-interface";
 import {
   boolean,
   integer,
@@ -110,21 +110,5 @@ export const socialRequestsTable = pgTable(
   },
   (table) => ({
     uniqueRequest: unique().on(table.party1, table.party2),
-  })
-);
-
-export const spiritFrogsTable = pgTable(
-  "spirit_frogs",
-  {
-    id: serial("id").primaryKey(),
-    frogId: integer("frog_id").notNull(),
-    pod: text("pod").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => ({
-    uniqueFrogId: unique().on(table.frogId),
   })
 );

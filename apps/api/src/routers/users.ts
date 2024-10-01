@@ -116,4 +116,26 @@ export const usersRouter = router({
         spiritFrog: await getSpiritFrog(myScore?.semaphoreIdHash),
       };
     }),
+  getSpiritFrog: authedProcedure
+    .input(
+      z.object({
+        // TODO: change this to qr code uuid otherwise one could brute force all spirit frogs
+        profileId: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        friendCount: z.number().optional(),
+        frogCount: z.number().optional(),
+        // FIXME: add zod schema for IFrogData
+        spiritFrog: z.custom<IFrogData>().optional(),
+      })
+    )
+    .query(async ({ input: { profileId } }) => {
+      return {
+        friendCount: undefined,
+        frogCount: undefined,
+        spiritFrog: await getSpiritFrog(profileId),
+      };
+    }),
 });

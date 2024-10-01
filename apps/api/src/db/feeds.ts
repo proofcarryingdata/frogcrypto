@@ -1,6 +1,6 @@
 import { sql, SQL, and, eq } from "drizzle-orm";
-import { db, Transaction } from ".";
 import { userFeedsTable } from "./schema";
+import { db, type Transaction } from ".";
 
 /**
  * Update the last time a user has polled a feed.
@@ -64,7 +64,7 @@ export const updateUserFeedState = async (
     )
     .for("update", { skipLocked: true });
 
-  if (locks.length === 0) {
+  if (!locks[0]) {
     throw new Error("could not obtain lock");
   }
 

@@ -46,7 +46,8 @@ function MyProfile() {
   return (
     <div className="container mx-auto px-4">
       <FrogProfile
-        profileFrog={myProfilePOD}
+        frog={myProfilePOD}
+        profileId={myProfilePOD.profileId}
         isMyProfile
         friendStatus="friends"
         friendCount={0} // TODO: Implement friend count

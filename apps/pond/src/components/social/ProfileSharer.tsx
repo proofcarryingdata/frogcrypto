@@ -13,7 +13,9 @@ export function ProfileSharer() {
   const [mode, setMode] = useState<"scan" | "frogme">("frogme");
   const semaphoreIdBase64 = useSemaphoreIdBase64() ?? "";
   const { data: myProfilePOD } = useMyProfilePOD();
-  const profileUrl = `${window.location.origin}/social/profile/${semaphoreIdBase64}`;
+  const profileUrl = `${window.location.origin}/social/${encodeURIComponent(
+    semaphoreIdBase64
+  )}`;
 
   const [, setLocation] = useLocation();
   const { ref } = useZxing({

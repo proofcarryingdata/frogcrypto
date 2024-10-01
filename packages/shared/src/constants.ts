@@ -7,7 +7,7 @@ export const SERVER_URL =
     ? "https://frogcrypto-api.vercel.app"
     : "http://localhost:4001";
 
-export const DEFAULT_ZUPASS_URL = "https://develop.zupass.org";
+export const DEFAULT_ZUPASS_URL = "https://staging.zupass.org";
 // process.env.NODE_ENV === "development"
 //   ? "http://localhost:5173"
 //   : "https://parcnet-client-ivory.vercel.app";

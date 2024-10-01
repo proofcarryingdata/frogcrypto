@@ -6,7 +6,12 @@ import {
   Temperament,
   Biome,
 } from "@pcd/eddsa-frog-pcd";
-import { shortCommitment, type ProfileFrogPOD } from "@frogcrypto/shared";
+import {
+  type FrogPOD,
+  shortCommitment,
+  type ProfileFrogPOD,
+} from "@frogcrypto/shared";
+import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import ImageZoom from "./ImageZoom";
 
 const RARE_COLORS: Record<Rarity, string> = {
@@ -34,10 +39,8 @@ const biomeValue = (biome: Biome): string => {
   return _.startCase(Biome[biome]);
 };
 
-function FrogCard({ frog, expanded }: { frog: IFrogData; expanded?: boolean }) {
-  const profileFrog =
-    // TODO: better type checking
-    "profileId" in frog ? (frog as ProfileFrogPOD) : undefined;
+function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
+  const profileFrog = isProfileFrogPOD(frog) ? frog : undefined;
   const [showMore, setShowMore] = useState(expanded ?? Boolean(profileFrog));
 
   return (

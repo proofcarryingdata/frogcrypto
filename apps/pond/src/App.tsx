@@ -14,6 +14,7 @@ import { useSocialTabStatus, useUserState } from "./hooks/useUserState";
 import { useMaybeZupassAPI } from "./hooks/useZapp";
 import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
 import NotFound from "./components/NotFound";
+import ClaimCyberFrog from "./components/ClaimCyberFrog";
 
 function FrogCrypto() {
   const { frogs } = useFrogs();
@@ -66,7 +67,7 @@ function FrogCrypto() {
             </Link>
           ) : (
             <span className="btn relative opacity-50 cursor-not-allowed bg-gray-400">
-              ??? (🐸)
+              ??? (5 🐸)
             </span>
           )}
         </nav>
@@ -77,6 +78,7 @@ function FrogCrypto() {
         <Route path="/dex" component={DexTab} />
         <Route path="/social/tadpole" component={SpiritFrogMinter} />
         <Route path="/social" component={SocialTab} nest />
+        <Route path="/cyber/:signature" component={ClaimCyberFrog} />
         <Route component={NotFound} />
       </Switch>
     </>
