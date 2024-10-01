@@ -12,7 +12,7 @@ function ClaimCyberFrog() {
 
   const { mutateAsync: getCyberFrog } = trpc.feeds.getCyberFrog.useMutation();
 
-  useEffect(() => {
+  const handleClaim = () => {
     void toast.promise(
       getCyberFrog({ signature })
         .then((data) => {
@@ -22,7 +22,7 @@ function ClaimCyberFrog() {
           throw new Error("No pod found");
         })
         .finally(() => {
-          setLocation("~/");
+          //   setLocation("~/");
         }),
       {
         loading: "Claiming Cyber Frog...",
@@ -31,9 +31,16 @@ function ClaimCyberFrog() {
           `Error claiming Cyber Frog: ${e instanceof Error ? e.message : "Unknown error"}`,
       }
     );
-  }, [getCyberFrog, signature, z, setLocation]);
+  };
 
-  return <Loader />;
+  return (
+    <div>
+      <button type="button" onClick={handleClaim} className="btn">
+        Claim
+      </button>
+      <pre>Signature: {signature}</pre>
+    </div>
+  );
 }
 
 export default ClaimCyberFrog;
