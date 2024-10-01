@@ -52,7 +52,7 @@ export function DexTab() {
   const [mode, setMode] = useState<"grid" | "list">("list");
   const { frogs } = useFrogs();
   const possibleFrogs = usePossibleFrogs();
-  const groupedPODs = useGroupedPODs(frogs || []);
+  const groupedPODs = useGroupedPODs(frogs ?? []);
 
   const [focusedFrogs, setFocusedFrogs] = useState<FrogPOD[]>([]);
 
@@ -124,7 +124,7 @@ export function DexTab() {
         />
       )}
 
-      {focusedFrogs.length > 0 && (
+      {focusedFrogs[0] ? (
         <FrogsModal
           pods={focusedFrogs}
           onClose={(): void => {
@@ -132,7 +132,7 @@ export function DexTab() {
           }}
           color={RARITIES[focusedFrogs[0].rarity].color}
         />
-      )}
+      ) : null}
     </>
   );
 }
@@ -285,6 +285,7 @@ const useGroupedPODs = (pods: FrogPOD[]): FrogsById => {
       pods.reduce<FrogsById>((acc, pod) => {
         const entry = acc[pod.frogId] ?? { pods: [], frog: pod };
         entry.pods.push(pod);
+        entry.frog = pod;
         acc[pod.frogId] = entry;
         return acc;
       }, {}),

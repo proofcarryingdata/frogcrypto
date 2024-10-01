@@ -13,6 +13,7 @@ import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabStatus, useUserState } from "./hooks/useUserState";
 import { useMaybeZupassAPI } from "./hooks/useZapp";
 import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
+import NotFound from "./components/NotFound";
 
 function FrogCrypto() {
   const { frogs } = useFrogs();
@@ -74,8 +75,9 @@ function FrogCrypto() {
       <Switch>
         <Route path="/" component={GetFrogTab} />
         <Route path="/dex" component={DexTab} />
-        <Route path="/social" component={SocialTab} />
         <Route path="/social/tadpole" component={SpiritFrogMinter} />
+        <Route path="/social" component={SocialTab} nest />
+        <Route component={NotFound} />
       </Switch>
     </>
   );

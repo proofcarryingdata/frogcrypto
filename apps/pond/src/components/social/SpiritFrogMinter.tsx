@@ -18,6 +18,7 @@ import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
 import FrogCard from "../shared/FrogCard";
 import TypistText from "../shared/TypistText";
 import Loader from "../shared/Loader";
+import MintingAnimation from "./MintingAnimation";
 
 // Define a type for the numeric attributes
 type FrogAttributes = Pick<
@@ -27,7 +28,7 @@ type FrogAttributes = Pick<
 
 // Refactored constants
 const TOTAL_ATTRIBUTE_POINTS = 17;
-const THINKING_TIME_MS = 100;
+const THINKING_TIME_MS = 1000;
 
 // Update the attribute questions to use the FrogAttributes type
 const attributeQuestions = [
@@ -383,7 +384,6 @@ export function SpiritFrogMinter() {
   const [mintingPhase, setMintingPhase] = useState<
     "dimming" | "minting" | null
   >(null);
-  const [blackoutOpacity, setBlackoutOpacity] = useState(0);
   const [currentDialogue, setCurrentDialogue] = useState("");
   const dialogueRef = useRef<HTMLDivElement>(null);
   const [showOptions, setShowOptions] = useState(true);
@@ -405,18 +405,12 @@ export function SpiritFrogMinter() {
   useEffect(() => {
     if (mintingPhase === "dimming") {
       document.documentElement.classList.add("minting-mode");
-      let opacity = 0;
-      const interval = setInterval(() => {
-        opacity += 0.01;
-        setBlackoutOpacity(opacity);
-        if (opacity >= 1) {
-          clearInterval(interval);
-          setMintingPhase("minting");
-        }
-      }, 50);
+      const timeout = setTimeout(() => {
+        setMintingPhase("minting");
+      }, 3_000);
 
       return () => {
-        clearInterval(interval);
+        clearTimeout(timeout);
         document.documentElement.classList.remove("minting-mode");
         setMintingPhase(null);
       };
@@ -429,7 +423,6 @@ export function SpiritFrogMinter() {
     if (!semaphoreIdBase64 || !spiritFrog || !temperament) return;
     return {
       ...spiritFrog,
-      name: `0x${shortCommitment(semaphoreIdBase64)}'s ${spiritFrog.name}`,
       temperament,
       ...attributes,
       timestampSigned: Date.now(),
@@ -449,7 +442,7 @@ export function SpiritFrogMinter() {
     onMutate: async () => {
       setStage("minting");
       await new Promise((resolve) => {
-        setTimeout(resolve, 3000);
+        setTimeout(resolve, 10_000);
       });
     },
   });
@@ -513,13 +506,6 @@ export function SpiritFrogMinter() {
       setStage("review");
       setCurrentDialogue(""); // Clear the dialogue for the review stage
     }
-  };
-
-  const handleMint = () => {
-    if (!templateFrog) {
-      throw new Error("Template frog is undefined");
-    }
-    setMintingPhase("dimming");
   };
 
   const renderProgressBar = () => {
@@ -588,6 +574,7 @@ export function SpiritFrogMinter() {
             if (line.startsWith("You:")) {
               return (
                 <div
+                  // eslint-disable-next-line react/no-array-index-key -- no better key available
                   key={index}
                   className="self-end max-w-[80%] p-3 rounded-lg rounded-br-sm bg-blue-500 text-white text-sm animate-fadeIn"
                 >
@@ -597,6 +584,7 @@ export function SpiritFrogMinter() {
             } else if (line.startsWith("Spirit of the Pond:")) {
               return (
                 <div
+                  // eslint-disable-next-line react/no-array-index-key -- no better key available
                   key={index}
                   className="self-start max-w-[80%] p-3 rounded-lg rounded-bl-sm bg-gray-200 text-black text-sm animate-fadeIn"
                 >
@@ -613,7 +601,9 @@ export function SpiritFrogMinter() {
               <button
                 key={option.answer}
                 type="button"
-                onClick={() => handleAnswer(index)}
+                onClick={() => {
+                  void handleAnswer(index);
+                }}
                 className="w-3/4 text-left p-3 rounded-lg rounded-br-sm text-sm bg-blue-100 hover:bg-blue-200 transition-colors duration-200 ease-in-out animate-fadeIn"
               >
                 {enhanceText(option.answer)}
@@ -674,7 +664,9 @@ export function SpiritFrogMinter() {
             <button
               type="button"
               disabled={isMinting}
-              onClick={handleMint}
+              onClick={() => {
+                setMintingPhase("minting");
+              }}
               className="btn-frog whitespace-pre"
             >
               Summon Frog 🐸
@@ -684,28 +676,6 @@ export function SpiritFrogMinter() {
       </div>
     );
   };
-
-  const renderMinting = () => (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="relative w-full h-full flex items-center justify-center">
-        <div className="text-white text-center z-10">
-          <p className="mb-4 animate-pulse">
-            The waters of the Enchanted Pond are stirring...
-          </p>
-          <p className="mb-4 animate-pulse">
-            Ancient amphibian algorithms are at work...
-          </p>
-          <p className="animate-pulse">
-            Your Spirit Frog is leaping into existence...
-          </p>
-        </div>
-        <div
-          className="absolute inset-0 bg-black transition-opacity duration-3000"
-          style={{ opacity: blackoutOpacity }}
-        />
-      </div>
-    </div>
-  );
 
   useEffect(() => {
     if (myProfilePOD) {
@@ -726,7 +696,7 @@ export function SpiritFrogMinter() {
       {stage === "intro" && renderIntro()}
       {stage === "quiz" && renderQuiz()}
       {stage === "review" && renderReview()}
-      {stage === "minting" && renderMinting()}
+      {stage === "minting" ? <MintingAnimation /> : null}
     </div>
   );
 }

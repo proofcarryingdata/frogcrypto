@@ -6,7 +6,7 @@ import {
   Temperament,
   Biome,
 } from "@pcd/eddsa-frog-pcd";
-import { type ProfileFrogPOD } from "@frogcrypto/shared";
+import { shortCommitment, type ProfileFrogPOD } from "@frogcrypto/shared";
 import ImageZoom from "./ImageZoom";
 
 const RARE_COLORS: Record<Rarity, string> = {
@@ -45,7 +45,9 @@ function FrogCard({ frog, expanded }: { frog: IFrogData; expanded?: boolean }) {
       <div
         className={`${RARE_COLORS[frog.rarity] || "bg-gray-700"} text-white text-center py-2 px-4 w-full rounded-t-lg`}
       >
-        {profileFrog ? frog.name : `#${String(frog.frogId)} ${frog.name}`}
+        {profileFrog
+          ? `0x${shortCommitment(profileFrog.profileId)}'s ${frog.name}`
+          : `#${String(frog.frogId)} ${frog.name}`}
       </div>
 
       <div className="w-full flex flex-col gap-4 items-center p-4">
@@ -59,36 +61,9 @@ function FrogCard({ frog, expanded }: { frog: IFrogData; expanded?: boolean }) {
           }}
         />
 
-        <div className="grid grid-cols-5 gap-4 w-full">
-          <FrogAttribute label="JMP" title="Jump" value={frog.jump} />
-          <FrogAttribute
-            label="VIB"
-            title="Vibe"
-            value={temperamentValue(frog.temperament)}
-          />
-          <FrogAttribute label="SPD" title="Speed" value={frog.speed} />
-          <FrogAttribute
-            label="INT"
-            title="Intelligence"
-            value={frog.intelligence}
-          />
-          <FrogAttribute label="BTY" title="Beauty" value={frog.beauty} />
-        </div>
+        <FrogAttributes frog={frog} />
 
-        {profileFrog ? (
-          <div className="grid grid-cols-2 gap-4 w-full">
-            <FrogAttribute
-              label="TG"
-              title="Telegram"
-              value={profileFrog.telegramUsername || "???"}
-            />
-            <FrogAttribute
-              label="FC"
-              title="Farcaster"
-              value={profileFrog.farcasterUsername || "???"}
-            />
-          </div>
-        ) : null}
+        {profileFrog ? <FrogSocialAttributes frog={profileFrog} /> : null}
 
         <button
           type="button"
@@ -122,16 +97,71 @@ function FrogCard({ frog, expanded }: { frog: IFrogData; expanded?: boolean }) {
   );
 }
 
-function FrogAttribute({
+export function FrogAttributes({ frog }: { frog: IFrogData }) {
+  return (
+    <div className="grid grid-cols-5 gap-4 w-full">
+      <FrogAttribute label="JMP" title="Jump" value={frog.jump} />
+      <FrogAttribute
+        label="VIB"
+        title="Vibe"
+        value={temperamentValue(frog.temperament)}
+      />
+      <FrogAttribute label="SPD" title="Speed" value={frog.speed} />
+      <FrogAttribute
+        label="INT"
+        title="Intelligence"
+        value={frog.intelligence}
+      />
+      <FrogAttribute label="BTY" title="Beauty" value={frog.beauty} />
+    </div>
+  );
+}
+
+export function FrogSocialAttributes({ frog }: { frog: ProfileFrogPOD }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 w-full">
+      <FrogAttribute
+        label="TG"
+        title="Telegram"
+        value={
+          frog.telegramUsername ? (
+            <a href={`https://t.me/${frog.telegramUsername}`}>
+              @{frog.telegramUsername}
+            </a>
+          ) : (
+            <span className="italic">&lt;unk&gt;</span>
+          )
+        }
+      />
+      <FrogAttribute
+        label="FC"
+        title="Farcaster"
+        value={
+          frog.farcasterUsername ? (
+            <a href={`https://farcaster.xyz/${frog.farcasterUsername}`}>
+              {frog.farcasterUsername}
+            </a>
+          ) : (
+            <span className="italic">&lt;unk&gt;</span>
+          )
+        }
+      />
+    </div>
+  );
+}
+
+export function FrogAttribute({
   label,
   title,
   value,
 }: {
   label: string;
   title: string;
-  value: string | number | undefined;
+  value: string | number | React.ReactNode | undefined;
 }) {
-  const attrColor = (val: string | number | undefined): string => {
+  const attrColor = (
+    val: string | number | React.ReactNode | undefined
+  ): string => {
     if (typeof val === "number") {
       if (val <= 3) return "text-red-600";
       if (val >= 7) return "text-green-600";
@@ -151,11 +181,13 @@ function FrogAttribute({
   );
 }
 
-const formatAttrValue = (value: string | number | undefined): string => {
+const formatAttrValue = (
+  value: string | number | React.ReactNode | undefined
+): React.ReactNode => {
   if (typeof value === "number") {
     return String(value).padStart(2, "0");
   }
-  return String(value);
+  return value;
 };
 
 export default FrogCard;
