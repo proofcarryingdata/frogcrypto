@@ -17,8 +17,8 @@ const useGetFrog = () => {
       // TODO: optimize
       await utils.users.me.refetch();
 
-      queryClient.setQueryData([QUERY_KEY_FROGS], (frogs: POD[]) => {
-        return [parseFrogPOD(pod), ...frogs];
+      queryClient.setQueryData([QUERY_KEY_FROGS], (pods: POD[]): POD[] => {
+        return [pod, ...pods];
       });
     },
     onError: async () => {
