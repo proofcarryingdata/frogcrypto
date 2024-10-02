@@ -3,6 +3,7 @@ import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { eq } from "drizzle-orm";
 import type express from "express";
+import { TRPCError } from "@trpc/server";
 import { db } from "./db";
 import { userIdsTable } from "./db/schema";
 
@@ -49,15 +50,19 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
 
   if (!user) {
     logger.error("User not found for signer public key", pod.signerPublicKey);
-    throw new Error("Invalid PWT: user not found");
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid PWT: user not found",
+    });
   }
 
   const semaphoreId = decompressBigInt(user.semaphoreId);
   if (semaphoreId !== parsed.value.sub.value) {
     logger.error("Mismatch between PWT sub and user semaphore id");
-    throw new Error(
-      "Invalid PWT: mismatch between PWT sub and user semaphore id"
-    );
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid PWT: mismatch between PWT sub and user semaphore id",
+    });
   }
 
   return {

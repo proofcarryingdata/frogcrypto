@@ -71,9 +71,7 @@ function useInitializeUser() {
           isMemberOf: [await z.identity.getPublicKey()],
         },
       });
-      console.log("myPlayerIDSpec", myPlayerIDSpec);
       const pods = await z.pod.query(myPlayerIDSpec);
-      console.log("pods", pods);
       const playerIDPOD =
         pods[0] ??
         (await z.pod.sign(

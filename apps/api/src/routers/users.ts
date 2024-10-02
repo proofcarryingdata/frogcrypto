@@ -123,7 +123,7 @@ export const usersRouter = router({
         frogCount: z.number(),
         semaphoreIdBase64: z.string(),
         // FIXME: add zod schema for IFrogData
-        spiritFrog: z.custom<IFrogData>().optional(),
+        spiritFrog: z.custom<IFrogData>(),
       })
     )
     .query(async ({ input: { profileId } }) => {
@@ -140,8 +140,16 @@ export const usersRouter = router({
 
       if (!myScore) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message: "User not found",
+        });
+      }
+
+      const spiritFrog = await getSpiritFrog(myScore.semaphoreIdHash);
+      if (!spiritFrog) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Spirit frog not found",
         });
       }
 
@@ -149,7 +157,7 @@ export const usersRouter = router({
         friendCount: 0,
         frogCount: myScore.score,
         semaphoreIdBase64: compressBigInt(BigInt(myScore.semaphoreId)),
-        spiritFrog: await getSpiritFrog(myScore.semaphoreIdHash),
+        spiritFrog,
       };
     }),
 });

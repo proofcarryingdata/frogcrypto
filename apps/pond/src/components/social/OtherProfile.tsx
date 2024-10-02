@@ -1,21 +1,21 @@
-import React, { useMemo, useState } from "react";
-import { useParams } from "wouter";
-import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
-import { Button } from "../shared/Button";
-import Loader from "../shared/Loader";
-import Modal from "../shared/Modal";
-import useFrogs, { useProfileFrogs } from "../../hooks/useFrogs";
+import React, { useEffect, useMemo } from "react";
+import toast from "react-hot-toast";
+import { useLocation, useParams } from "wouter";
+import { useProfileFrogs } from "../../hooks/useFrogs";
+import { useMyProfilePOD } from "../../hooks/useProfilePOD";
 import { trpc } from "../../trpc";
+import Loader from "../shared/Loader";
 import FrogProfile from "./FrogProfile";
 
 function OtherProfile() {
+  const [, setLocation] = useLocation();
   const { id } = useParams();
   const { data: myProfilePOD, isLoading: isLoadingMyProfilePOD } =
     useMyProfilePOD();
   const profileId = id ? decodeURIComponent(id) : undefined;
 
   const { frogs, isLoading: isLoadingFrogs } = useProfileFrogs();
-  const { data: userData, isLoading: isLoadingSpiritFrog } =
+  const { data: userData, error: userDataError } =
     trpc.users.getSpiritFrog.useQuery(
       {
         profileId: profileId ?? "",
@@ -30,17 +30,16 @@ function OtherProfile() {
     return frogs?.find((frog) => frog.profileId === userData.semaphoreIdBase64);
   }, [frogs, profileId, userData]);
 
-  if (isLoadingFrogs || isLoadingMyProfilePOD || isLoadingSpiritFrog)
-    return <Loader />;
+  useEffect(() => {
+    if (userDataError) {
+      toast.error("Ribbit! This frog seems to have hopped away. 🐸");
+      setLocation("/");
+    }
+  }, [setLocation, userDataError]);
 
-  if (!userData) {
-    throw new Error("No user data found");
-  }
+  if (isLoadingFrogs || isLoadingMyProfilePOD || !userData) return <Loader />;
 
   const { spiritFrog, friendCount, frogCount } = userData;
-  if (!spiritFrog) {
-    throw new Error("No spirit frog found");
-  }
 
   return (
     <div className="container mx-auto px-4">
