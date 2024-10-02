@@ -46,12 +46,13 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
     .select()
     .from(userIdsTable)
     .where(eq(userIdsTable.signerPk, pod.signerPublicKey));
+
   if (!user) {
     logger.error("User not found for signer public key", pod.signerPublicKey);
     throw new Error("Invalid PWT: user not found");
   }
 
-  const semaphoreId = BigInt(parsed.value.sub.value);
+  const semaphoreId = decompressBigInt(user.semaphoreId);
   if (semaphoreId !== parsed.value.sub.value) {
     logger.error("Mismatch between PWT sub and user semaphore id");
     throw new Error(
@@ -77,6 +78,10 @@ export const auth = async (
   }
 
   // TODO: cache this
-  const user = await decodeAndVerifyPwt(authorization.split(" ")[1]);
+  const pwt = authorization.split(" ")[1];
+  if (!pwt) {
+    throw new Error("Invalid PWT: no PWT provided");
+  }
+  const user = await decodeAndVerifyPwt(pwt);
   return user;
 };

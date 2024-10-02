@@ -1,24 +1,21 @@
 import { PwtSpec } from "@frogcrypto/api/src/auth";
 import {
   decompressBigInt,
-  logger,
+  getPlayerIDEntries,
   PlayerIDSpec,
   semaphoreIdToUserId,
-  shortCommitment,
-  signPlayerID,
 } from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
-import { POD, type PODCryptographicValue } from "@pcd/pod";
+import { POD } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 import { useQuery } from "@tanstack/react-query";
 import { crypto } from "@zk-kit/utils";
-import { produce } from "immer";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
+import { stringify } from "superjson";
 import { setToken, trpc } from "../trpc";
 import { rootIdAtom, userIdentityAtom } from "./useUserState";
 import { useMaybeZupassAPI } from "./useZapp";
-import { stringify } from "superjson";
 
 function useInitializeUser() {
   const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
@@ -56,52 +53,41 @@ function useInitializeUser() {
       const z = zupassAPI.z;
 
       const myPlayerIDSpec = p.pod({
-        entries: produce(PlayerIDSpec.schema, (draft) => {
-          // @ts-expect-error draft.owner is typed as ReadOnly
-          draft.owner.isMemberOf = [
-            {
-              type: "cryptographic",
-              value: semaphoreId,
-            },
-          ] satisfies PODCryptographicValue[];
-        }),
-      });
-      const pods = await z.pod.query(myPlayerIDSpec);
-      if (pods.length === 0) {
-        const shortID = shortCommitment(userIdentity.commitment);
-        const pod = signPlayerID(
+        entries: PlayerIDSpec.schema,
+        tuples: [
           {
-            owner: semaphoreId,
+            entries: ["playerPk"],
+            isMemberOf: [
+              [
+                {
+                  type: "eddsa_pubkey",
+                  value: userIdentity.publicKey,
+                },
+              ],
+            ],
+          },
+        ],
+        signerPublicKey: {
+          isMemberOf: [await z.identity.getPublicKey()],
+        },
+      });
+      console.log("myPlayerIDSpec", myPlayerIDSpec);
+      const pods = await z.pod.query(myPlayerIDSpec);
+      console.log("pods", pods);
+      const playerIDPOD =
+        pods[0] ??
+        (await z.pod.sign(
+          getPlayerIDEntries({
+            playerPk: userIdentity.publicKey,
             device: window.navigator.userAgent,
             location: window.location.href,
-            playerId: shortID,
-          },
-          userIdentity.privateKey
-        );
-        await z.pod.insert(pod);
+          })
+        ));
+      if (pods.length === 0) {
+        await z.pod.insert(playerIDPOD);
       }
 
-      const gpc = await z.gpc.prove({
-        pods: {
-          id: {
-            pod: myPlayerIDSpec.schema,
-            // owner: {
-            //   entry: "owner",
-            //   protocol: "SemaphoreV4",
-            // },
-            revealed: {
-              podType: true,
-              owner: true, // TODO: we need to check this manually for now
-            },
-          },
-        },
-        watermark: { type: "int", value: BigInt(Date.now()) },
-      });
-      if (!gpc.success) {
-        logger.error(`Failed to prove GPC: ${gpc.error}`);
-        throw new Error("Failed to prove GPC");
-      }
-      await auth(gpc);
+      await auth(playerIDPOD);
 
       setRootId(semaphoreId.toString());
 

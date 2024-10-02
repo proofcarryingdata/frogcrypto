@@ -14,11 +14,7 @@ function OtherProfile() {
     useMyProfilePOD();
   const profileId = id ? decodeURIComponent(id) : undefined;
 
-  const { profileFrogs, isLoading: isLoadingFrogs } = useProfileFrogs();
-  const knownFrog = useMemo(() => {
-    if (!profileId) return undefined;
-    return profileFrogs?.find((frog) => frog.profileId === profileId);
-  }, [profileFrogs, profileId]);
+  const { frogs, isLoading: isLoadingFrogs } = useProfileFrogs();
   const { data: userData, isLoading: isLoadingSpiritFrog } =
     trpc.users.getSpiritFrog.useQuery(
       {
@@ -28,6 +24,11 @@ function OtherProfile() {
         enabled: Boolean(profileId),
       }
     );
+
+  const knownFrog = useMemo(() => {
+    if (!profileId || !userData) return undefined;
+    return frogs?.find((frog) => frog.profileId === userData.semaphoreIdBase64);
+  }, [frogs, profileId, userData]);
 
   if (isLoadingFrogs || isLoadingMyProfilePOD || isLoadingSpiritFrog)
     return <Loader />;
@@ -48,8 +49,8 @@ function OtherProfile() {
         profileId={profileId ?? ""}
         isMyProfile={knownFrog?.profileId === myProfilePOD?.profileId}
         friendStatus={knownFrog ? "friends" : "none"}
-        friendCount={friendCount ?? 0}
-        frogCount={frogCount ?? 0}
+        friendCount={friendCount}
+        frogCount={frogCount}
       />
     </div>
   );

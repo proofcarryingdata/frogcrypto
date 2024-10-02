@@ -1,6 +1,12 @@
-import { FrogSpec, logger, signFrogData } from "@frogcrypto/shared";
+import {
+  compressBigInt,
+  decompressBigInt,
+  logger,
+  PlayerIDSpec,
+  userPublicKeyToUserId,
+} from "@frogcrypto/shared";
 import { type IFrogData } from "@pcd/eddsa-frog-pcd";
-import { type GPCRevealedClaims } from "@pcd/gpc-pcd";
+import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
 import _ from "lodash";
@@ -15,47 +21,35 @@ import { FEEDS } from "./feeds";
 
 export const usersRouter = router({
   auth: publicProcedure
-    .input(
-      z.object({
-        proof: z.any(),
-        boundConfig: z.any(),
-        revealedClaims: z.any(),
-      })
-    )
-    .mutation(async ({ input: { revealedClaims } }) => {
-      // TODO: validate pcd proof config
-      const playerIDPOD = (revealedClaims as GPCRevealedClaims).pods.id;
-      if (!playerIDPOD) {
+    .input(z.custom<POD>((x) => x instanceof POD && x.verifySignature()))
+    .mutation(async ({ input: pod }) => {
+      const playerIDPOD = PlayerIDSpec.safeParse(pod.content.asEntries());
+      if (!playerIDPOD.isValid) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No player ID POD found in GPC",
+          message: "Invalid player ID POD",
         });
       }
-      const signer = playerIDPOD.signerPublicKey;
+      const signer = pod.signerPublicKey;
       if (!signer) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "No signer found in GPC",
         });
       }
-      const owner = playerIDPOD.entries?.owner?.value.toString();
-      if (!owner) {
+      const owner = userPublicKeyToUserId(signer);
+      const signerPk = playerIDPOD.value.playerPk.value.toString();
+      if (!signerPk) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No owner found in GPC",
+          message: "No playerPk found in POD",
         });
       }
-      logger.info(`Got GPC for user ${owner} with signer ${signer}`);
-
-      // FIXME: GPC verification is disabled until we can get it working
-      //   const isValid = await GPCPCDPackage.verify(pcd);
-      //   if (!isValid) {
-      //     return res.status(400).json({ error: "Invalid GPC" });
-      //   }
+      logger.info(`Got auth POD for user ${owner} with signer ${signerPk}`);
 
       await db
         .insert(userIdsTable)
-        .values({ semaphoreId: owner, signerPk: signer })
+        .values({ semaphoreId: owner, signerPk })
         .onConflictDoNothing();
     }),
   me: authedProcedure
@@ -125,17 +119,37 @@ export const usersRouter = router({
     )
     .output(
       z.object({
-        friendCount: z.number().optional(),
-        frogCount: z.number().optional(),
+        friendCount: z.number(),
+        frogCount: z.number(),
+        semaphoreIdBase64: z.string(),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>().optional(),
       })
     )
     .query(async ({ input: { profileId } }) => {
+      const [myScore] = await db
+        .select({
+          semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
+          semaphoreId: userScoresTable.semaphoreId,
+          score: userScoresTable.score,
+        })
+        .from(userScoresTable)
+        .where(
+          eq(userScoresTable.semaphoreId, String(decompressBigInt(profileId)))
+        );
+
+      if (!myScore) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+
       return {
-        friendCount: undefined,
-        frogCount: undefined,
-        spiritFrog: await getSpiritFrog(profileId),
+        friendCount: 0,
+        frogCount: myScore.score,
+        semaphoreIdBase64: compressBigInt(BigInt(myScore.semaphoreId)),
+        spiritFrog: await getSpiritFrog(myScore.semaphoreIdHash),
       };
     }),
 });
