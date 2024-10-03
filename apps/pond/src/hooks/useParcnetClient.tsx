@@ -56,8 +56,10 @@ export function ParcnetIframeProvider({
   useEffect(() => {
     if (!isMounted.current) {
       isMounted.current = true;
+    } else {
       return;
     }
+
     if (window.parent === window.self) {
       if (ref.current) {
         void connect(zapp, ref.current, url).then((zupass) => {

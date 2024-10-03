@@ -99,9 +99,7 @@ function useInitializeUser() {
   // reset rootId if it doesn't match semaphoreId
   useEffect(() => {
     if (semaphoreId && rootId && semaphoreId.toString() !== rootId) {
-      // FIXME: this is causing issue for some reason?
-      console.log("resetting rootId", semaphoreId.toString(), rootId);
-      // setRootId(null);
+      setRootId(null);
     }
   }, [rootId, semaphoreId, setRootId]);
 
