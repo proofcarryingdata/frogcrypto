@@ -27,7 +27,9 @@ createRoot(root).render(
             <ErrorBoundary fallback={<div>Something went wrong</div>}>
               <App />
               <Toaster />
-              <ReactQueryDevtools initialIsOpen={false} />
+              {window.self === window.top && (
+                <ReactQueryDevtools initialIsOpen={false} />
+              )}
             </ErrorBoundary>
           </ParcnetIframeProvider>
         </QueryClientProvider>

@@ -88,7 +88,7 @@ function useInitializeUser() {
 
       return {
         rootId: semaphoreId.toString(),
-        userIdentity,
+        publicKey: userIdentity.publicKey,
       };
     },
     throwOnError: true,
@@ -99,7 +99,9 @@ function useInitializeUser() {
   // reset rootId if it doesn't match semaphoreId
   useEffect(() => {
     if (semaphoreId && rootId && semaphoreId.toString() !== rootId) {
-      setRootId(null);
+      // FIXME: this is causing issue for some reason?
+      console.log("resetting rootId", semaphoreId.toString(), rootId);
+      // setRootId(null);
     }
   }, [rootId, semaphoreId, setRootId]);
 
@@ -132,6 +134,7 @@ function useInitializeUser() {
 
       return () => {
         clearInterval(interval);
+        setReady(false);
       };
     }
   }, [rootId, userIdentity]);

@@ -69,6 +69,8 @@ export function ParcnetIframeProvider({
         });
       }
     } else {
+      // @ts-expect-error iframe-resizer is not typed
+      void import("iframe-resizer/js/iframeResizer.contentWindow.min.js");
       void connectToHost(zapp).then((zupass) => {
         setValue({
           state: ClientConnectionState.CONNECTED,
