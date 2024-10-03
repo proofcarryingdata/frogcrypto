@@ -9,8 +9,8 @@ import type {
   FrogCryptoFeed,
 } from "@pcd/passport-interface";
 import _ from "lodash";
+import { decompressBigInt, parseFrogEnum } from "@frogcrypto/shared";
 import type { UserFeed } from "./db/schema";
-import { parseFrogEnum } from "@frogcrypto/shared";
 
 export function computeUserFeedState(
   state: Pick<UserFeed, "lastFetchedAt"> | undefined,
@@ -73,8 +73,8 @@ export function sanitizeFeed(feed: FrogCryptoFeed): FrogCryptoClientFeed {
  * a positive number if id1 > id2, or zero if they are equal.
  */
 export function compareIds(id1: string, id2: string): number {
-  const bigInt1 = BigInt(id1);
-  const bigInt2 = BigInt(id2);
+  const bigInt1 = decompressBigInt(id1);
+  const bigInt2 = decompressBigInt(id2);
 
   if (bigInt1 < bigInt2) return -1;
   if (bigInt1 > bigInt2) return 1;

@@ -3,11 +3,11 @@ import { type POD } from "@pcd/pod";
 import { useQueryClient } from "@tanstack/react-query";
 import { trpc } from "../trpc";
 import { QUERY_KEY_FROGS } from "./useFrogs";
-import { useZupassAPI } from "./useZapp";
+import { useParcnetClient } from "./useParcnetClient";
 
 const useGetFrog = () => {
   const queryClient = useQueryClient();
-  const z = useZupassAPI();
+  const z = useParcnetClient();
   const utils = trpc.useUtils();
 
   return trpc.feeds.search.useMutation({

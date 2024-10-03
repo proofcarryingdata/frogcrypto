@@ -2,13 +2,13 @@ import React, { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import toast from "react-hot-toast";
 import { trpc } from "../trpc";
-import { useZupassAPI } from "../hooks/useZapp";
+import { useParcnetClient } from "../hooks/useParcnetClient";
 import Loader from "./shared/Loader";
 
 function ClaimCyberFrog() {
   const [, setLocation] = useLocation();
   const { signature } = useParams<{ signature: string }>();
-  const z = useZupassAPI();
+  const z = useParcnetClient();
 
   const { mutateAsync: getCyberFrog } = trpc.feeds.getCyberFrog.useMutation();
 

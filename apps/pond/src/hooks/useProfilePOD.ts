@@ -18,7 +18,7 @@ import {
   useSemaphoreIdBase64,
   useUserIdentity,
 } from "./useUserState";
-import { useZupassAPI } from "./useZapp";
+import { useParcnetClient } from "./useParcnetClient";
 
 export const QUERY_KEYS_PROFILE_PODS = ["POD", "profilePOD"];
 
@@ -51,7 +51,7 @@ export function useProfilePODs<TData = ProfileFrogPOD[]>(
     "queryKey" | "queryFn"
   >
 ) {
-  const z = useZupassAPI();
+  const z = useParcnetClient();
 
   return useQuery({
     queryKey: QUERY_KEYS_PROFILE_PODS,
@@ -91,7 +91,7 @@ export function useSetMyProfilePOD(
   opts?: Omit<UseMutationOptions<void, Error, ProfileFrogPOD>, "mutationFn">
 ) {
   const userIdentity = useUserIdentity();
-  const z = useZupassAPI();
+  const z = useParcnetClient();
   const queryClient = useQueryClient();
   const selectMyProfilePOD = useSelectMyProfilePOD();
 

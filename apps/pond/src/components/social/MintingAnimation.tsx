@@ -22,7 +22,7 @@ function MintingAnimation() {
     blackoutElement.style.backgroundColor = "black";
     blackoutElement.style.opacity = "1";
     blackoutElement.style.transition = `opacity ${BLACKOUT_FADE_DURATION}ms`;
-    blackoutElement.style.zIndex = "9999";
+    blackoutElement.style.zIndex = "40";
     document.body.appendChild(blackoutElement);
 
     let timeout: NodeJS.Timeout;

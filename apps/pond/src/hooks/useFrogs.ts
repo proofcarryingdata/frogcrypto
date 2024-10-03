@@ -12,14 +12,12 @@ import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { stringify } from "superjson";
-import { POD } from "@pcd/pod";
-import { useZupassAPI } from "./useZapp";
+import { useParcnetClient } from "./useParcnetClient";
 
 export const QUERY_KEY_FROGS = "frogs";
 
 const useFrogs = () => {
-  const z = useZupassAPI();
+  const z = useParcnetClient();
 
   const {
     data: frogs,
@@ -58,7 +56,7 @@ export function isProfileFrogPOD(frog: IFrogData): frog is ProfileFrogPOD {
 export const QUERY_KEY_PROFILE_FROGS = "profileFrogs";
 
 export const useProfileFrogs = () => {
-  const z = useZupassAPI();
+  const z = useParcnetClient();
 
   const {
     data: frogs,

@@ -19,6 +19,7 @@ export const PwtSpec = p.entries({
 export interface AuthSession {
   user: {
     semaphoreId: bigint;
+    semaphoreIdBase64: string;
     signerPublicKey: bigint;
     isAdmin: boolean;
   };
@@ -68,6 +69,7 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   return {
     user: {
       semaphoreId,
+      semaphoreIdBase64: user.semaphoreId,
       signerPublicKey,
       isAdmin: user.isAdmin,
     },

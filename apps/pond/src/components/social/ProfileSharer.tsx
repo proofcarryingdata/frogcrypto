@@ -39,7 +39,11 @@ export function ProfileSharer() {
     } satisfies ShareData;
   }, [myProfilePOD, profileUrl]);
   const isShareable = useMemo(() => {
-    return Boolean(shareData) && navigator.canShare(shareData);
+    return (
+      Boolean(shareData) &&
+      "canShare" in navigator &&
+      navigator.canShare(shareData)
+    );
   }, [shareData]);
 
   if (!myProfilePOD) {

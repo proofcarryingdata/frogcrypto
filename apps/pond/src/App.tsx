@@ -11,7 +11,10 @@ import useInitializeUser from "./hooks/useInitializeUser";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabStatus, useUserState } from "./hooks/useUserState";
-import { useMaybeZupassAPI } from "./hooks/useZapp";
+import {
+  useMaybeParcnetClient,
+  useParcnetClientConnected,
+} from "./hooks/useParcnetClient";
 import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
 import NotFound from "./components/NotFound";
 import ClaimCyberFrog from "./components/ClaimCyberFrog";
@@ -88,9 +91,9 @@ function FrogCrypto() {
 function App() {
   useTsParticles();
 
-  const maybeZupassAPI = useMaybeZupassAPI();
+  const isConnected = useParcnetClientConnected();
   const hasIdentity = useInitializeUser();
-  const isReady = maybeZupassAPI && hasIdentity;
+  const isReady = isConnected && hasIdentity;
 
   return (
     <main className="flex justify-center w-screen min-h-screen py-8">

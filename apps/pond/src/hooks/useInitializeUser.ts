@@ -15,18 +15,18 @@ import { useEffect, useState } from "react";
 import { stringify } from "superjson";
 import { setToken, trpc } from "../trpc";
 import { rootIdAtom, userIdentityAtom } from "./useUserState";
-import { useMaybeZupassAPI } from "./useZapp";
+import { useMaybeParcnetClient } from "./useParcnetClient";
 
 function useInitializeUser() {
   const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
   const [rootId, setRootId] = useAtom(rootIdAtom);
-  const zupassAPI = useMaybeZupassAPI();
+  const z = useMaybeParcnetClient();
   const { mutateAsync: auth } = trpc.users.auth.useMutation();
 
   const { data: semaphoreId } = useQuery({
     queryKey: ["zupassId"],
-    queryFn: () => zupassAPI?.z.identity.getSemaphoreV4Commitment(),
-    enabled: Boolean(zupassAPI),
+    queryFn: () => z?.identity.getSemaphoreV4Commitment(),
+    enabled: Boolean(z),
   });
 
   useEffect(() => {
@@ -40,17 +40,14 @@ function useInitializeUser() {
   useQuery({
     queryKey: [
       "initializeUser",
-      Boolean(zupassAPI),
-      zupassAPI?.url,
+      Boolean(z),
       stringify(userIdentity),
       String(semaphoreId),
     ],
     queryFn: async () => {
-      if (!zupassAPI || !userIdentity || !semaphoreId) {
+      if (!z || !userIdentity || !semaphoreId) {
         throw new Error("Missing zupassAPI, userIdentity, or semaphoreId");
       }
-
-      const z = zupassAPI.z;
 
       const myPlayerIDSpec = p.pod({
         entries: PlayerIDSpec.schema,
@@ -96,10 +93,7 @@ function useInitializeUser() {
     },
     throwOnError: true,
     enabled:
-      !rootId &&
-      Boolean(zupassAPI) &&
-      Boolean(userIdentity) &&
-      Boolean(semaphoreId),
+      !rootId && Boolean(z) && Boolean(userIdentity) && Boolean(semaphoreId),
   });
 
   // reset rootId if it doesn't match semaphoreId

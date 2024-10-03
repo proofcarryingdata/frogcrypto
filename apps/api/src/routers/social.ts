@@ -2,15 +2,18 @@ import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
+import { compressBigInt, decompressBigInt } from "@frogcrypto/shared";
 import { db } from "../db";
 import { socialRequestsTable } from "../db/schema";
 import { authedProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
+import { incrementScore, recordFriendCount } from "../db/users";
 
 const MAX_REQUESTS_PER_DAY = 100;
 const REQUEST_VISIBILITY_DAYS = 30; // Requests older than this will not be returned in queries
 
 export const socialRouter = router({
+  // FIXME: the logic here is incorrect. we need to make sure the insert conflict doesn't allow "accepting" a request because there are various other logic changes that should happen when a request is accepted
   createOrUpdateSocialRequest: authedProcedure
     .input(
       z.object({
@@ -22,7 +25,7 @@ export const socialRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { otherPartyId, requestPOD } = input;
-      const myId = String(ctx.user.semaphoreId);
+      const myId = compressBigInt(ctx.user.semaphoreId);
 
       // Check rate limit
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -55,6 +58,7 @@ export const socialRouter = router({
           ? [myId, otherPartyId]
           : [otherPartyId, myId];
 
+      const now = new Date();
       const updatedRequest = await db
         .insert(socialRequestsTable)
         .values({
@@ -62,17 +66,19 @@ export const socialRouter = router({
           party2,
           party1POD: myId === party1 ? requestPOD.serialize() : null,
           party2POD: myId === party2 ? requestPOD.serialize() : null,
-          party1PODTimestamp: myId === party1 ? new Date() : null,
-          party2PODTimestamp: myId === party2 ? new Date() : null,
+          party1PODTimestamp: myId === party1 ? now : null,
+          party2PODTimestamp: myId === party2 ? now : null,
+          updatedAt: now,
         })
         .onConflictDoUpdate({
           target: [socialRequestsTable.party1, socialRequestsTable.party2],
+          setWhere: eq(socialRequestsTable.status, "pending"),
           set: {
             [myId === party1 ? "party1POD" : "party2POD"]:
               requestPOD.serialize(),
             [myId === party1 ? "party1PODTimestamp" : "party2PODTimestamp"]:
-              new Date(),
-            updatedAt: new Date(),
+              now,
+            updatedAt: now,
             version: sql`${socialRequestsTable.version} + 1`,
           },
         })
@@ -95,23 +101,22 @@ export const socialRouter = router({
       .where(
         and(
           or(
-            and(
-              eq(socialRequestsTable.party1, String(ctx.user.semaphoreId)),
-              isNull(socialRequestsTable.party2POD)
-            ),
-            and(
-              eq(socialRequestsTable.party2, String(ctx.user.semaphoreId)),
-              isNull(socialRequestsTable.party1POD)
-            )
+            eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
+            eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64)
           ),
-          sql`${socialRequestsTable.updatedAt} > ${new Date(Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000)}`
+          sql`${socialRequestsTable.updatedAt} > ${new Date(Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000)}`,
+          eq(socialRequestsTable.status, "pending")
         )
       );
 
     return requests.map((request) => ({
       ...request,
+      requestedBy:
+        request.party1PODTimestamp === request.updatedAt
+          ? request.party1
+          : request.party2,
       requestPOD:
-        request.party1 === String(ctx.user.semaphoreId)
+        request.party1PODTimestamp === request.updatedAt
           ? request.party2POD
           : request.party1POD,
     }));
@@ -128,7 +133,7 @@ export const socialRouter = router({
         and(
           or(
             and(
-              eq(socialRequestsTable.party1, String(ctx.user.semaphoreId)),
+              eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
               isNotNull(socialRequestsTable.party2POD),
               eq(
                 socialRequestsTable.party2PODTimestamp,
@@ -136,7 +141,7 @@ export const socialRouter = router({
               )
             ),
             and(
-              eq(socialRequestsTable.party2, String(ctx.user.semaphoreId)),
+              eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
               isNotNull(socialRequestsTable.party1POD),
               eq(
                 socialRequestsTable.party1PODTimestamp,
@@ -151,11 +156,11 @@ export const socialRouter = router({
     return requests.map((request) => ({
       ...request,
       sentPOD:
-        request.party1 === String(ctx.user.semaphoreId)
+        request.party1 === ctx.user.semaphoreIdBase64
           ? request.party1POD
           : request.party2POD,
       receivedPOD:
-        request.party1 === String(ctx.user.semaphoreId)
+        request.party1 === ctx.user.semaphoreIdBase64
           ? request.party2POD
           : request.party1POD,
     }));
@@ -173,7 +178,7 @@ export const socialRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { requestId, responsePOD } = input;
 
-      await db.transaction(async (tx) => {
+      return db.transaction(async (tx) => {
         const request = await tx
           .select()
           .from(socialRequestsTable)
@@ -182,11 +187,11 @@ export const socialRouter = router({
               eq(socialRequestsTable.id, requestId),
               or(
                 and(
-                  eq(socialRequestsTable.party1, String(ctx.user.semaphoreId)),
+                  eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
                   isNull(socialRequestsTable.party1POD)
                 ),
                 and(
-                  eq(socialRequestsTable.party2, String(ctx.user.semaphoreId)),
+                  eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
                   isNull(socialRequestsTable.party2POD)
                 )
               )
@@ -204,9 +209,16 @@ export const socialRouter = router({
         }
 
         const updateField =
-          request.party1 === String(ctx.user.semaphoreId)
+          request.party1 === ctx.user.semaphoreIdBase64
             ? "party1POD"
             : "party2POD";
+
+        if (request.status === "pending") {
+          await recordFriendCount(tx, [
+            String(decompressBigInt(request.party1)),
+            String(decompressBigInt(request.party2)),
+          ]);
+        }
 
         await db
           .update(socialRequestsTable)

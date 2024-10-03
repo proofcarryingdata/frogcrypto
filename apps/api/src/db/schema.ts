@@ -62,7 +62,8 @@ export const userScoresTable = pgTable(
   {
     id: serial("id").primaryKey(),
     semaphoreId: text("semaphore_id").notNull(),
-    score: integer("score").notNull(),
+    score: integer("score").notNull().default(0),
+    friendCount: integer("friend_count").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

@@ -69,13 +69,24 @@ function FrogProfile({
           </button>
         );
       case "pending":
+        if (onAddFriend === undefined) {
+          return (
+            <button
+              type="button"
+              disabled
+              className="bg-yellow-500 text-white px-4 py-2 rounded-full cursor-not-allowed"
+            >
+              Pending
+            </button>
+          );
+        }
         return (
           <button
             type="button"
-            disabled
-            className="bg-yellow-500 text-white px-4 py-2 rounded-full cursor-not-allowed"
+            onClick={onAddFriend}
+            className="bg-yellow-500 text-white px-4 py-2 rounded-full hover:bg-yellow-600 transition-colors"
           >
-            Pending
+            Accept
           </button>
         );
       case "friends":
@@ -127,7 +138,7 @@ function FrogProfile({
           </button>
         </div>
 
-        <FrogAttributes frog={frog} />
+        {isProfileFrogPOD(frog) ? <FrogAttributes frog={frog} /> : null}
         <FrogDescription frog={frog} />
       </div>
     </>

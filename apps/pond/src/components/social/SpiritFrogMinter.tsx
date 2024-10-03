@@ -679,11 +679,7 @@ export function SpiritFrogMinter() {
 
   useEffect(() => {
     if (myProfilePOD) {
-      if (history.length > 1) {
-        history.back();
-      } else {
-        setLocation("/social");
-      }
+      setLocation("~/social", { replace: true });
     }
   }, [myProfilePOD, setLocation]);
 

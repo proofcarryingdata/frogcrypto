@@ -132,6 +132,7 @@ export const usersRouter = router({
           semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
           semaphoreId: userScoresTable.semaphoreId,
           score: userScoresTable.score,
+          friendCount: userScoresTable.friendCount,
         })
         .from(userScoresTable)
         .where(
@@ -154,7 +155,7 @@ export const usersRouter = router({
       }
 
       return {
-        friendCount: 0,
+        friendCount: myScore.friendCount,
         frogCount: myScore.score,
         semaphoreIdBase64: compressBigInt(BigInt(myScore.semaphoreId)),
         spiritFrog,

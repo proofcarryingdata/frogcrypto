@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link, Route, Switch, useLocation } from "wouter";
 import { Compass, Trophy, User } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { useMyProfilePOD } from "../hooks/useProfilePOD";
 import { useSocialTabStatus } from "../hooks/useUserState";
 import Loader from "./shared/Loader";
@@ -8,7 +9,6 @@ import UnderConstruction from "./UnderConstruction";
 import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
 import ProfileSharer from "./social/ProfileSharer";
-import FrogProfile from "./social/FrogProfile";
 import OtherProfile from "./social/OtherProfile";
 
 function NavBar() {
@@ -46,6 +46,7 @@ function SocialTab() {
 
   useEffect(() => {
     if (!socialTabAvailable) {
+      toast.error("Ribbit! This pond area is off-limits for now.");
       setLocation("~/", { replace: true });
     } else if (!isLoadingMyProfilePOD && !myProfilePOD) {
       setLocation("/tadpole");
