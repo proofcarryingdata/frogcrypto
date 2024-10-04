@@ -7,7 +7,7 @@ import { frogsTable } from "./schema";
 import { db } from ".";
 
 // Hard-coded list of spirit frog IDs
-const SPIRIT_FROG_IDS = [1, 2, 3, 4]; // Replace with actual spirit frog IDs
+const SPIRIT_FROG_IDS = [6, 16, 24]; // Replace with actual spirit frog IDs
 
 let cachedSpiritFrogs: FrogCryptoFrogData[] = [];
 let cachedDexFrogs: DexFrog[] = [];

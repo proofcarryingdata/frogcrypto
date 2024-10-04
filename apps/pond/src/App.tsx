@@ -10,7 +10,7 @@ import useFrogs from "./hooks/useFrogs";
 import useInitializeUser from "./hooks/useInitializeUser";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
-import { useSocialTabStatus, useUserState } from "./hooks/useUserState";
+import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 import {
   useMaybeParcnetClient,
   useParcnetClientConnected,
@@ -18,14 +18,15 @@ import {
 import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
 import NotFound from "./components/NotFound";
 import ClaimCyberFrog from "./components/ClaimCyberFrog";
+import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
 
 function FrogCrypto() {
-  const { frogs } = useFrogs();
+  const { data: frogs } = useFrogs();
   const { data: userState } = useUserState();
   const myScore = userState?.myScore?.score;
   const { subscriptions } = useSubscriptions();
-  const { isAvailable: socialTabAvailable, pendingCount } =
-    useSocialTabStatus();
+  const socialTabAvailable = useSocialTabAvailable();
+  const { data: pendingFrogRequestsCount } = usePendingFrogRequestsCount();
   const [location] = useLocation();
 
   if (!frogs || !userState) {
@@ -56,17 +57,17 @@ function FrogCrypto() {
           </Link>
           {socialTabAvailable ? (
             <Link
-              href="/social"
+              href={pendingFrogRequestsCount ? "/social/friends" : "/social"}
               className={`btn relative ${
                 location.startsWith("/social") ? "bg-green-600" : "bg-gray-400"
               }`}
             >
               frog social
-              {pendingCount > 0 && (
-                <span className="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
-                  {pendingCount}
+              {pendingFrogRequestsCount ? (
+                <span className="absolute top-0 right-0 -mt-3 -mr-3 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
+                  {pendingFrogRequestsCount}
                 </span>
-              )}
+              ) : null}
             </Link>
           ) : (
             <span className="btn relative opacity-50 cursor-not-allowed bg-gray-400">

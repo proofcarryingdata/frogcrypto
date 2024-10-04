@@ -1,10 +1,10 @@
+import { compressBigInt } from "@frogcrypto/shared";
+import { atom, useAtomValue } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import _ from "lodash";
 import { useMemo } from "react";
-import { atom, useAtomValue } from "jotai";
-import { UseQueryOptions } from "@tanstack/react-query";
-import { compressBigInt } from "@frogcrypto/shared";
 import { trpc } from "../trpc";
+import { usePendingFrogRequests } from "./useFrogRequests";
 import { useFeedIds } from "./useSubscriptions";
 
 export interface UserIdentity {
@@ -57,12 +57,11 @@ export function usePossibleFrogs() {
   return userState?.possibleFrogs;
 }
 
-export function useSocialTabStatus() {
+export function useSocialTabAvailable() {
   const { data: userState } = useUserState();
-  const { data: pendingRequests } = trpc.social.getPendingRequests.useQuery();
 
-  const isAvailable = (userState?.myScore?.score ?? 0) >= 5;
-  const pendingCount = pendingRequests?.length ?? 0;
-
-  return { isAvailable, pendingCount };
+  return (
+    (userState?.myScore?.score ?? 0) >= 5 ||
+    (userState?.myScore?.friendCount ?? 0) > 0
+  );
 }

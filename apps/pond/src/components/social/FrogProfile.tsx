@@ -130,12 +130,23 @@ function FrogProfile({
 
         <div className="flex justify-center space-x-4 mb-4 text-sm [&_button]:px-2 [&_button]:py-1 [&_button]:rounded-lg">
           {renderFriendButton()}
-          <button type="button" className="border text-gray-500">
-            {friendCount} Friends
-          </button>
-          <button type="button" className="border text-gray-500">
-            {frogCount} 🐸
-          </button>
+
+          {isMyProfile && friendCount > 0 ? (
+            <Link href="/friends">
+              <button type="button" className="border text-gray-500">
+                {friendCount} Friends
+              </button>
+            </Link>
+          ) : (
+            <button type="button" disabled className="border text-gray-500">
+              {friendCount} Friends
+            </button>
+          )}
+          <Link href="/scores">
+            <button type="button" className="border text-gray-500">
+              {frogCount} 🐸
+            </button>
+          </Link>
         </div>
 
         {isProfileFrogPOD(frog) ? <FrogAttributes frog={frog} /> : null}

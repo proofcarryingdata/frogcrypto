@@ -74,6 +74,7 @@ export const usersRouter = router({
           .object({
             score: z.number(),
             rank: z.number(),
+            friendCount: z.number(),
           })
           .optional(),
         // FIXME: add zod schema for IFrogData
@@ -95,6 +96,7 @@ export const usersRouter = router({
           semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
           score: userScoresTable.score,
           rank: sql<number>`cast(rank() over (order by ${userScoresTable.score} desc) as int)`,
+          friendCount: userScoresTable.friendCount,
         })
         .from(userScoresTable)
         .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));

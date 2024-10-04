@@ -1,75 +1,22 @@
-import {
-  parseProfileFrogPOD,
-  type ProfileFrogPOD,
-  ProfileFrogSpec,
-  signProfileFrogData,
-} from "@frogcrypto/shared";
-import * as p from "@parcnet-js/podspec";
+import { type ProfileFrogPOD, signProfileFrogData } from "@frogcrypto/shared";
+import { type POD } from "@pcd/pod";
 import {
   useMutation,
   type UseMutationOptions,
-  useQuery,
   useQueryClient,
-  type UseQueryOptions,
 } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
-import {
-  useSemaphoreId,
-  useSemaphoreIdBase64,
-  useUserIdentity,
-} from "./useUserState";
+import { useCallback } from "react";
+import { QUERY_KEY_FROGS, useProfileFrogs } from "./useFrogs";
 import { useParcnetClient } from "./useParcnetClient";
-
-export const QUERY_KEYS_PROFILE_PODS = ["POD", "profilePOD"];
-
-export function useProfilePODSpec(semaphoreId: string) {
-  const userIdentity = useUserIdentity();
-
-  return useMemo(
-    () =>
-      p.pod({
-        entries: {
-          ...ProfileFrogSpec.schema,
-          owner: {
-            ...ProfileFrogSpec.schema.owner,
-            isMemberOf: semaphoreId
-              ? [{ type: "cryptographic", value: BigInt(semaphoreId) }]
-              : [],
-          },
-        },
-        signerPublicKey: {
-          isMemberOf: userIdentity ? [userIdentity.publicKey] : [],
-        },
-      }),
-    [semaphoreId, userIdentity]
-  );
-}
-
-export function useProfilePODs<TData = ProfileFrogPOD[]>(
-  opts?: Omit<
-    UseQueryOptions<ProfileFrogPOD[], Error, TData>,
-    "queryKey" | "queryFn"
-  >
-) {
-  const z = useParcnetClient();
-
-  return useQuery({
-    queryKey: QUERY_KEYS_PROFILE_PODS,
-    queryFn: () =>
-      z.pod
-        .query(p.pod({ entries: ProfileFrogSpec.schema }))
-        .then((pods) => pods.map(parseProfileFrogPOD)),
-    ...opts,
-  });
-}
+import { useSemaphoreIdBase64, useUserIdentity } from "./useUserState";
 
 function useSelectMyProfilePOD() {
   const userIdentity = useUserIdentity();
   const semaphoreIdBase64 = useSemaphoreIdBase64();
 
   return useCallback(
-    (pods: ProfileFrogPOD[] | undefined) => {
-      return pods?.find(
+    (pods: ProfileFrogPOD[]) => {
+      return pods.find(
         (pod) =>
           pod.ownerSemaphoreId === semaphoreIdBase64 &&
           pod.signerPublicKey === userIdentity?.publicKey
@@ -82,7 +29,21 @@ function useSelectMyProfilePOD() {
 export function useMyProfilePOD() {
   const select = useSelectMyProfilePOD();
 
-  return useProfilePODs<ProfileFrogPOD | undefined>({
+  return useProfileFrogs<ProfileFrogPOD | undefined>({
+    select,
+  });
+}
+
+export function useOtherProfilePODs() {
+  const semaphoreIdBase64 = useSemaphoreIdBase64();
+  const select = useCallback(
+    (pods: ProfileFrogPOD[]) => {
+      return pods.filter((pod) => pod.profileId !== semaphoreIdBase64);
+    },
+    [semaphoreIdBase64]
+  );
+
+  return useProfileFrogs({
     select,
   });
 }
@@ -93,7 +54,6 @@ export function useSetMyProfilePOD(
   const userIdentity = useUserIdentity();
   const z = useParcnetClient();
   const queryClient = useQueryClient();
-  const selectMyProfilePOD = useSelectMyProfilePOD();
 
   return useMutation({
     mutationFn: async (unsignedPOD: ProfileFrogPOD) => {
@@ -105,22 +65,28 @@ export function useSetMyProfilePOD(
         unsignedPOD,
         userIdentity.privateKey
       );
-      const parsedPOD = parseProfileFrogPOD(signedPOD);
       await z.pod.insert(signedPOD);
 
-      queryClient.setQueryData<ProfileFrogPOD[]>(
-        QUERY_KEYS_PROFILE_PODS,
-        (oldData) => {
-          if (!oldData) return [parsedPOD];
+      const frogs = queryClient.getQueryData<POD[]>([QUERY_KEY_FROGS]);
+      if (!frogs) {
+        return;
+      }
 
-          const oldProfilePOD = selectMyProfilePOD(oldData);
-          if (oldProfilePOD) {
-            void z.pod.delete(oldProfilePOD.signature);
-          }
-
-          return [...oldData.filter((pod) => pod !== oldProfilePOD), parsedPOD];
-        }
+      const oldPOD = frogs.find(
+        (pod) =>
+          pod.content.getRawValue("profileId") ===
+            signedPOD.content.getRawValue("profileId") &&
+          pod.signerPublicKey === signedPOD.signerPublicKey
       );
+      if (oldPOD) {
+        await z.pod.delete(oldPOD.signature);
+      }
+
+      const newFrogs = [
+        signedPOD,
+        ...frogs.filter((pod) => pod.signature !== oldPOD?.signature),
+      ];
+      queryClient.setQueryData([QUERY_KEY_FROGS], newFrogs);
     },
     ...opts,
   });

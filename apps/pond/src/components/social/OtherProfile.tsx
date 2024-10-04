@@ -1,14 +1,13 @@
+import { signProfileFrogData } from "@frogcrypto/shared";
 import React, { useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useParams } from "wouter";
-import { signProfileFrogData } from "@frogcrypto/shared";
-import { POD } from "@pcd/pod";
-import { useProfileFrogs } from "../../hooks/useFrogs";
+import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
+import useFrogs, { useProfileFrogs } from "../../hooks/useFrogs";
 import { useMyProfilePOD } from "../../hooks/useProfilePOD";
+import { useUserIdentity } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
-import { useUserIdentity } from "../../hooks/useUserState";
-import { useParcnetClient } from "../../hooks/useParcnetClient";
 import FrogProfile from "./FrogProfile";
 
 const useAddFriend = (otherPartyId: string) => {
@@ -59,64 +58,6 @@ const useAddFriend = (otherPartyId: string) => {
   };
 };
 
-const useAcceptRequest = (pendingRequest?: {
-  id: number;
-  requestedBy: string;
-  requestPOD: string | null;
-}) => {
-  const userIdentity = useUserIdentity();
-  const { data: profilePOD } = useMyProfilePOD();
-  const z = useParcnetClient();
-
-  const utils = trpc.useUtils();
-  const createSocialRequest = trpc.social.acceptRequest.useMutation({
-    onSuccess: async (data) => {
-      void utils.social.getPendingRequests.invalidate();
-      if (data.success) {
-        toast.success("Request accepted! You've made a new connection!");
-      }
-
-      if (!pendingRequest) {
-        return;
-      }
-      if (!pendingRequest.requestPOD) {
-        throw new Error("Request POD not found");
-      }
-      await z.pod.insert(POD.deserialize(pendingRequest.requestPOD));
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  if (!pendingRequest) {
-    return undefined;
-  }
-
-  return () => {
-    if (!userIdentity) {
-      throw new Error("User identity not found");
-    }
-    if (!profilePOD) {
-      // FIXME: we need to bring user to frog minter first
-      throw new Error("Profile not found");
-    }
-
-    const responsePOD = signProfileFrogData(
-      {
-        ...profilePOD,
-        ownerSemaphoreId: pendingRequest.requestedBy,
-      },
-      userIdentity.privateKey
-    );
-
-    createSocialRequest.mutate({
-      requestId: pendingRequest.id,
-      responsePOD,
-    });
-  };
-};
-
 function OtherProfile() {
   const [, setLocation] = useLocation();
   const { id } = useParams();
@@ -124,7 +65,7 @@ function OtherProfile() {
     useMyProfilePOD();
   const profileId = id ? decodeURIComponent(id) : undefined;
 
-  const { frogs, isLoading: isLoadingFrogs } = useProfileFrogs();
+  const { data: frogs, isLoading: isLoadingFrogs } = useProfileFrogs();
   const { data: userData, error: userDataError } =
     trpc.users.getSpiritFrog.useQuery(
       {
@@ -170,7 +111,7 @@ function OtherProfile() {
   const onAddFriend = useAddFriend(
     !pendingRequest || canAcceptRequest ? (profileId ?? "") : ""
   );
-  const onAcceptRequest = useAcceptRequest(pendingRequest);
+  const { mutate: acceptRequest } = useAcceptFrogRequest();
 
   if (isLoadingFrogs || isLoadingMyProfilePOD || !userData) return <Loader />;
 
@@ -184,7 +125,13 @@ function OtherProfile() {
       friendStatus={friendStatus}
       friendCount={friendCount}
       frogCount={frogCount}
-      onAddFriend={onAcceptRequest ?? onAddFriend}
+      onAddFriend={
+        pendingRequest
+          ? () => {
+              acceptRequest(pendingRequest);
+            }
+          : onAddFriend
+      }
     />
   );
 }

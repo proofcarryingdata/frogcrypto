@@ -3,10 +3,12 @@ import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { Button } from "../shared/Button";
 import Loader from "../shared/Loader";
 import Modal from "../shared/Modal";
+import { trpc } from "../../trpc";
 import FrogProfile from "./FrogProfile";
 
 function MyProfile() {
-  const { data: myProfilePOD, isLoading } = useMyProfilePOD();
+  const { data: myProfilePOD, isLoading: isLoadingProfilePOD } =
+    useMyProfilePOD();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState(
     myProfilePOD?.telegramUsername ?? ""
@@ -14,6 +16,13 @@ function MyProfile() {
   const [farcasterUsername, setFarcasterUsername] = useState(
     myProfilePOD?.farcasterUsername ?? ""
   );
+  const { data: myProfile, isLoading: isLoadingMyProfile } =
+    trpc.users.getSpiritFrog.useQuery(
+      {
+        profileId: myProfilePOD?.profileId ?? "",
+      },
+      { enabled: Boolean(myProfilePOD) }
+    );
 
   const { mutate: updateProfile, isPending } = useSetMyProfilePOD();
 
@@ -37,8 +46,9 @@ function MyProfile() {
     setIsEditModalOpen(false);
   };
 
+  const isLoading = isLoadingProfilePOD || isLoadingMyProfile;
   if (isLoading) return <Loader />;
-  if (!myProfilePOD) {
+  if (!myProfilePOD || !myProfile) {
     // FIXME: user needs to create a profile POD
     throw new Error("No profile POD found");
   }
@@ -50,8 +60,8 @@ function MyProfile() {
         profileId={myProfilePOD.profileId}
         isMyProfile
         friendStatus="friends"
-        friendCount={0} // TODO: Implement friend count
-        frogCount={1} // TODO: Implement frog count
+        friendCount={myProfile.friendCount}
+        frogCount={myProfile.frogCount}
         onEditProfile={handleEditProfile}
       />
 

@@ -50,7 +50,7 @@ const RARITIES: Record<Rarity, { label: string; color: string }> = {
  */
 export function DexTab() {
   const [mode, setMode] = useState<"grid" | "list">("list");
-  const { frogs } = useFrogs();
+  const { data: frogs } = useFrogs();
   const possibleFrogs = usePossibleFrogs();
   const groupedPODs = useGroupedPODs(frogs ?? []);
 

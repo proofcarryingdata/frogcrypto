@@ -1,4 +1,4 @@
-import { Feed, parseFrogPOD } from "@frogcrypto/shared";
+import { type Feed, parseFrogPOD } from "@frogcrypto/shared";
 import { Biome } from "@pcd/eddsa-frog-pcd";
 import { FROG_FREEROLLS } from "@pcd/passport-interface";
 import axios from "axios";
@@ -23,7 +23,7 @@ function GetFrogTab() {
   const { subscriptions } = useSubscriptions();
   const { data: userState } = useUserState();
   const userStateByFeedId = useUserStateByFeedId();
-  const { frogs } = useFrogs();
+  const { data: frogs } = useFrogs();
 
   return (
     <>

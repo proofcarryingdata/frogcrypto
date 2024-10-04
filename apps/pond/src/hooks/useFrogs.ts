@@ -4,11 +4,11 @@ import {
   parseFrogPOD,
   parseProfileFrogPOD,
   type ProfileFrogPOD,
-  ProfileFrogSpec,
 } from "@frogcrypto/shared";
 import { pod } from "@parcnet-js/podspec";
 import { type IFrogData } from "@pcd/eddsa-frog-pcd";
-import { useQuery } from "@tanstack/react-query";
+import { type POD } from "@pcd/pod";
+import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import _ from "lodash";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -16,71 +16,83 @@ import { useParcnetClient } from "./useParcnetClient";
 
 export const QUERY_KEY_FROGS = "frogs";
 
-const useFrogs = () => {
+function useFrogPODs<TData = POD[]>(
+  opts?: Omit<UseQueryOptions<POD[], Error, TData>, "queryKey" | "queryFn">
+) {
   const z = useParcnetClient();
 
-  const {
-    data: frogs,
-    isLoading,
-    error,
-  } = useQuery({
+  return useQuery({
     queryKey: [QUERY_KEY_FROGS],
-    queryFn: () => z.pod.query(pod({ entries: FrogSpec.schema })),
+    queryFn: async () =>
+      _.sortBy(await z.pod.query(pod({ entries: FrogSpec.schema })), (p) => {
+        const timestampSigned = p.content.getRawValue("timestampSigned");
+        if (typeof timestampSigned === "bigint") {
+          return -timestampSigned;
+        }
+        return 0;
+      }),
+    ...opts,
+  });
+}
+
+const useFrogs = () => {
+  const res = useFrogPODs({
     select: (data) => {
       localStorage.setItem(
         QUERY_KEY_FROGS,
         JSON.stringify(data.map((p) => p.serialize()))
       );
 
-      return _.sortBy(
-        data.map((p) => parseFrogPOD(p)),
-        (frog) => -frog.timestampSigned
+      return data.map((p) =>
+        p.content.getRawValue("profileId")
+          ? parseProfileFrogPOD(p)
+          : parseFrogPOD(p)
       );
     },
   });
 
   useEffect(() => {
-    if (error) {
-      logger.error(error);
+    if (res.error) {
+      logger.error(res.error);
       toast.error("Error fetching frogs");
     }
-  }, [error]);
+  }, [res.error]);
 
-  return { frogs, isLoading };
+  return res;
 };
 
 export function isProfileFrogPOD(frog: IFrogData): frog is ProfileFrogPOD {
   return "profileId" in frog;
 }
 
-export const QUERY_KEY_PROFILE_FROGS = "profileFrogs";
+export const useProfileFrogs = <TData = ProfileFrogPOD[]>(
+  opts?: Omit<
+    UseQueryOptions<POD[], Error, TData>,
+    "queryKey" | "queryFn" | "select"
+  > & {
+    select?: (data: ProfileFrogPOD[]) => TData;
+  }
+) => {
+  const res = useFrogPODs({
+    ...opts,
+    select: (data): TData => {
+      const pods = data
+        .filter((p) => p.content.getRawValue("profileId"))
+        .map((p) => parseProfileFrogPOD(p));
 
-export const useProfileFrogs = () => {
-  const z = useParcnetClient();
-
-  const {
-    data: frogs,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: [QUERY_KEY_PROFILE_FROGS],
-    queryFn: () => z.pod.query(pod({ entries: ProfileFrogSpec.schema })),
-    select: (data) => {
-      return _.sortBy(
-        data.map((p) => parseProfileFrogPOD(p)),
-        (frog) => -frog.timestampSigned
-      );
+      const select = opts?.select ?? ((x): TData => x as TData);
+      return select(pods);
     },
   });
 
   useEffect(() => {
-    if (error) {
-      logger.error(error);
+    if (res.error) {
+      logger.error(res.error);
       toast.error("Error fetching frogs");
     }
-  }, [error]);
+  }, [res.error]);
 
-  return { frogs, isLoading };
+  return res;
 };
 
 export default useFrogs;
