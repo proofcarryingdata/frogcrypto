@@ -6,7 +6,7 @@ export const incrementScore = async (
   tx: Transaction,
   semaphoreId: string,
   increment = 1
-): Promise<typeof userScoresTable.$inferInsert> => {
+): Promise<typeof userScoresTable.$inferSelect> => {
   const [result] = await tx
     .insert(userScoresTable)
     .values({

@@ -11,7 +11,6 @@ import { useParcnetClient } from "./useParcnetClient";
 import { useSemaphoreIdBase64, useUserIdentity } from "./useUserState";
 
 function useSelectMyProfilePOD() {
-  const userIdentity = useUserIdentity();
   const semaphoreIdBase64 = useSemaphoreIdBase64();
 
   return useCallback(
@@ -19,10 +18,10 @@ function useSelectMyProfilePOD() {
       return pods.find(
         (pod) =>
           pod.ownerSemaphoreId === semaphoreIdBase64 &&
-          pod.signerPublicKey === userIdentity?.publicKey
+          pod.profileId === semaphoreIdBase64
       );
     },
-    [userIdentity, semaphoreIdBase64]
+    [semaphoreIdBase64]
   );
 }
 
@@ -76,7 +75,8 @@ export function useSetMyProfilePOD(
         (pod) =>
           pod.content.getRawValue("profileId") ===
             signedPOD.content.getRawValue("profileId") &&
-          pod.signerPublicKey === signedPOD.signerPublicKey
+          pod.content.getRawValue("ownerSemaphoreId") ===
+            signedPOD.content.getRawValue("ownerSemaphoreId")
       );
       if (oldPOD) {
         await z.pod.delete(oldPOD.signature);

@@ -1,8 +1,19 @@
 import { atom, useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { withImmer } from "jotai-immer";
-import { useCallback } from "react";
-import { Feed } from "@frogcrypto/shared";
+import { useCallback, useEffect } from "react";
+import {
+  FeedSpec,
+  parseFeedPOD,
+  signFeedPOD,
+  type Feed,
+} from "@frogcrypto/shared";
+import { useQuery } from "@tanstack/react-query";
+import { pod } from "@parcnet-js/podspec";
+import { useUserIdentity } from "./useUserState";
+import { useParcnetClient } from "./useParcnetClient";
+
+const QUERY_KEY_FEEDS = ["feeds"];
 
 const subscriptionsAtom = withImmer(
   atomWithStorage<Feed[]>("subscriptions", [])
@@ -14,6 +25,41 @@ const feedIdsAtom = atom<string[]>((get) =>
 
 export function useSubscriptions() {
   const [subscriptions, setSubscriptions] = useAtom(subscriptionsAtom);
+  const userIdentity = useUserIdentity();
+  const z = useParcnetClient();
+
+  const { data: feedPODs } = useQuery({
+    queryKey: QUERY_KEY_FEEDS,
+    queryFn: async () =>
+      z.pod
+        .query(
+          pod({
+            entries: FeedSpec.schema,
+          })
+        )
+        .then((pods) => pods.map(parseFeedPOD)),
+  });
+  useEffect(() => {
+    if (feedPODs) {
+      setSubscriptions((draft) => {
+        feedPODs.forEach((feed) => {
+          const index = draft.findIndex((sub) => sub.id === feed.id);
+          if (index === -1) {
+            draft.push(feed);
+          }
+        });
+      });
+    }
+  }, [feedPODs, setSubscriptions]);
+  useEffect(() => {
+    if (userIdentity && feedPODs) {
+      subscriptions.forEach((sub) => {
+        if (!feedPODs.some((feed) => feed.id === sub.id)) {
+          void z.pod.insert(signFeedPOD(sub, userIdentity.privateKey));
+        }
+      });
+    }
+  }, [feedPODs, subscriptions, userIdentity, z.pod]);
 
   return {
     subscriptions,

@@ -1,32 +1,20 @@
-import {
-  compressBigInt,
-  FeedSchema,
-  logger,
-  signFrogData,
-  parseFrogEnum,
-} from "@frogcrypto/shared";
-import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
+import { FeedSchema, logger, signFrogData } from "@frogcrypto/shared";
+import { Biome } from "@pcd/eddsa-frog-pcd";
 import {
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
   type FrogCryptoFeed,
-  type FrogCryptoFrogData,
 } from "@pcd/passport-interface";
-import { TRPCError } from "@trpc/server";
-import _ from "lodash";
-import { z } from "zod";
 import { POD } from "@pcd/pod";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { db } from "../db";
 import { updateUserFeedState } from "../db/feeds";
+import { generateFrogData, sampleFrogData } from "../db/frogs";
 import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
-import {
-  computeUserFeedState,
-  parseFrogTemperament,
-  sampleFrogAttribute,
-} from "../utils";
-import { generateFrogData, sampleFrogData } from "../db/frogs";
+import { computeUserFeedState } from "../utils";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {

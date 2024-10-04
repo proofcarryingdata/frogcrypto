@@ -9,12 +9,12 @@ import {
   usePendingFrogRequests,
 } from "../hooks/useFrogRequests";
 import Loader from "./shared/Loader";
-import UnderConstruction from "./UnderConstruction";
 import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
 import ProfileSharer from "./social/ProfileSharer";
 import OtherProfile from "./social/OtherProfile";
 import FrogFriends from "./social/FrogFriends";
+import FrogScore from "./social/FrogScore";
 
 function NavBar() {
   useAcceptedFrogRequests();
@@ -78,7 +78,7 @@ function SocialTab() {
       <Switch>
         <Route path="/" component={MyProfile} />
         <Route path="/friends" component={FrogFriends} />
-        <Route path="/scores" component={UnderConstruction} />
+        <Route path="/scores" component={FrogScore} />
         <Route path="/share" component={ProfileSharer} />
         <Route path="/:id" component={OtherProfile} />
 

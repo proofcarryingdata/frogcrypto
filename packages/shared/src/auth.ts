@@ -1,11 +1,19 @@
-import * as p from "@parcnet-js/podspec";
+import * as p from '@parcnet-js/podspec';
 
-import { shortCommitment, userPublicKeyToUserId } from "./semaphore";
+import { shortCommitment, userPublicKeyToUserId } from './semaphore';
 
 export const POD_TYPE_FROGCRYPTO_PLAYER_ID = "frogcrypto.playerId";
 
 export const PlayerIDSpec = p.entries({
-  podType: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
+  podType: {
+    type: "string",
+    isMemberOf: [
+      {
+        type: "string",
+        value: POD_TYPE_FROGCRYPTO_PLAYER_ID,
+      },
+    ],
+  },
   playerPk: { type: "eddsa_pubkey" },
   device: { type: "string" },
   timestamp: { type: "int" },
@@ -16,7 +24,10 @@ export const PlayerIDSpec = p.entries({
   zupass_description: {
     type: "string",
   },
-  zupass_display: { type: "string", value: "collectable" },
+  zupass_display: {
+    type: "string",
+    isMemberOf: [{ type: "string", value: "collectable" }],
+  },
 });
 
 export const getPlayerIDEntries = ({

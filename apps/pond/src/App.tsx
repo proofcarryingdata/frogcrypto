@@ -98,7 +98,7 @@ function App() {
 
   return (
     <main className="flex justify-center w-screen min-h-screen py-8">
-      <div className="flex flex-col gap-6 w-full max-w-sm items-stretch">
+      <div className="flex flex-col gap-6 w-full max-w-sm items-stretch px-2">
         <h1 className="font-superfunky text-2xl self-center">
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>

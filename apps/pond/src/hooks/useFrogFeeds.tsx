@@ -1,18 +1,11 @@
 import { type Feed, logger } from "@frogcrypto/shared";
-import {
-  type FrogCryptoClientFeed,
-  IFrogCryptoClientFeedSchema,
-  requestListFeeds,
-} from "@pcd/passport-interface";
+import { IFrogCryptoClientFeedSchema } from "@pcd/passport-interface";
 import React, { useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import urljoin from "url-join";
 import { validate } from "uuid";
-import { SERVER_URL } from "@frogcrypto/shared";
 import { trpc } from "../trpc";
 import useSearchParams from "./useSearchParams";
 import { useSubscriptions } from "./useSubscriptions";
-export const DEFAULT_FROG_SUBSCRIPTION_PROVIDER_URL = `${SERVER_URL}/feeds`;
 
 /**
  * Returns a callback to register the default frog subscription provider and
@@ -81,22 +74,7 @@ export function useInitializeFrogSubscriptions(): (
         .forEach((feed) => parseAndAddFeed(feed, false));
 
       if (feedId) {
-        try {
-          const res = await requestListFeeds(
-            urljoin(
-              DEFAULT_FROG_SUBSCRIPTION_PROVIDER_URL,
-              encodeURIComponent(feedId)
-            )
-          );
-          const feed = res.value?.feeds[0];
-          if (feed) {
-            return parseAndAddFeed(feed as any, true) ? (feed as any) : null;
-          }
-          throw new Error(res.error || "Feed not found");
-        } catch (e) {
-          logger.error("Failed to fetch feed", feedId, e);
-          throw new Error("Unable to fetch feed");
-        }
+        throw new Error("Manual feed addition not supported yet");
       }
 
       return null;
