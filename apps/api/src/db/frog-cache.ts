@@ -1,6 +1,10 @@
-import { logger, parseFrogEnum } from "@frogcrypto/shared";
+import {
+  logger,
+  parseFrogEnum,
+  type DexFrog,
+  type FrogCryptoFrogData,
+} from "@frogcrypto/shared";
 import { Rarity } from "@pcd/eddsa-frog-pcd";
-import { type DexFrog, type FrogCryptoFrogData } from "@pcd/passport-interface";
 import { sql } from "drizzle-orm";
 import { toFrogData } from "./frogs";
 import { frogsTable } from "./schema";

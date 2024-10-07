@@ -1,5 +1,5 @@
 import { compressBigInt, logger, parseFrogEnum } from "@frogcrypto/shared";
-import { Biome, IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
+import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import {
   type DexFrog,
   type FrogCryptoDbFrogData,
@@ -8,11 +8,11 @@ import {
 } from "@pcd/passport-interface";
 import { eq, not, sql } from "drizzle-orm";
 import _ from "lodash";
+import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
 import { frogsTable } from "./schema";
 import { createRawSqlArray, jsonbField } from "./utils";
-import { db } from "./index";
 import { getSpiritFrogs } from "./frog-cache";
-import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
+import { db } from "./index";
 
 /**
  * Sample a single frog based on drop_weight scaled by biome specific scaling factor.
@@ -71,26 +71,15 @@ export async function getSpiritFrog(
   }
 
   const spiritFrogs = await getSpiritFrogs();
-  const spiritFrogIndex =
-    Math.abs(hashCode(semaphoreIdHash)) % spiritFrogs.length;
+  const spiritFrogIndex = Math.abs(
+    Number(BigInt(semaphoreIdHash) % BigInt(spiritFrogs.length))
+  );
   const spiritFrog = spiritFrogs[spiritFrogIndex];
   if (!spiritFrog) {
     return undefined;
   }
 
   return generateFrogData(spiritFrog, BigInt(0));
-}
-
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    // eslint-disable-next-line no-bitwise -- this is a hash function
-    hash = (hash << 5) - hash + char;
-    // eslint-disable-next-line no-bitwise -- this is a hash function
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash;
 }
 
 export function generateFrogData(

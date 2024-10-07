@@ -5,3 +5,4 @@ export * from "./logger";
 export * from "./auth";
 export * from "./feeds";
 export * from "./constants";
+export * from "./username";

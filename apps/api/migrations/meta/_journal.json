@@ -36,6 +36,13 @@
       "when": 1727116330053,
       "tag": "0004_clammy_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1728339940500,
+      "tag": "0005_slimy_zarda",
+      "breakpoints": true
     }
   ]
 }

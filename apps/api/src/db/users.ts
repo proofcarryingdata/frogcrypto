@@ -1,5 +1,6 @@
-import { sql, eq, count, or, and, inArray } from "drizzle-orm";
-import { socialRequestsTable, userIdsTable, userScoresTable } from "./schema";
+import { eq, inArray, sql } from "drizzle-orm";
+import { type FrogCryptoScore } from "@frogcrypto/shared";
+import { userIdsTable, userScoresTable } from "./schema";
 import { db, type Transaction } from ".";
 
 export const incrementScore = async (
@@ -57,4 +58,32 @@ export async function getSemaphoreId(
     .from(userIdsTable)
     .where(eq(userIdsTable.signerPk, signerPk));
   return userId[0]?.semaphoreId;
+}
+
+export const userScoresView = db.$with("user_scores_view").as(
+  db
+    .select({
+      semaphoreId: userScoresTable.semaphoreId,
+      semaphoreIdHash:
+        sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`.as(
+          "semaphoreIdHash"
+        ),
+      score: userScoresTable.score,
+      rank: sql<number>`cast(rank() over (order by ${userScoresTable.score} desc) as int)`.as(
+        "rank"
+      ),
+      friendCount: userScoresTable.friendCount,
+    })
+    .from(userScoresTable)
+);
+
+export async function getUserScore(
+  semaphoreId: string | bigint
+): Promise<FrogCryptoScore | undefined> {
+  const [score] = await db
+    .with(userScoresView)
+    .select()
+    .from(userScoresView)
+    .where(eq(userScoresView.semaphoreId, String(semaphoreId)));
+  return score;
 }

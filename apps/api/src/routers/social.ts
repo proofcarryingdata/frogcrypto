@@ -1,13 +1,13 @@
+import { compressBigInt, decompressBigInt } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
-import { and, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { compressBigInt, decompressBigInt } from "@frogcrypto/shared";
 import { db } from "../db";
 import { socialRequestsTable } from "../db/schema";
-import { authedProcedure, router } from "../trpc";
+import { recordFriendCount, userScoresView } from "../db/users";
+import { authedProcedure, publicProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
-import { incrementScore, recordFriendCount } from "../db/users";
 
 const MAX_REQUESTS_PER_DAY = 100;
 const REQUEST_VISIBILITY_DAYS = 30; // Requests older than this will not be returned in queries
@@ -223,4 +223,13 @@ export const socialRouter = router({
         return { success: true };
       });
     }),
+
+  scoreboard: publicProcedure.query(async () => {
+    return db
+      .with(userScoresView)
+      .select()
+      .from(userScoresView)
+      .orderBy(desc(userScoresView.score))
+      .limit(100);
+  }),
 });

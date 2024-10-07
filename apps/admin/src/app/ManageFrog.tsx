@@ -163,6 +163,9 @@ function frogParser(data: string): FrogCryptoFrogData[] {
 
       if (value.includes("-")) {
         const [min, max] = value.split("-").map((v) => Number(v.trim()));
+        if (min === undefined || max === undefined) {
+          throw new Error(`Invalid range for attribute ${attribute}: ${value}`);
+        }
         return [min, max];
       }
 

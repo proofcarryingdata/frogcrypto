@@ -8,6 +8,6 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "include": ["."],
+  "include": [".", "src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

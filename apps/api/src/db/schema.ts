@@ -1,4 +1,5 @@
 import { type FrogCryptoFrogData } from "@pcd/passport-interface";
+import { sql } from "drizzle-orm";
 import {
   boolean,
   integer,
@@ -10,6 +11,7 @@ import {
   uuid,
   jsonb,
   pgEnum,
+  type QueryBuilder,
 } from "drizzle-orm/pg-core";
 
 // Define the enum

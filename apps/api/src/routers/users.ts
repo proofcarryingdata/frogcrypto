@@ -8,13 +8,14 @@ import {
 import { type IFrogData } from "@pcd/eddsa-frog-pcd";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import _ from "lodash";
 import { z } from "zod";
 import { db } from "../db";
 import { getAllFrogs } from "../db/frog-cache";
 import { getSpiritFrog } from "../db/frogs";
-import { userFeedsTable, userIdsTable, userScoresTable } from "../db/schema";
+import { userFeedsTable, userIdsTable } from "../db/schema";
+import { getUserScore, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
 import { FEEDS } from "./feeds";
@@ -72,6 +73,7 @@ export const usersRouter = router({
         ),
         myScore: z
           .object({
+            semaphoreIdHash: z.string(),
             score: z.number(),
             rank: z.number(),
             friendCount: z.number(),
@@ -91,15 +93,7 @@ export const usersRouter = router({
         "feedId"
       );
 
-      const [myScore] = await db
-        .select({
-          semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
-          score: userScoresTable.score,
-          rank: sql<number>`cast(rank() over (order by ${userScoresTable.score} desc) as int)`,
-          friendCount: userScoresTable.friendCount,
-        })
-        .from(userScoresTable)
-        .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));
+      const myScore = await getUserScore(semaphoreId);
 
       const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
 
@@ -129,17 +123,8 @@ export const usersRouter = router({
       })
     )
     .query(async ({ input: { profileId } }) => {
-      const [myScore] = await db
-        .select({
-          semaphoreIdHash: sql<string>`'0x' || encode(sha256('frogcrypto_' || ${userScoresTable.semaphoreId}::bytea), 'hex')`,
-          semaphoreId: userScoresTable.semaphoreId,
-          score: userScoresTable.score,
-          friendCount: userScoresTable.friendCount,
-        })
-        .from(userScoresTable)
-        .where(
-          eq(userScoresTable.semaphoreId, String(decompressBigInt(profileId)))
-        );
+      const semaphoreId = decompressBigInt(profileId);
+      const myScore = await getUserScore(semaphoreId);
 
       if (!myScore) {
         throw new TRPCError({
@@ -159,7 +144,7 @@ export const usersRouter = router({
       return {
         friendCount: myScore.friendCount,
         frogCount: myScore.score,
-        semaphoreIdBase64: compressBigInt(BigInt(myScore.semaphoreId)),
+        semaphoreIdBase64: compressBigInt(semaphoreId),
         spiritFrog,
       };
     }),

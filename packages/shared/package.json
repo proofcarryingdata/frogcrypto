@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch --onSuccess 'tsc --emitDeclarationOnly --declaration'",
+    "dev": "tsup --watch --onSuccess 'tsc --emitDeclarationOnly --declaration --declarationMap'",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "test": "jest"
