@@ -5,8 +5,8 @@ import {
   logger,
   signFrogData,
   type ServerFeed,
+  Biome,
 } from "@frogcrypto/shared";
-import { Biome } from "@pcd/eddsa-frog-pcd";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

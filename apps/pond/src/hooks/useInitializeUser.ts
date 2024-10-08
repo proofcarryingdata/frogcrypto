@@ -2,6 +2,7 @@ import { PwtSpec } from "@frogcrypto/api/src/auth";
 import {
   decompressBigInt,
   getPlayerIDEntries,
+  logger,
   PlayerIDSpec,
   semaphoreIdToUserId,
 } from "@frogcrypto/shared";

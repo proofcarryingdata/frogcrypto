@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "jotai";
-import { ErrorBoundary } from "react-error-boundary";
 import { Toaster } from "react-hot-toast";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ParcnetIframeProvider } from "./hooks/useParcnetClient";
@@ -24,13 +23,11 @@ createRoot(root).render(
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <ParcnetIframeProvider zapp={zapp}>
-            <ErrorBoundary fallback={<div>Something went wrong</div>}>
-              <App />
-              <Toaster />
-              {window.self === window.top && (
-                <ReactQueryDevtools initialIsOpen={false} />
-              )}
-            </ErrorBoundary>
+            <App />
+            <Toaster />
+            {window.self === window.top && (
+              <ReactQueryDevtools initialIsOpen={false} />
+            )}
           </ParcnetIframeProvider>
         </QueryClientProvider>
       </trpc.Provider>

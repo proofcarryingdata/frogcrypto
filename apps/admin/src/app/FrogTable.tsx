@@ -1,10 +1,10 @@
-import { type FrogCryptoFrogData } from "@pcd/passport-interface";
+import { type FrogCryptoFrogData } from "@frogcrypto/shared";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  RowSelectionState,
+  type RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import React, {

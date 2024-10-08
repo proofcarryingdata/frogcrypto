@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import _ from "lodash";
 import {
+  type FrogPOD,
+  shortCommitment,
+  type ProfileFrogPOD,
   type IFrogData,
   Rarity,
   Temperament,
   Biome,
-} from "@pcd/eddsa-frog-pcd";
-import {
-  type FrogPOD,
-  shortCommitment,
-  type ProfileFrogPOD,
 } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import ImageZoom from "./ImageZoom";

@@ -1,5 +1,9 @@
-import { type Feed, parseFrogPOD, FROG_FREEROLLS } from "@frogcrypto/shared";
-import { Biome } from "@pcd/eddsa-frog-pcd";
+import {
+  type Feed,
+  parseFrogPOD,
+  FROG_FREEROLLS,
+  Biome,
+} from "@frogcrypto/shared";
 import axios from "axios";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";

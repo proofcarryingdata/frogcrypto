@@ -4,9 +4,9 @@ import {
   parseFrogPOD,
   parseProfileFrogPOD,
   type ProfileFrogPOD,
+  type IFrogData,
 } from "@frogcrypto/shared";
 import { pod } from "@parcnet-js/podspec";
-import { type IFrogData } from "@pcd/eddsa-frog-pcd";
 import { type POD } from "@pcd/pod";
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import _ from "lodash";

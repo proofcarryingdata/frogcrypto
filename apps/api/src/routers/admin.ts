@@ -1,6 +1,6 @@
-import { FrogCryptoFrogDataSchema } from "@pcd/passport-interface";
 import { inArray, sql } from "drizzle-orm";
 import { z } from "zod";
+import { FrogCryptoFrogDataSchema } from "@frogcrypto/shared";
 import { db } from "../db";
 import { frogsTable } from "../db/schema";
 import { adminProcedure, router } from "../trpc";

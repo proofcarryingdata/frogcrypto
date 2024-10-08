@@ -13,7 +13,6 @@
     "@frogcrypto/shared": "workspace:*",
     "@frogcrypto/ui": "workspace:*",
     "@parcnet-js/app-connector": "^0.0.8",
-    "@pcd/passport-interface": "^0.11.9",
     "@pcd/pod": "^0.1.7",
     "@tanstack/react-query": "^5.55.4",
     "@tanstack/react-table": "^8.20.5",

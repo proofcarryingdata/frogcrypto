@@ -19,6 +19,7 @@ import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
 import NotFound from "./components/NotFound";
 import ClaimCyberFrog from "./components/ClaimCyberFrog";
 import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 function FrogCrypto() {
   const { data: frogs } = useFrogs();
@@ -103,7 +104,7 @@ function App() {
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>
 
-        {isReady ? <FrogCrypto /> : <Loader />}
+        <ErrorBoundary>{isReady ? <FrogCrypto /> : <Loader />}</ErrorBoundary>
       </div>
     </main>
   );

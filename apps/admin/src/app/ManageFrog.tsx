@@ -1,9 +1,9 @@
 /* eslint-disable camelcase -- db columns are not camel case */
-import { logger } from "@frogcrypto/shared";
 import {
   type FrogCryptoFrogData,
   FrogCryptoFrogDataSchema,
-} from "@pcd/passport-interface";
+  logger,
+} from "@frogcrypto/shared";
 import React, { useEffect, useMemo, useState } from "react";
 import { trpc } from "../trpc";
 import FrogTable from "./FrogTable";

@@ -1,7 +1,10 @@
 import React from "react";
 import { Link } from "wouter";
-import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
-import { type IFrogData } from "@pcd/eddsa-frog-pcd";
+import {
+  type IFrogData,
+  type ProfileFrogPOD,
+  shortCommitment,
+} from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 
 interface FrogProfileCompactProps {

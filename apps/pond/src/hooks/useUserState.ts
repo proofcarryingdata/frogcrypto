@@ -3,6 +3,7 @@ import { atom, useAtomValue } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import _ from "lodash";
 import { useMemo } from "react";
+import { TRPCClientError } from "@trpc/client";
 import { trpc } from "../trpc";
 import { usePendingFrogRequests } from "./useFrogRequests";
 import { useFeedIds } from "./useSubscriptions";
@@ -40,7 +41,14 @@ export const useSemaphoreIdBase64 = () => useAtomValue(semaphoreIdBase64Atom);
 export function useUserState() {
   const feedIds = useFeedIds();
 
-  return trpc.users.me.useQuery({ feedIds });
+  return trpc.users.me.useQuery(
+    { feedIds },
+    {
+      throwOnError(error) {
+        return error.data?.code === "UNAUTHORIZED";
+      },
+    }
+  );
 }
 
 export function useUserStateByFeedId() {

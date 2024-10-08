@@ -18,7 +18,9 @@ const useGetFrog = () => {
       await utils.users.me.refetch();
 
       queryClient.setQueryData([QUERY_KEY_FROGS], (pods: POD[]): POD[] => {
-        return [pod, ...pods];
+        return pods.find((p) => p.signature === pod.signature)
+          ? pods
+          : [pod, ...pods];
       });
     },
     onError: async () => {

@@ -1,13 +1,13 @@
 import {
   compressBigInt,
   type FeedBiomeConfigs,
-  parseFrogEnum,
-} from "@frogcrypto/shared";
-import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
-import {
-  type FrogCryptoDbFrogData,
+  toFrogData,
   type FrogCryptoFrogData,
-} from "@pcd/passport-interface";
+  parseFrogEnum,
+  Biome,
+  type IFrogData,
+  Rarity,
+} from "@frogcrypto/shared";
 import { sql } from "drizzle-orm";
 import _ from "lodash";
 import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
@@ -56,16 +56,6 @@ export async function sampleFrogData(
   }
 
   return toFrogData(frog);
-}
-
-export function toFrogData(
-  dbFrogData: FrogCryptoDbFrogData
-): FrogCryptoFrogData {
-  return {
-    id: dbFrogData.id,
-    uuid: dbFrogData.uuid,
-    ...dbFrogData.frog,
-  };
 }
 
 export async function getSpiritFrog(

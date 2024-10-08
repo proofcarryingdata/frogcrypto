@@ -4,8 +4,8 @@ import {
   logger,
   PlayerIDSpec,
   userPublicKeyToUserId,
+  type IFrogData,
 } from "@frogcrypto/shared";
-import { type IFrogData } from "@pcd/eddsa-frog-pcd";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
@@ -15,7 +15,7 @@ import { db } from "../db";
 import { getAllFrogs } from "../db/frog-cache";
 import { getSpiritFrog } from "../db/frogs";
 import { userFeedsTable, userIdsTable } from "../db/schema";
-import { getUserScore, userScoresView } from "../db/users";
+import { getUserScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
 import { FEEDS } from "./feeds";

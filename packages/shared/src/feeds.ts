@@ -1,9 +1,10 @@
-import _ from "lodash";
-import { z } from "zod";
+import _ from 'lodash';
+import { z } from 'zod';
 
-import * as p from "@parcnet-js/podspec";
-import { Biome } from "@pcd/eddsa-frog-pcd";
-import { POD } from "@pcd/pod";
+import * as p from '@parcnet-js/podspec';
+import { POD } from '@pcd/pod';
+
+import { Biome } from './frogs';
 
 export const POD_TYPE_FROGCRYPTO_FEED = "frogcrypto.feed";
 

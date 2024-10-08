@@ -1,9 +1,9 @@
-import { shortCommitment, type ProfileFrogPOD } from "@frogcrypto/shared";
 import {
   COMMON_TEMPERAMENT_SET,
   Temperament,
   type IFrogData,
-} from "@pcd/eddsa-frog-pcd";
+  type ProfileFrogPOD,
+} from "@frogcrypto/shared";
 import _ from "lodash";
 import React, {
   useEffect,

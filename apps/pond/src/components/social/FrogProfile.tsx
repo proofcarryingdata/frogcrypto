@@ -1,8 +1,11 @@
-import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
+import {
+  type IFrogData,
+  type ProfileFrogPOD,
+  shortCommitment,
+} from "@frogcrypto/shared";
 import { QrCode } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "wouter";
-import { type IFrogData } from "@pcd/eddsa-frog-pcd";
 import { FrogAttributes, FrogSocialAttributes } from "../shared/FrogCard";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 

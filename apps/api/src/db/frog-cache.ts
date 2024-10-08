@@ -3,10 +3,10 @@ import {
   parseFrogEnum,
   type DexFrog,
   type FrogCryptoFrogData,
+  Rarity,
+  toFrogData,
 } from "@frogcrypto/shared";
-import { Rarity } from "@pcd/eddsa-frog-pcd";
 import { max, sql } from "drizzle-orm";
-import { toFrogData } from "./frogs";
 import { frogsTable } from "./schema";
 import { db } from ".";
 
@@ -41,6 +41,7 @@ async function refreshCacheIfNeeded() {
     lastUpdateTimestamp &&
     Date.now() - lastUpdateTimestamp.getTime() < CACHE_DURATION
   ) {
+    logger.info("Using cached frog data");
     return;
   }
 

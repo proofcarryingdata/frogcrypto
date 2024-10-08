@@ -1,10 +1,12 @@
+import _ from "lodash";
 import {
-  COMMON_TEMPERAMENT_SET,
+  decompressBigInt,
+  type Feed,
+  parseFrogEnum,
   Rarity,
   Temperament,
-} from "@pcd/eddsa-frog-pcd";
-import _ from "lodash";
-import { decompressBigInt, type Feed, parseFrogEnum } from "@frogcrypto/shared";
+  COMMON_TEMPERAMENT_SET,
+} from "@frogcrypto/shared";
 import type { UserFeed } from "./db/schema";
 
 /**
@@ -57,8 +59,8 @@ export function parseFrogTemperament(value?: string): Temperament {
 }
 
 /**
- * Compares two semaphore IDs and returns a negative number if id1 < id2,
- * a positive number if id1 > id2, or zero if they are equal.
+ * Compares two semaphore IDs and returns a negative number if id1 \< id2,
+ * a positive number if id1 \> id2, or zero if they are equal.
  */
 export function compareIds(id1: string, id2: string): number {
   const bigInt1 = decompressBigInt(id1);
