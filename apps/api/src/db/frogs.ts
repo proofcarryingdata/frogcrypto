@@ -1,17 +1,19 @@
-import { compressBigInt, logger, parseFrogEnum } from "@frogcrypto/shared";
+import {
+  compressBigInt,
+  type FeedBiomeConfigs,
+  parseFrogEnum,
+} from "@frogcrypto/shared";
 import { Biome, type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
 import {
-  type DexFrog,
   type FrogCryptoDbFrogData,
-  type FrogCryptoFeedBiomeConfigs,
   type FrogCryptoFrogData,
 } from "@pcd/passport-interface";
-import { eq, not, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import _ from "lodash";
 import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
+import { getSpiritFrogs } from "./frog-cache";
 import { frogsTable } from "./schema";
 import { createRawSqlArray, jsonbField } from "./utils";
-import { getSpiritFrogs } from "./frog-cache";
 import { db } from "./index";
 
 /**
@@ -20,8 +22,11 @@ import { db } from "./index";
  * https://utopia.duth.gr/~pefraimi/research/data/2007EncOfAlg.pdf
  */
 export async function sampleFrogData(
-  biomes: FrogCryptoFeedBiomeConfigs
+  biomes: FeedBiomeConfigs
 ): Promise<FrogCryptoFrogData | undefined> {
+  _.chain(biomes)
+    .entries()
+    .map(([biome, config]) => [biome, config]);
   const biomeKeys = Object.keys(biomes)
     .filter((biome) => biomes[biome as keyof typeof biomes]?.dropWeightScaler)
     .map(String);

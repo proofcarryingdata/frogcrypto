@@ -1,5 +1,4 @@
-import { type Feed, logger } from "@frogcrypto/shared";
-import { IFrogCryptoClientFeedSchema } from "@pcd/passport-interface";
+import { type Feed, FeedSchema, logger } from "@frogcrypto/shared";
 import React, { useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { validate } from "uuid";
@@ -26,7 +25,7 @@ export function useInitializeFrogSubscriptions(): (
           return false;
         }
 
-        const parsed = IFrogCryptoClientFeedSchema.safeParse(feed);
+        const parsed = FeedSchema.safeParse(feed);
         if (parsed.success) {
           if (parsed.data.activeUntil > Date.now() / 1000) {
             // only add a feed if it is active

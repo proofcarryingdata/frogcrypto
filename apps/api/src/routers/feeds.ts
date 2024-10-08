@@ -1,10 +1,12 @@
-import { FeedSchema, logger, signFrogData } from "@frogcrypto/shared";
-import { Biome } from "@pcd/eddsa-frog-pcd";
 import {
+  FeedSchema,
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
-  type FrogCryptoFeed,
-} from "@pcd/passport-interface";
+  logger,
+  signFrogData,
+  type ServerFeed,
+} from "@frogcrypto/shared";
+import { Biome } from "@pcd/eddsa-frog-pcd";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -27,9 +29,6 @@ export const FEEDS = [
     name: "Swamp",
     description:
       "Veiled in mist and teeming with life, the labyrinthine Swamp is home to a plethora of frogs.",
-    permissions: [{ folder: "FrogCrypto", type: "AppendToFolder_permission" }],
-    credentialRequest: { signatureType: "sempahore-signature-pcd" },
-    autoPoll: false,
     private: false,
     activeUntil: 1893484800,
     cooldown: 15,
@@ -43,25 +42,11 @@ export const FEEDS = [
       Unknown: { dropWeightScaler: 0.2 },
     },
   },
-] satisfies FrogCryptoFeed[];
-
-/**
- * Sanitize a feed object to return only feed data to the client.
- */
-function sanitizeFeed(feed: FrogCryptoFeed): z.infer<typeof FeedSchema> {
-  return {
-    id: feed.id,
-    name: feed.name,
-    description: feed.description,
-    private: feed.private,
-    activeUntil: feed.activeUntil,
-    cooldown: feed.cooldown,
-  };
-}
+] satisfies ServerFeed[];
 
 export const feedsRouter = router({
   list: publicProcedure.output(z.array(FeedSchema)).query(() => {
-    return FEEDS.map(sanitizeFeed);
+    return FEEDS;
   }),
   search: authedProcedure
     .input(

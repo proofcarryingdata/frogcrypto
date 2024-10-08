@@ -3,19 +3,24 @@ import {
   Rarity,
   Temperament,
 } from "@pcd/eddsa-frog-pcd";
-import type {
-  FrogCryptoClientFeed,
-  FrogCryptoComputedUserState,
-  FrogCryptoFeed,
-} from "@pcd/passport-interface";
 import _ from "lodash";
-import { decompressBigInt, parseFrogEnum } from "@frogcrypto/shared";
+import { decompressBigInt, type Feed, parseFrogEnum } from "@frogcrypto/shared";
 import type { UserFeed } from "./db/schema";
+
+/**
+ * Individual feed level state for a user.
+ */
+export interface UserFeedState {
+  feedId: string;
+  lastFetchedAt: number;
+  nextFetchAt: number;
+  active: boolean;
+}
 
 export function computeUserFeedState(
   state: Pick<UserFeed, "lastFetchedAt"> | undefined,
-  feed: FrogCryptoFeed
-): FrogCryptoComputedUserState {
+  feed: Feed
+): UserFeedState {
   const lastFetchedAt = state?.lastFetchedAt?.getTime() ?? 0;
   const nextFetchAt = lastFetchedAt + feed.cooldown * 1000;
 
@@ -49,23 +54,6 @@ export function parseFrogTemperament(value?: string): Temperament {
     return Temperament.UNKNOWN;
   }
   return parseFrogEnum(Temperament, value);
-}
-
-/**
- * Sanitize a feed object to return only feed data to the client.
- */
-export function sanitizeFeed(feed: FrogCryptoFeed): FrogCryptoClientFeed {
-  return {
-    id: feed.id,
-    name: feed.name,
-    description: feed.description,
-    permissions: feed.permissions,
-    credentialRequest: feed.credentialRequest,
-    autoPoll: feed.autoPoll,
-    private: feed.private,
-    activeUntil: feed.activeUntil,
-    cooldown: feed.cooldown,
-  };
 }
 
 /**

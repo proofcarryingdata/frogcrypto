@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "jest --detectOpenHandles",
-    "vercel-build": "pnpm run build && mkdir -p public/proto-pod-gpc-artifacts && cp -r node_modules/@pcd/proto-pod-gpc-artifacts/* public/proto-pod-gpc-artifacts/ && ls -la public/proto-pod-gpc-artifacts"
+    "vercel-build": "pnpm run build"
   },
   "jest": {
     "preset": "@frogcrypto/jest-presets/node"
@@ -19,11 +19,9 @@
     "@frogcrypto/shared": "workspace:*",
     "@parcnet-js/podspec": "^0.0.4",
     "@pcd/eddsa-frog-pcd": "^0.3.5",
-    "@pcd/gpc-pcd": "^0.0.8",
     "@pcd/passport-interface": "^0.11.9",
     "@pcd/pcd-types": "^0.11.4",
     "@pcd/pod": "^0.1.7",
-    "@pcd/proto-pod-gpc-artifacts": "^0.9.0",
     "@semaphore-protocol/identity": "^4.2.0",
     "@trpc/server": "11.0.0-rc.502",
     "@vercel/postgres": "^0.10.0",

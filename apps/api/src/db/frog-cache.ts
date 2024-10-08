@@ -5,13 +5,14 @@ import {
   type FrogCryptoFrogData,
 } from "@frogcrypto/shared";
 import { Rarity } from "@pcd/eddsa-frog-pcd";
-import { sql } from "drizzle-orm";
+import { max, sql } from "drizzle-orm";
 import { toFrogData } from "./frogs";
 import { frogsTable } from "./schema";
 import { db } from ".";
 
 // Hard-coded list of spirit frog IDs
 const SPIRIT_FROG_IDS = [6, 16, 24]; // Replace with actual spirit frog IDs
+const CACHE_DURATION = 1000 * 60; // 1 minute
 
 let cachedSpiritFrogs: FrogCryptoFrogData[] = [];
 let cachedDexFrogs: DexFrog[] = [];
@@ -29,13 +30,20 @@ export async function getAllFrogs(): Promise<DexFrog[]> {
 
 async function getLatestUpdateTimestamp(): Promise<Date> {
   const result = await db
-    .select({ maxUpdatedAt: sql<Date>`MAX(${frogsTable.updatedAt})` })
+    .select({ maxUpdatedAt: max(frogsTable.updatedAt) })
     .from(frogsTable);
 
-  return result[0]?.maxUpdatedAt ?? new Date(0);
+  return new Date(result[0]?.maxUpdatedAt ?? 0);
 }
 
 async function refreshCacheIfNeeded() {
+  if (
+    lastUpdateTimestamp &&
+    Date.now() - lastUpdateTimestamp.getTime() < CACHE_DURATION
+  ) {
+    return;
+  }
+
   const latestUpdate = await getLatestUpdateTimestamp();
   if (!lastUpdateTimestamp || latestUpdate > lastUpdateTimestamp) {
     await refreshCache();

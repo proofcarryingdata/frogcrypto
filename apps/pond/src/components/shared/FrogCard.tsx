@@ -128,7 +128,12 @@ export function FrogSocialAttributes({ frog }: { frog: ProfileFrogPOD }) {
         title="Telegram"
         value={
           frog.telegramUsername ? (
-            <a href={`https://t.me/${frog.telegramUsername}`}>
+            <a
+              className="hover:underline"
+              href={`https://t.me/${frog.telegramUsername}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               @{frog.telegramUsername}
             </a>
           ) : (

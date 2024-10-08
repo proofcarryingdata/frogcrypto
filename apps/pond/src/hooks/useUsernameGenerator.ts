@@ -8,14 +8,16 @@ export function useUsernameGenerator(): (
   return useCallback((sempahoreIdHash: string, lowercase = false) => {
     try {
       const hashBigInt = BigInt(sempahoreIdHash);
-      const randomAdjective: string =
+      const randomAdjective =
         adjectives[
           Number(
             (hashBigInt / BigInt(animals.length)) % BigInt(adjectives.length)
           )
         ];
-      const randomAnimal: string =
-        animals[Number(hashBigInt % BigInt(animals.length))];
+      const randomAnimal = animals[Number(hashBigInt % BigInt(animals.length))];
+      if (randomAdjective === undefined || randomAnimal === undefined) {
+        throw new Error("Invalid adjective or animal");
+      }
 
       return lowercase
         ? `${randomAdjective}_${randomAnimal}`

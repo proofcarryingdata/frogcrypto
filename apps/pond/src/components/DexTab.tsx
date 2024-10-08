@@ -1,12 +1,11 @@
 import { type IFrogData, Rarity } from "@pcd/eddsa-frog-pcd";
-import { type DexFrog } from "@pcd/passport-interface";
 import React, {
   type Dispatch,
   type SetStateAction,
   useMemo,
   useState,
 } from "react";
-import { type FrogPOD } from "@frogcrypto/shared";
+import { type FrogPOD, type DexFrog } from "@frogcrypto/shared";
 import { List, LayoutGrid } from "lucide-react";
 import { usePossibleFrogs } from "../hooks/useUserState";
 import useFrogs from "../hooks/useFrogs";

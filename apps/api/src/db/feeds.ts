@@ -1,6 +1,6 @@
-import { sql, SQL, and, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { userFeedsTable } from "./schema";
-import { db, type Transaction } from ".";
+import { type Transaction } from ".";
 
 /**
  * Update the last time a user has polled a feed.

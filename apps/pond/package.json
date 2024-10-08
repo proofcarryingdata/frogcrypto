@@ -15,8 +15,6 @@
     "@parcnet-js/app-connector": "^0.0.8",
     "@parcnet-js/podspec": "^0.0.4",
     "@pcd/eddsa-frog-pcd": "^0.3.4",
-    "@pcd/gpc-pcd": "^0.0.8",
-    "@pcd/passport-interface": "^0.11.7",
     "@pcd/pcd-types": "^0.11.4",
     "@pcd/pod": "^0.1.7",
     "@pcd/pod-pcd": "^0.1.7",
