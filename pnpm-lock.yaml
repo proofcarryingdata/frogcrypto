@@ -114,9 +114,6 @@ importers:
       '@pcd/eddsa-frog-pcd':
         specifier: ^0.3.5
         version: 0.3.5
-      '@pcd/gpc-pcd':
-        specifier: ^0.0.8
-        version: 0.0.8
       '@pcd/passport-interface':
         specifier: ^0.11.9
         version: 0.11.9(react-dom@18.3.1)(react@18.3.1)
@@ -126,9 +123,6 @@ importers:
       '@pcd/pod':
         specifier: ^0.1.7
         version: 0.1.7
-      '@pcd/proto-pod-gpc-artifacts':
-        specifier: ^0.9.0
-        version: 0.9.0
       '@semaphore-protocol/identity':
         specifier: ^4.2.0
         version: 4.3.0
@@ -238,12 +232,6 @@ importers:
       '@pcd/eddsa-frog-pcd':
         specifier: ^0.3.4
         version: 0.3.5
-      '@pcd/gpc-pcd':
-        specifier: ^0.0.8
-        version: 0.0.8
-      '@pcd/passport-interface':
-        specifier: ^0.11.7
-        version: 0.11.9(react-dom@18.3.1)(react@18.3.1)
       '@pcd/pcd-types':
         specifier: ^0.11.4
         version: 0.11.4
@@ -2581,24 +2569,6 @@ packages:
       chai: 4.5.0
     dev: false
 
-  /@pcd/gpc-pcd@0.0.8:
-    resolution: {integrity: sha512-D/vmVaUkpR9Blvhv7a0K/AbUJirgOWw4EhXMGzD2U1FnUmFznBCNismTZEkgqI3k2X4NSeo8A2pu+Td/KgxFaQ==}
-    dependencies:
-      '@pcd/gpc': 0.0.8
-      '@pcd/pcd-types': 0.11.4
-      '@pcd/pod-pcd': 0.1.7
-      '@pcd/semaphore-identity-pcd': 0.11.6
-      '@pcd/util': 0.5.4
-      '@types/lodash': 4.17.10
-      json-bigint: 1.0.0
-      lodash: 4.17.21
-      snarkjs: 0.7.4
-      uuid: 9.0.1
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
   /@pcd/gpc@0.0.8:
     resolution: {integrity: sha512-rsQZJuOB/fsq2JWZcQZv6hmr2lIX60oFlInAW6JeXyKVcro6AoOGcKHepDpHeRTG7SEze3/98jJ22X/8tMeGsw==}
     dependencies:
@@ -2707,10 +2677,6 @@ packages:
       js-sha256: 0.10.1
       json-bigint: 1.0.0
       poseidon-lite: 0.2.1
-    dev: false
-
-  /@pcd/proto-pod-gpc-artifacts@0.9.0:
-    resolution: {integrity: sha512-DipHMqcwpwCGy0/4hpENYjhKPcxVDEM4Koe13L1QpDYlOVVlUfsV9Y5ObpjtZELH4Q8jLWEW2tnMW9vR+c388w==}
     dev: false
 
   /@pcd/semaphore-group-pcd@0.11.6:
