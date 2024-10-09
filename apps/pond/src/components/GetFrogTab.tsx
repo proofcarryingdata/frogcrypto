@@ -8,6 +8,7 @@ import axios from "axios";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
+import { podToPODData } from "@parcnet-js/podspec";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
 import useFrogs from "../hooks/useFrogs";
@@ -54,7 +55,7 @@ function GetFrogTab() {
           <Divider />
           <div className="flex flex-col gap-4 w-full pb-8">
             {frogs?.map((frog) => (
-              <FrogCard key={frog.contentID} frog={frog} />
+              <FrogCard key={frog.signature} frog={frog} />
             ))}
           </div>
         </>
@@ -113,7 +114,7 @@ function SearchButton({
           loading: <LoadingMessages biome={feed.name} />,
           success: ({ pod }) => {
             void confetti();
-            const frog = parseFrogPOD(pod);
+            const frog = parseFrogPOD(podToPODData(pod));
             if (frog.biome === Biome.Unknown) {
               return `You found something strange in ${feed.name}. It doesn't appear to be a frog.`;
             }

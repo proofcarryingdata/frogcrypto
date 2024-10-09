@@ -4,12 +4,13 @@ import { withImmer } from "jotai-immer";
 import { useCallback, useEffect } from "react";
 import {
   FeedSpec,
+  FROGCRYPTO_FOLDER_NAME,
   parseFeedPOD,
   signFeedPOD,
   type Feed,
 } from "@frogcrypto/shared";
 import { useQuery } from "@tanstack/react-query";
-import { pod } from "@parcnet-js/podspec";
+import { pod, podToPODData } from "@parcnet-js/podspec";
 import { useUserIdentity } from "./useUserState";
 import { useParcnetClient } from "./useParcnetClient";
 
@@ -32,6 +33,7 @@ export function useSubscriptions() {
     queryKey: QUERY_KEY_FEEDS,
     queryFn: async () =>
       z.pod
+        .collection(FROGCRYPTO_FOLDER_NAME)
         .query(
           pod({
             entries: FeedSpec.schema,
@@ -55,7 +57,9 @@ export function useSubscriptions() {
     if (userIdentity && feedPODs) {
       subscriptions.forEach((sub) => {
         if (!feedPODs.some((feed) => feed.id === sub.id)) {
-          void z.pod.insert(signFeedPOD(sub, userIdentity.privateKey));
+          void z.pod
+            .collection(FROGCRYPTO_FOLDER_NAME)
+            .insert(podToPODData(signFeedPOD(sub, userIdentity.privateKey)));
         }
       });
     }

@@ -1,7 +1,11 @@
 import { toast } from "react-hot-toast";
 import { POD } from "@pcd/pod";
-import { signProfileFrogData } from "@frogcrypto/shared";
+import {
+  FROGCRYPTO_FOLDER_NAME,
+  signProfileFrogData,
+} from "@frogcrypto/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { podToPODData } from "@parcnet-js/podspec";
 import { trpc } from "../trpc";
 import { useUserIdentity } from "./useUserState";
 import { useMyProfilePOD } from "./useProfilePOD";
@@ -56,7 +60,9 @@ const useAcceptFrogRequest = () => {
         throw new Error("Request POD not found");
       }
 
-      await z.pod.insert(POD.deserialize(variables.requestPOD));
+      await z.pod
+        .collection(FROGCRYPTO_FOLDER_NAME)
+        .insert(podToPODData(POD.deserialize(variables.requestPOD)));
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEY_FROGS],
       });

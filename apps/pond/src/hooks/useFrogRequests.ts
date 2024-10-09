@@ -2,7 +2,11 @@ import { useMemo, useEffect } from "react";
 import _ from "lodash";
 import { useQueryClient } from "@tanstack/react-query";
 import { POD } from "@pcd/pod";
-import { type ProfileFrogPOD } from "@frogcrypto/shared";
+import {
+  FROGCRYPTO_FOLDER_NAME,
+  type ProfileFrogPOD,
+} from "@frogcrypto/shared";
+import { podToPODData } from "@parcnet-js/podspec";
 import { trpc } from "../trpc";
 import { useOtherProfilePODs } from "./useProfilePOD";
 import { useSemaphoreIdBase64 } from "./useUserState";
@@ -66,8 +70,12 @@ export function useAcceptedFrogRequests() {
     });
 
     void Promise.all([
-      ...toDelete.map((pod) => z.pod.delete(pod.signature)),
-      ...toAdd.map((pod) => z.pod.insert(pod)),
+      ...toDelete.map((pod) =>
+        z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(pod.signature)
+      ),
+      ...toAdd.map((pod) =>
+        z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podToPODData(pod))
+      ),
     ]).then(() =>
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY_FROGS] })
     );

@@ -1,6 +1,7 @@
 import { PwtSpec } from "@frogcrypto/api/src/auth";
 import {
   decompressBigInt,
+  FROGCRYPTO_FOLDER_NAME,
   getPlayerIDEntries,
   logger,
   PlayerIDSpec,
@@ -69,7 +70,9 @@ function useInitializeUser() {
           isMemberOf: [await z.identity.getPublicKey()],
         },
       });
-      const pods = await z.pod.query(myPlayerIDSpec);
+      const pods = await z.pod
+        .collection(FROGCRYPTO_FOLDER_NAME)
+        .query(myPlayerIDSpec);
       const playerIDPOD =
         pods[0] ??
         (await z.pod.sign(
@@ -80,10 +83,16 @@ function useInitializeUser() {
           })
         ));
       if (pods.length === 0) {
-        await z.pod.insert(playerIDPOD);
+        await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(playerIDPOD);
       }
 
-      await auth(playerIDPOD);
+      await auth(
+        POD.load(
+          playerIDPOD.entries,
+          playerIDPOD.signature,
+          playerIDPOD.signerPublicKey
+        )
+      );
 
       setRootId(semaphoreId.toString());
 

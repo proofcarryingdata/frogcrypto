@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@frogcrypto/shared": "workspace:*",
-    "@parcnet-js/podspec": "^0.0.4",
+    "@parcnet-js/podspec": "1.0.0",
     "@pcd/pod": "^0.1.7",
     "@semaphore-protocol/identity": "^4.2.0",
     "@trpc/server": "11.0.0-rc.502",

@@ -1,4 +1,8 @@
-import { type ProfileFrogPOD, signProfileFrogData } from "@frogcrypto/shared";
+import {
+  FROGCRYPTO_FOLDER_NAME,
+  type ProfileFrogPOD,
+  signProfileFrogData,
+} from "@frogcrypto/shared";
 import { type POD } from "@pcd/pod";
 import {
   useMutation,
@@ -6,6 +10,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { podToPODData } from "@parcnet-js/podspec";
 import { QUERY_KEY_FROGS, useProfileFrogs } from "./useFrogs";
 import { useParcnetClient } from "./useParcnetClient";
 import { useSemaphoreIdBase64, useUserIdentity } from "./useUserState";
@@ -64,7 +69,9 @@ export function useSetMyProfilePOD(
         unsignedPOD,
         userIdentity.privateKey
       );
-      await z.pod.insert(signedPOD);
+      await z.pod
+        .collection(FROGCRYPTO_FOLDER_NAME)
+        .insert(podToPODData(signedPOD));
 
       const frogs = queryClient.getQueryData<POD[]>([QUERY_KEY_FROGS]);
       if (!frogs) {
@@ -79,7 +86,7 @@ export function useSetMyProfilePOD(
             signedPOD.content.getRawValue("ownerSemaphoreId")
       );
       if (oldPOD) {
-        await z.pod.delete(oldPOD.signature);
+        await z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldPOD.signature);
       }
 
       const newFrogs = [

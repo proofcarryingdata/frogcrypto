@@ -15,14 +15,13 @@ const root = document.getElementById("root");
 if (!root) {
   throw new Error("No root element found");
 }
-const zapp = { name: "frogcrypto", permissions: ["read", "write"] };
 
 createRoot(root).render(
   <StrictMode>
     <Provider>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <ParcnetIframeProvider zapp={zapp}>
+          <ParcnetIframeProvider>
             <App />
             <Toaster />
             {window.self === window.top && (

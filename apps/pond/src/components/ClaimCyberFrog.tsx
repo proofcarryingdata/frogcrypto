@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import toast from "react-hot-toast";
+import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
+import { podToPODData } from "@parcnet-js/podspec";
 import { trpc } from "../trpc";
 import { useParcnetClient } from "../hooks/useParcnetClient";
 import Loader from "./shared/Loader";
@@ -17,7 +19,9 @@ function ClaimCyberFrog() {
       getCyberFrog({ signature })
         .then((data) => {
           if (data.pod) {
-            return z.pod.insert(data.pod);
+            return z.pod
+              .collection(FROGCRYPTO_FOLDER_NAME)
+              .insert(podToPODData(data.pod));
           }
           throw new Error("No pod found");
         })

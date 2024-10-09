@@ -1,6 +1,7 @@
 import { parseProfileFrogPOD } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import React from "react";
+import { podToPODData } from "@parcnet-js/podspec";
 import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
@@ -27,7 +28,9 @@ export function PendingRequests() {
       {pendingRequests.map((request) => (
         <FrogProfileRow
           key={request.id}
-          frog={parseProfileFrogPOD(POD.deserialize(request.requestPOD ?? ""))}
+          frog={parseProfileFrogPOD(
+            podToPODData(POD.deserialize(request.requestPOD ?? ""))
+          )}
           profileId={request.requestedBy}
         >
           <button

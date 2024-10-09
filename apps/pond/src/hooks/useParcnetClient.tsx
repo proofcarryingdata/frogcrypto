@@ -1,4 +1,4 @@
-import { DEFAULT_ZUPASS_URL } from "@frogcrypto/shared";
+import { DEFAULT_ZUPASS_URL, FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
 import { connect, connectToHost } from "@parcnet-js/app-connector";
 import { useAtomValue } from "jotai";
@@ -37,11 +37,29 @@ type ClientState = ClientIframeState;
 
 const zupassUrlAtom = atomWithStorage("zupassUrl", DEFAULT_ZUPASS_URL);
 
+const ZAPP: Zapp = {
+  name: "frogcrypto",
+  permissions: {
+    REQUEST_PROOF: {
+      collections: ["Tickets", FROGCRYPTO_FOLDER_NAME],
+    },
+    SIGN_POD: {},
+    READ_POD: {
+      collections: [FROGCRYPTO_FOLDER_NAME],
+    },
+    INSERT_POD: {
+      collections: [FROGCRYPTO_FOLDER_NAME],
+    },
+    DELETE_POD: {
+      collections: [FROGCRYPTO_FOLDER_NAME],
+    },
+    READ_PUBLIC_IDENTIFIERS: {},
+  },
+};
+
 export function ParcnetIframeProvider({
-  zapp,
   children,
 }: {
-  zapp: Zapp;
   children: React.ReactNode;
 }): ReactNode {
   const ref = useRef<HTMLDivElement>(null);
@@ -62,7 +80,7 @@ export function ParcnetIframeProvider({
 
     if (window.parent === window.self) {
       if (ref.current) {
-        void connect(zapp, ref.current, url).then((zupass) => {
+        void connect(ZAPP, ref.current, url).then((zupass) => {
           setValue({
             state: ClientConnectionState.CONNECTED,
             z: zupass,
@@ -71,9 +89,7 @@ export function ParcnetIframeProvider({
         });
       }
     } else {
-      // @ts-expect-error iframe-resizer is not typed
-      void import("iframe-resizer/js/iframeResizer.contentWindow.min.js");
-      void connectToHost(zapp).then((zupass) => {
+      void connectToHost(ZAPP).then((zupass) => {
         setValue({
           state: ClientConnectionState.CONNECTED,
           z: zupass,
@@ -85,7 +101,7 @@ export function ParcnetIframeProvider({
     return () => {
       isMounted.current = false;
     };
-  }, [url, zapp]);
+  }, [url]);
 
   return (
     <ParcnetClientContext.Provider value={value}>

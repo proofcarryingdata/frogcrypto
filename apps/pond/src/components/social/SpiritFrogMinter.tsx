@@ -432,7 +432,6 @@ export function SpiritFrogMinter() {
       telegramUsername: "",
       farcasterUsername: "",
 
-      contentID: 0n,
       signature: "",
       signerPublicKey: "",
     } satisfies ProfileFrogPOD;

@@ -7,7 +7,6 @@ import { compressBigInt, decompressBigInt } from '../bigint';
 import { Biome, IFrogData, Rarity, Temperament } from './base';
 
 export type FrogPOD = IFrogData & {
-  contentID: bigint;
   signature: string;
   signerPublicKey: string;
 };
@@ -45,8 +44,8 @@ export const FrogSpec = p.entries({
   owner: { type: "cryptographic", isOwnerID: true },
 });
 
-export function parseFrogPOD(pod: POD): FrogPOD {
-  const entries = pod.content.asEntries();
+export function parseFrogPOD(pod: p.PODData): FrogPOD {
+  const entries = pod.entries;
   const res = FrogSpec.safeParse(entries);
   if (!res.isValid) {
     console.debug("Invalid frog POD", res.issues);
@@ -71,7 +70,7 @@ export function parseFrogPOD(pod: POD): FrogPOD {
     timestampSigned: Number(parsed.timestampSigned.value),
     ownerSemaphoreId: compressBigInt(parsed.owner.value),
 
-    ..._.pick(pod, ["contentID", "signature", "signerPublicKey"]),
+    ..._.pick(pod, ["signature", "signerPublicKey"]),
   } satisfies FrogPOD;
 }
 
@@ -122,8 +121,8 @@ export type ProfileFrogPOD = FrogPOD & {
   farcasterUsername: string;
 };
 
-export function parseProfileFrogPOD(pod: POD): ProfileFrogPOD {
-  const entries = pod.content.asEntries();
+export function parseProfileFrogPOD(pod: p.PODData): ProfileFrogPOD {
+  const entries = pod.entries;
   const res = ProfileFrogSpec.safeParse(entries);
   if (!res.isValid) {
     console.debug("Invalid profile frog POD", res.issues);
