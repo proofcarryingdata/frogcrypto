@@ -3,14 +3,13 @@ import {
   type ProfileFrogPOD,
   signProfileFrogData,
 } from "@frogcrypto/shared";
-import { type POD } from "@pcd/pod";
+import { type PODData, podToPODData } from "@parcnet-js/podspec";
 import {
   useMutation,
   type UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { podToPODData } from "@parcnet-js/podspec";
 import { QUERY_KEY_FROGS, useProfileFrogs } from "./useFrogs";
 import { useParcnetClient } from "./useParcnetClient";
 import { useSemaphoreIdBase64, useUserIdentity } from "./useUserState";
@@ -65,25 +64,21 @@ export function useSetMyProfilePOD(
         throw new Error("User not initialized");
       }
 
-      const signedPOD = signProfileFrogData(
-        unsignedPOD,
-        userIdentity.privateKey
+      const signedPOD = podToPODData(
+        signProfileFrogData(unsignedPOD, userIdentity.privateKey)
       );
-      await z.pod
-        .collection(FROGCRYPTO_FOLDER_NAME)
-        .insert(podToPODData(signedPOD));
+      await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(signedPOD);
 
-      const frogs = queryClient.getQueryData<POD[]>([QUERY_KEY_FROGS]);
+      const frogs = queryClient.getQueryData<PODData[]>([QUERY_KEY_FROGS]);
       if (!frogs) {
         return;
       }
 
       const oldPOD = frogs.find(
         (pod) =>
-          pod.content.getRawValue("profileId") ===
-            signedPOD.content.getRawValue("profileId") &&
-          pod.content.getRawValue("ownerSemaphoreId") ===
-            signedPOD.content.getRawValue("ownerSemaphoreId")
+          pod.entries.profileId?.value === signedPOD.entries.profileId?.value &&
+          pod.entries.ownerSemaphoreId?.value ===
+            signedPOD.entries.ownerSemaphoreId?.value
       );
       if (oldPOD) {
         await z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldPOD.signature);

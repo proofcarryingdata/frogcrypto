@@ -5,7 +5,7 @@ import { shortCommitment, userPublicKeyToUserId } from './semaphore';
 export const POD_TYPE_FROGCRYPTO_PLAYER_ID = "frogcrypto.playerId";
 
 export const PlayerIDSpec = p.entries({
-  podType: {
+  pod_type: {
     type: "string",
     isMemberOf: [
       {
@@ -42,7 +42,7 @@ export const getPlayerIDEntries = ({
   const playerId = shortCommitment(userPublicKeyToUserId(playerPk));
 
   return PlayerIDSpec.parse({
-    podType: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
+    pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PLAYER_ID },
     playerPk: { type: "eddsa_pubkey", value: playerPk },
     device: { type: "string", value: device },
     timestamp: { type: "int", value: BigInt(Date.now()) },

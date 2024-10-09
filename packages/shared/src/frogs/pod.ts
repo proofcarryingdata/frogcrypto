@@ -1,10 +1,10 @@
-import _ from 'lodash';
+import _ from "lodash";
 
-import * as p from '@parcnet-js/podspec';
-import { POD, POD_INT_MAX, PODIntValue } from '@pcd/pod';
+import * as p from "@parcnet-js/podspec";
+import { POD, POD_INT_MAX, PODIntValue } from "@pcd/pod";
 
-import { compressBigInt, decompressBigInt } from '../bigint';
-import { Biome, IFrogData, Rarity, Temperament } from './base';
+import { compressBigInt, decompressBigInt } from "../bigint";
+import { Biome, IFrogData, Rarity, Temperament } from "./base";
 
 export type FrogPOD = IFrogData & {
   signature: string;
@@ -22,7 +22,7 @@ function enumToEntryList<T extends Record<string, number | string>>(
 }
 
 export const FrogSpec = p.entries({
-  podType: {
+  pod_type: {
     type: "string",
     isMemberOf: [{ type: "string", value: POD_TYPE_FROGCRYPTO_FROG }],
   },
@@ -78,7 +78,7 @@ export function signFrogData(frog: IFrogData, privateKey: string): POD {
   const res = FrogSpec.safeParse(
     {
       ...frog,
-      podType: POD_TYPE_FROGCRYPTO_FROG,
+      pod_type: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
       timestampSigned: Date.now(),
     },
@@ -145,7 +145,7 @@ export function signProfileFrogData(
   const res = ProfileFrogSpec.safeParse(
     {
       ...frog,
-      podType: POD_TYPE_FROGCRYPTO_FROG,
+      pod_type: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
       profileId: decompressBigInt(frog.profileId),
       timestampSigned: Date.now(),

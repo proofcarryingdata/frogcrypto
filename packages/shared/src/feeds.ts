@@ -9,7 +9,7 @@ import { Biome } from "./frogs";
 export const POD_TYPE_FROGCRYPTO_FEED = "frogcrypto.feed";
 
 export const FeedSpec = p.entries({
-  podType: {
+  pod_type: {
     type: "string",
     isMemberOf: [
       {
@@ -56,7 +56,7 @@ export type Feed = z.infer<typeof FeedSchema>;
 export const signFeedPOD = (feed: Feed, privateKey: string) => {
   const pod = FeedSpec.parse(
     {
-      podType: POD_TYPE_FROGCRYPTO_FEED,
+      pod_type: POD_TYPE_FROGCRYPTO_FEED,
       id: feed.id,
       name: feed.name,
       description: feed.description,
