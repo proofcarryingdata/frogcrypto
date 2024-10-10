@@ -14,7 +14,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { getAllFrogs } from "../db/frog-cache";
 import { getSpiritFrog } from "../db/frogs";
-import { userFeedsTable, userIdsTable } from "../db/schema";
+import { userFeedsTable, userScoresTable } from "../db/schema";
 import { getUserScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
@@ -48,9 +48,11 @@ export const usersRouter = router({
       }
       logger.info(`Got auth POD for user ${owner} with signer ${signerPk}`);
 
+      // TODO: verify ticket proof
+
       await db
-        .insert(userIdsTable)
-        .values({ semaphoreId: owner, signerPk })
+        .insert(userScoresTable)
+        .values({ semaphoreId: owner })
         .onConflictDoNothing();
     }),
   me: authedProcedure

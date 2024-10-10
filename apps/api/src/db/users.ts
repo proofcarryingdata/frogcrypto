@@ -9,18 +9,11 @@ export const incrementScore = async (
   increment = 1
 ): Promise<typeof userScoresTable.$inferSelect> => {
   const [result] = await tx
-    .insert(userScoresTable)
-    .values({
-      semaphoreId,
-      score: increment,
-      friendCount: 0,
+    .update(userScoresTable)
+    .set({
+      score: sql`${userScoresTable.score} + ${increment}`,
     })
-    .onConflictDoUpdate({
-      target: userScoresTable.semaphoreId,
-      set: {
-        score: sql`${userScoresTable.score} + ${increment}`,
-      },
-    })
+    .where(eq(userScoresTable.semaphoreId, semaphoreId))
     .returning();
 
   if (!result) {

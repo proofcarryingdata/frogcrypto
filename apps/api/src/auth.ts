@@ -1,53 +1,42 @@
-import { decompressBigInt, logger } from "@frogcrypto/shared";
+import {
+  decompressBigInt,
+  logger,
+  PwtSpec,
+  verifyPwtAndGetSemaphoreId,
+} from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { eq } from "drizzle-orm";
 import type express from "express";
 import { TRPCError } from "@trpc/server";
 import { db } from "./db";
-import { userIdsTable } from "./db/schema";
-
-export const PwtSpec = p.entries({
-  aud: { type: "string", value: "frogcrypto" },
-  exp: { type: "int" },
-  // signer commitment
-  iss: { type: "cryptographic" },
-  // root semaphore id
-  sub: { type: "cryptographic" },
-});
+import { userScoresTable } from "./db/schema";
 
 export interface AuthSession {
   user: {
     semaphoreId: bigint;
     semaphoreIdBase64: string;
-    signerPublicKey: bigint;
     isAdmin: boolean;
   };
 }
 
 async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   const pod = POD.deserialize(token);
-  if (!pod.verifySignature()) {
-    logger.error("Invalid PWT signature");
-    throw new Error("Invalid PWT: invalid POD signature");
+  let semaphoreId: bigint;
+  try {
+    semaphoreId = verifyPwtAndGetSemaphoreId(pod);
+  } catch (e) {
+    logger.error("Invalid PWT", e);
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid PWT",
+    });
   }
-  const parsed = PwtSpec.safeParse(pod.content.asEntries());
-  if (!parsed.isValid) {
-    console.error("Invalid PWT", parsed.issues);
-    throw new Error("Invalid PWT: invalid POD content");
-  }
-  const signerPublicKey = decompressBigInt(pod.signerPublicKey);
-  // if (poseidon2(signerPublicKey) !== parsed.value.iss.value) {
-  //   logger.error("Mismatch between PWT iss and signer public key");
-  //   throw new Error(
-  //     "Invalid PWT: mismatch between PWT iss and signer public key"
-  //   );
-  // }
 
   const [user] = await db
     .select()
-    .from(userIdsTable)
-    .where(eq(userIdsTable.signerPk, pod.signerPublicKey));
+    .from(userScoresTable)
+    .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));
 
   if (!user) {
     logger.error("User not found for signer public key", pod.signerPublicKey);
@@ -57,20 +46,10 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
     });
   }
 
-  const semaphoreId = decompressBigInt(user.semaphoreId);
-  if (semaphoreId !== parsed.value.sub.value) {
-    logger.error("Mismatch between PWT sub and user semaphore id");
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid PWT: mismatch between PWT sub and user semaphore id",
-    });
-  }
-
   return {
     user: {
       semaphoreId,
       semaphoreIdBase64: user.semaphoreId,
-      signerPublicKey,
       isAdmin: user.isAdmin,
     },
   };

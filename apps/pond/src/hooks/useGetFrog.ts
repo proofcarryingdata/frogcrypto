@@ -25,7 +25,7 @@ const useGetFrog = () => {
       );
 
       // TODO: optimize
-      await utils.users.me.refetch();
+      await utils.users.me.invalidate();
     },
     onError: async () => {
       await utils.users.me.invalidate();

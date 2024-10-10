@@ -1,5 +1,5 @@
-import { PwtSpec } from "@frogcrypto/api/src/auth";
 import {
+  PwtSpec,
   decompressBigInt,
   FROGCRYPTO_FOLDER_NAME,
   getPlayerIDEntries,

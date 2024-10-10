@@ -19,7 +19,7 @@ export const socialRequestStatusEnum = pgEnum("social_request_status", [
   "declined",
 ]);
 
-export const userIdsTable = pgTable(
+export const _userIdsTable = pgTable(
   "user_ids",
   {
     id: serial("id").primaryKey(),
@@ -64,6 +64,7 @@ export const userScoresTable = pgTable(
     semaphoreId: text("semaphore_id").notNull(),
     score: integer("score").notNull().default(0),
     friendCount: integer("friend_count").notNull().default(0),
+    isAdmin: boolean("is_admin").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
