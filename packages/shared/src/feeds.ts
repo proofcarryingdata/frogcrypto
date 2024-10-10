@@ -1,10 +1,9 @@
-import _ from "lodash";
-import { z } from "zod";
+import _ from 'lodash';
+import { z } from 'zod';
 
-import * as p from "@parcnet-js/podspec";
-import { POD } from "@pcd/pod";
+import * as p from '@parcnet-js/podspec';
 
-import { Biome } from "./frogs";
+import { Biome } from './frogs';
 
 export const POD_TYPE_FROGCRYPTO_FEED = "frogcrypto.feed";
 
@@ -53,8 +52,8 @@ export const FeedSchema = z.object({
 
 export type Feed = z.infer<typeof FeedSchema>;
 
-export const signFeedPOD = (feed: Feed, privateKey: string) => {
-  const pod = FeedSpec.parse(
+export const toFeedPODEntries = (feed: Feed) => {
+  return FeedSpec.parse(
     {
       pod_type: POD_TYPE_FROGCRYPTO_FEED,
       id: feed.id,
@@ -69,7 +68,6 @@ export const signFeedPOD = (feed: Feed, privateKey: string) => {
     },
     { coerce: true }
   );
-  return POD.sign(pod, privateKey);
 };
 
 export const parseFeedPOD = (pod: p.PODData): Feed => {

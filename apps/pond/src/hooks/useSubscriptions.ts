@@ -1,21 +1,21 @@
-import { atom, useAtom, useAtomValue } from "jotai";
-import { atomWithStorage } from "jotai/utils";
-import { withImmer } from "jotai-immer";
-import { useCallback, useEffect } from "react";
 import {
   FeedSpec,
   FROGCRYPTO_FOLDER_NAME,
   parseFeedPOD,
-  signFeedPOD,
+  toFeedPODEntries,
   type Feed,
 } from "@frogcrypto/shared";
+import { pod } from "@parcnet-js/podspec";
 import { useQuery } from "@tanstack/react-query";
-import { pod, podToPODData } from "@parcnet-js/podspec";
-import { useUserIdentity } from "./useUserState";
+import { atom, useAtom, useAtomValue } from "jotai";
+import { withImmer } from "jotai-immer";
+import { atomWithStorage } from "jotai/utils";
+import { useCallback, useEffect } from "react";
 import { useParcnetClient } from "./useParcnetClient";
 
 const QUERY_KEY_FEEDS = ["feeds"];
 
+// TODO: we should just persist FeedPOD to avoid duplicate entries
 const subscriptionsAtom = withImmer(
   atomWithStorage<Feed[]>("subscriptions", [])
 );
@@ -26,7 +26,6 @@ const feedIdsAtom = atom<string[]>((get) =>
 
 export function useSubscriptions() {
   const [subscriptions, setSubscriptions] = useAtom(subscriptionsAtom);
-  const userIdentity = useUserIdentity();
   const z = useParcnetClient();
 
   const { data: feedPODs } = useQuery({
@@ -54,16 +53,18 @@ export function useSubscriptions() {
     }
   }, [feedPODs, setSubscriptions]);
   useEffect(() => {
-    if (userIdentity && feedPODs) {
+    if (feedPODs) {
       subscriptions.forEach((sub) => {
         if (!feedPODs.some((feed) => feed.id === sub.id)) {
           void z.pod
-            .collection(FROGCRYPTO_FOLDER_NAME)
-            .insert(podToPODData(signFeedPOD(sub, userIdentity.privateKey)));
+            .sign(toFeedPODEntries(sub))
+            .then((podData) =>
+              z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podData)
+            );
         }
       });
     }
-  }, [feedPODs, subscriptions, userIdentity, z.pod]);
+  }, [feedPODs, subscriptions, z]);
 
   return {
     subscriptions,

@@ -4,11 +4,11 @@ import {
   FROG_FREEROLLS,
   Biome,
 } from "@frogcrypto/shared";
-import axios from "axios";
 import _ from "lodash";
 import React, { useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 import { podToPODData } from "@parcnet-js/podspec";
+import { TRPCClientError } from "@trpc/client";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
 import useFrogs from "../hooks/useFrogs";
@@ -121,20 +121,18 @@ function SearchButton({
             return `You found a ${frog.name} in ${feed.name}!`;
           },
           error: (e) => {
-            if (
-              axios.isAxiosError<{ error: string }, Record<string, unknown>>(e)
-            ) {
-              const fetchErrorMsg = e.response?.data.error.toLowerCase();
-              if (fetchErrorMsg?.includes("not active")) {
+            if (e instanceof TRPCClientError) {
+              const fetchErrorMsg = e.message.toLowerCase();
+              if (fetchErrorMsg.includes("not active")) {
                 return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
               }
-              if (fetchErrorMsg?.includes("next fetch")) {
+              if (fetchErrorMsg.includes("next fetch")) {
                 return "Froggy hiccup! Seems like one of our amphibians is playing camouflage. Zoo staff are peeking under every leaf. Hop back later for another try!";
               }
-              if (fetchErrorMsg?.includes("faucet off")) {
+              if (fetchErrorMsg.includes("faucet off")) {
                 return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";
               }
-              if (fetchErrorMsg?.includes("frog not found")) {
+              if (fetchErrorMsg.includes("frog not found")) {
                 return "Alas, there is nothing but a lily pad here.";
               }
             }

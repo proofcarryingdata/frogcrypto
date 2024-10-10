@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import * as p from "@parcnet-js/podspec";
-import { POD, POD_INT_MAX, PODIntValue } from "@pcd/pod";
+import { POD_INT_MAX, PODEntries, PODIntValue } from "@pcd/pod";
 
 import { compressBigInt, decompressBigInt } from "../bigint";
 import { Biome, IFrogData, Rarity, Temperament } from "./base";
@@ -74,7 +74,7 @@ export function parseFrogPOD(pod: p.PODData): FrogPOD {
   } satisfies FrogPOD;
 }
 
-export function signFrogData(frog: IFrogData, privateKey: string): POD {
+export function toFrogPODEntries(frog: IFrogData): PODEntries {
   const res = FrogSpec.safeParse(
     {
       ...frog,
@@ -89,7 +89,7 @@ export function signFrogData(frog: IFrogData, privateKey: string): POD {
     throw new Error("Invalid frog data");
   }
 
-  return POD.sign(res.value, privateKey);
+  return res.value;
 }
 
 export function parseFrogEnum(
@@ -138,10 +138,7 @@ export function parseProfileFrogPOD(pod: p.PODData): ProfileFrogPOD {
   };
 }
 
-export function signProfileFrogData(
-  frog: ProfileFrogPOD,
-  privateKey: string
-): POD {
+export function toProfileFrogPODEntries(frog: ProfileFrogPOD): PODEntries {
   const res = ProfileFrogSpec.safeParse(
     {
       ...frog,
@@ -157,5 +154,5 @@ export function signProfileFrogData(
     throw new Error("Invalid profile frog data");
   }
 
-  return POD.sign(res.value, privateKey);
+  return res.value;
 }

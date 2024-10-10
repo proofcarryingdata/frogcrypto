@@ -3,9 +3,9 @@ import {
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
   logger,
-  signFrogData,
   type ServerFeed,
   Biome,
+  toFrogPODEntries,
 } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
@@ -151,7 +151,10 @@ export const feedsRouter = router({
               );
             }
 
-            const frogPOD = signFrogData(frogData, ISSUER_PRIVATE_KEY);
+            const frogPOD = POD.sign(
+              toFrogPODEntries(frogData),
+              ISSUER_PRIVATE_KEY
+            );
 
             return {
               pod: frogPOD,

@@ -1,6 +1,6 @@
 import { eq, inArray, sql } from "drizzle-orm";
 import { type FrogCryptoScore } from "@frogcrypto/shared";
-import { userIdsTable, userScoresTable } from "./schema";
+import { userScoresTable } from "./schema";
 import { db, type Transaction } from ".";
 
 export const incrementScore = async (
@@ -49,16 +49,6 @@ export const recordFriendCount = async (
 
   return result;
 };
-
-export async function getSemaphoreId(
-  signerPk: string
-): Promise<string | undefined> {
-  const userId = await db
-    .select({ semaphoreId: userIdsTable.semaphoreId })
-    .from(userIdsTable)
-    .where(eq(userIdsTable.signerPk, signerPk));
-  return userId[0]?.semaphoreId;
-}
 
 export const userScoresView = db.$with("user_scores_view").as(
   db

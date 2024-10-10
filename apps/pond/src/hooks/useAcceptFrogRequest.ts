@@ -2,18 +2,16 @@ import { toast } from "react-hot-toast";
 import { POD } from "@pcd/pod";
 import {
   FROGCRYPTO_FOLDER_NAME,
-  signProfileFrogData,
+  toProfileFrogPODEntries,
 } from "@frogcrypto/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { podToPODData } from "@parcnet-js/podspec";
 import { trpc } from "../trpc";
-import { useUserIdentity } from "./useUserState";
 import { useMyProfilePOD } from "./useProfilePOD";
 import { useParcnetClient } from "./useParcnetClient";
 import { QUERY_KEY_FROGS } from "./useFrogs";
 
 const useAcceptFrogRequest = () => {
-  const userIdentity = useUserIdentity();
   const { data: profilePOD } = useMyProfilePOD();
   const z = useParcnetClient();
   const queryClient = useQueryClient();
@@ -27,25 +25,25 @@ const useAcceptFrogRequest = () => {
       requestedBy: string;
       requestPOD: string | null;
     }) => {
-      if (!userIdentity) {
-        throw new Error("User identity not found");
-      }
       if (!profilePOD) {
         // FIXME: we need to bring user to frog minter first
         throw new Error("Profile not found");
       }
 
-      const responsePOD = signProfileFrogData(
-        {
+      const responsePOD = await z.pod.sign(
+        toProfileFrogPODEntries({
           ...profilePOD,
           ownerSemaphoreId: pendingRequest.requestedBy,
-        },
-        userIdentity.privateKey
+        })
       );
 
       return createSocialRequest.mutateAsync({
         requestId: pendingRequest.id,
-        responsePOD,
+        responsePOD: POD.load(
+          responsePOD.entries,
+          responsePOD.signature,
+          responsePOD.signerPublicKey
+        ),
       });
     },
     onSuccess: async (data, variables) => {

@@ -1,9 +1,9 @@
 import {
   FROGCRYPTO_FOLDER_NAME,
   type ProfileFrogPOD,
-  signProfileFrogData,
+  toProfileFrogPODEntries,
 } from "@frogcrypto/shared";
-import { type PODData, podToPODData } from "@parcnet-js/podspec";
+import { type PODData } from "@parcnet-js/podspec";
 import {
   useMutation,
   type UseMutationOptions,
@@ -12,7 +12,7 @@ import {
 import { useCallback } from "react";
 import { QUERY_KEY_FROGS, useProfileFrogs } from "./useFrogs";
 import { useParcnetClient } from "./useParcnetClient";
-import { useSemaphoreIdBase64, useUserIdentity } from "./useUserState";
+import { useSemaphoreIdBase64 } from "./useUserState";
 
 function useSelectMyProfilePOD() {
   const semaphoreIdBase64 = useSemaphoreIdBase64();
@@ -54,19 +54,12 @@ export function useOtherProfilePODs() {
 export function useSetMyProfilePOD(
   opts?: Omit<UseMutationOptions<void, Error, ProfileFrogPOD>, "mutationFn">
 ) {
-  const userIdentity = useUserIdentity();
   const z = useParcnetClient();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (unsignedPOD: ProfileFrogPOD) => {
-      if (!userIdentity?.privateKey) {
-        throw new Error("User not initialized");
-      }
-
-      const signedPOD = podToPODData(
-        signProfileFrogData(unsignedPOD, userIdentity.privateKey)
-      );
+      const signedPOD = await z.pod.sign(toProfileFrogPODEntries(unsignedPOD));
       await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(signedPOD);
 
       const frogs = queryClient.getQueryData<PODData[]>([QUERY_KEY_FROGS]);

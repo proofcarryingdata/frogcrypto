@@ -1,21 +1,23 @@
-import { signProfileFrogData } from "@frogcrypto/shared";
+import { toProfileFrogPODEntries } from "@frogcrypto/shared";
+import { POD } from "@pcd/pod";
+import { useMutation } from "@tanstack/react-query";
 import React, { useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useParams } from "wouter";
 import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
-import useFrogs, { useProfileFrogs } from "../../hooks/useFrogs";
+import { useProfileFrogs } from "../../hooks/useFrogs";
+import { useParcnetClient } from "../../hooks/useParcnetClient";
 import { useMyProfilePOD } from "../../hooks/useProfilePOD";
-import { useUserIdentity } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import FrogProfile from "./FrogProfile";
 
 const useAddFriend = (otherPartyId: string) => {
-  const userIdentity = useUserIdentity();
   const { data: profilePOD } = useMyProfilePOD();
+  const z = useParcnetClient();
 
   const utils = trpc.useUtils();
-  const createSocialRequest =
+  const { mutateAsync: createSocialRequest } =
     trpc.social.createOrUpdateSocialRequest.useMutation({
       onSuccess: (data) => {
         void utils.social.getPendingRequests.invalidate();
@@ -30,32 +32,32 @@ const useAddFriend = (otherPartyId: string) => {
       },
     });
 
-  if (!otherPartyId) {
-    return undefined;
-  }
+  const { mutate } = useMutation({
+    mutationFn: async () => {
+      if (!profilePOD) {
+        // FIXME: we need to bring user to frog minter first
+        throw new Error("Profile not found");
+      }
 
-  return () => {
-    if (!userIdentity) {
-      throw new Error("User identity not found");
-    }
-    if (!profilePOD) {
-      // FIXME: we need to bring user to frog minter first
-      throw new Error("Profile not found");
-    }
+      const requestPODData = await z.pod.sign(
+        toProfileFrogPODEntries({
+          ...profilePOD,
+          ownerSemaphoreId: otherPartyId,
+        })
+      );
 
-    const requestPOD = signProfileFrogData(
-      {
-        ...profilePOD,
-        ownerSemaphoreId: otherPartyId,
-      },
-      userIdentity.privateKey
-    );
+      return createSocialRequest({
+        otherPartyId,
+        requestPOD: POD.load(
+          requestPODData.entries,
+          requestPODData.signature,
+          requestPODData.signerPublicKey
+        ),
+      });
+    },
+  });
 
-    createSocialRequest.mutate({
-      otherPartyId,
-      requestPOD,
-    });
-  };
+  return otherPartyId ? mutate : undefined;
 };
 
 function OtherProfile() {

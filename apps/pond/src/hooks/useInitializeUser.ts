@@ -3,24 +3,19 @@ import {
   decompressBigInt,
   FROGCRYPTO_FOLDER_NAME,
   getPlayerIDEntries,
-  logger,
   PlayerIDSpec,
-  semaphoreIdToUserId,
+  compressBigInt,
 } from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
 import { useQuery } from "@tanstack/react-query";
-import { crypto } from "@zk-kit/utils";
 import { useAtom } from "jotai";
-import { useEffect, useState } from "react";
-import { stringify } from "superjson";
+import { useEffect } from "react";
 import { setToken, trpc } from "../trpc";
-import { rootIdAtom, userIdentityAtom } from "./useUserState";
 import { useMaybeParcnetClient } from "./useParcnetClient";
+import { rootIdAtom } from "./useUserState";
 
 function useInitializeUser() {
-  const [userIdentity, setUserIdentity] = useAtom(userIdentityAtom);
   const [rootId, setRootId] = useAtom(rootIdAtom);
   const z = useMaybeParcnetClient();
   const { mutateAsync: auth } = trpc.users.auth.useMutation();
@@ -31,25 +26,14 @@ function useInitializeUser() {
     enabled: Boolean(z),
   });
 
-  useEffect(() => {
-    if (!userIdentity) {
-      setUserIdentity(
-        semaphoreIdToUserId(new Identity(crypto.getRandomValues(32)))
-      );
-    }
-  }, [setUserIdentity, userIdentity]);
-
   useQuery({
-    queryKey: [
-      "initializeUser",
-      Boolean(z),
-      stringify(userIdentity),
-      String(semaphoreId),
-    ],
+    queryKey: ["initializeUser", Boolean(z), String(semaphoreId)],
     queryFn: async () => {
-      if (!z || !userIdentity || !semaphoreId) {
-        throw new Error("Missing zupassAPI, userIdentity, or semaphoreId");
+      if (!z || !semaphoreId) {
+        throw new Error("Missing zupassAPI, or semaphoreId");
       }
+
+      const publicKey = await z.identity.getPublicKey();
 
       const myPlayerIDSpec = p.pod({
         entries: PlayerIDSpec.schema,
@@ -60,14 +44,14 @@ function useInitializeUser() {
               [
                 {
                   type: "eddsa_pubkey",
-                  value: userIdentity.publicKey,
+                  value: publicKey,
                 },
               ],
             ],
           },
         ],
         signerPublicKey: {
-          isMemberOf: [await z.identity.getPublicKey()],
+          isMemberOf: [publicKey],
         },
       });
       const pods = await z.pod
@@ -77,7 +61,7 @@ function useInitializeUser() {
         pods[0] ??
         (await z.pod.sign(
           getPlayerIDEntries({
-            playerPk: userIdentity.publicKey,
+            playerPk: publicKey,
             device: window.navigator.userAgent,
             location: window.location.href,
           })
@@ -94,58 +78,49 @@ function useInitializeUser() {
         )
       );
 
-      setRootId(semaphoreId.toString());
+      setRootId(compressBigInt(semaphoreId));
 
-      return {
-        rootId: semaphoreId.toString(),
-        publicKey: userIdentity.publicKey,
-      };
+      return true;
     },
     throwOnError: true,
-    enabled:
-      !rootId && Boolean(z) && Boolean(userIdentity) && Boolean(semaphoreId),
+    enabled: !rootId && Boolean(z) && Boolean(semaphoreId),
   });
 
   // reset rootId if it doesn't match semaphoreId
   useEffect(() => {
-    if (semaphoreId && rootId && semaphoreId.toString() !== rootId) {
+    if (semaphoreId && rootId && compressBigInt(semaphoreId) !== rootId) {
       setRootId(null);
     }
   }, [rootId, semaphoreId, setRootId]);
 
-  const [ready, setReady] = useState<boolean>(false);
-  useEffect(() => {
-    if (userIdentity && rootId) {
-      const refreshToken = () => {
-        setToken(
-          POD.sign(
-            PwtSpec.parse({
-              aud: { type: "string", value: "frogcrypto" },
-              exp: {
-                type: "int",
-                value: BigInt(Date.now() + 1000 * 60 * 60 * 24),
-              },
-              iss: {
-                type: "cryptographic",
-                value: decompressBigInt(userIdentity.commitment),
-              },
-              sub: { type: "cryptographic", value: BigInt(rootId) },
-            }),
-            userIdentity.privateKey
-          ).serialize()
-        );
-      };
-      const interval = setInterval(refreshToken, 1000 * 60 * 60);
+  const { data: ready = false } = useQuery({
+    queryKey: ["refreshToken", Boolean(z), rootId],
+    queryFn: async () => {
+      if (!z || !rootId) {
+        return false;
+      }
+      const pwt = await z.pod.sign(
+        PwtSpec.parse({
+          aud: { type: "string", value: "frogcrypto" },
+          exp: {
+            type: "int",
+            value: BigInt(Date.now() + 1000 * 60 * 60 * 24),
+          },
+          iss: {
+            type: "cryptographic",
+            value: decompressBigInt(rootId),
+          },
+          sub: { type: "cryptographic", value: decompressBigInt(rootId) },
+        })
+      );
+      setToken(
+        POD.load(pwt.entries, pwt.signature, pwt.signerPublicKey).serialize()
+      );
 
-      refreshToken();
-      setReady(true);
-
-      return () => {
-        clearInterval(interval);
-        setReady(false);
-      };
-    }
-  }, [rootId, userIdentity]);
+      return true;
+    },
+    enabled: Boolean(z) && Boolean(rootId),
+  });
 
   return ready;
 }

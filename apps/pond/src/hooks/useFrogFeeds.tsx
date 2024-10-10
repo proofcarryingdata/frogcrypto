@@ -32,7 +32,7 @@ export function useInitializeFrogSubscriptions(): (
             addSubscription(feed);
 
             // don't show toast if feedId is specified
-            if (!deeplink) {
+            if (deeplink) {
               toast.success(
                 `Croak and awe! The ${feed.name} awaits your adventurous leap!`,
                 {
