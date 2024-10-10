@@ -1,4 +1,4 @@
-import { compressBigInt, decompressBigInt } from "@frogcrypto/shared";
+import { decompressBigInt } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNotNull, or, sql } from "drizzle-orm";
@@ -25,7 +25,14 @@ export const socialRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { otherPartyId, requestPOD } = input;
-      const myId = compressBigInt(ctx.user.semaphoreId);
+      const myId = ctx.user.semaphoreIdBase64;
+
+      if (myId === otherPartyId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot send a request to yourself",
+        });
+      }
 
       // Check rate limit
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -112,13 +119,13 @@ export const socialRouter = router({
     return requests.map((request) => ({
       ...request,
       requestedBy:
-        request.party1PODTimestamp === request.updatedAt
+        request.party1PODTimestamp?.getTime() === request.updatedAt.getTime()
           ? request.party1
           : request.party2,
       requestPOD:
-        request.party1PODTimestamp === request.updatedAt
-          ? request.party2POD
-          : request.party1POD,
+        request.party1PODTimestamp?.getTime() === request.updatedAt.getTime()
+          ? request.party1POD
+          : request.party2POD,
     }));
   }),
 

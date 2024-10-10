@@ -96,24 +96,27 @@ function OtherProfile() {
       (request) => request.party1 === profileId || request.party2 === profileId
     );
   }, [profileId, pendingRequests]);
-  const canAcceptRequest = useMemo(() => {
-    if (!pendingRequest) return false;
-    return (
-      (pendingRequest.party1 === profileId &&
-        Boolean(pendingRequest.party1POD)) ||
-      (pendingRequest.party2 === profileId && Boolean(pendingRequest.party2POD))
-    );
-  }, [pendingRequest, profileId]);
+
   const friendStatus = useMemo(() => {
     if (knownFrog) return "friends";
     if (pendingRequest) return "pending";
     return "none";
   }, [knownFrog, pendingRequest]);
 
-  const onAddFriend = useAddFriend(
-    !pendingRequest || canAcceptRequest ? (profileId ?? "") : ""
-  );
+  const addFriend = useAddFriend(profileId ?? "");
   const { mutate: acceptRequest } = useAcceptFrogRequest();
+  const onClick = useMemo(() => {
+    if (pendingRequest) {
+      if (pendingRequest.requestedBy === profileId) {
+        return () => {
+          acceptRequest(pendingRequest);
+        };
+      }
+    } else {
+      return addFriend;
+    }
+    return undefined;
+  }, [pendingRequest, profileId, acceptRequest, addFriend]);
 
   if (isLoadingFrogs || isLoadingMyProfilePOD || !userData) return <Loader />;
 
@@ -127,13 +130,7 @@ function OtherProfile() {
       friendStatus={friendStatus}
       friendCount={friendCount}
       frogCount={frogCount}
-      onAddFriend={
-        pendingRequest
-          ? () => {
-              acceptRequest(pendingRequest);
-            }
-          : onAddFriend
-      }
+      onAddFriend={onClick}
     />
   );
 }

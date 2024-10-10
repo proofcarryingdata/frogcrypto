@@ -17,14 +17,17 @@ function FrogFriends(): React.ReactElement {
     <div>
       <PendingRequests />
       {friends && friends.length > 0 ? (
-        <div>
-          {friends.map((friend) => (
-            <FrogProfileRow
-              key={friend.profileId}
-              frog={friend}
-              profileId={friend.profileId}
-            />
-          ))}
+        <div className="flex flex-col gap-4">
+          <h2 className="text-xl font-bold">Friends ({friends.length})</h2>
+          <div>
+            {friends.map((friend) => (
+              <FrogProfileRow
+                key={friend.profileId}
+                frog={friend}
+                profileId={friend.profileId}
+              />
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

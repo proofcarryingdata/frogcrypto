@@ -9,7 +9,7 @@ import Loader from "../shared/Loader";
  */
 function FrogScore(): JSX.Element {
   const { data: { myScore: score } = {} } = useUserState();
-  const { data: scores = [] } = trpc.social.scoreboard.useQuery();
+  const { data: scores } = trpc.social.scoreboard.useQuery();
 
   if (!score) {
     return <Loader />;
@@ -22,13 +22,15 @@ function FrogScore(): JSX.Element {
         scores={[score]}
         getUsername={getUsernameFromHash}
       />
-      {scores.length > 0 && (
+      {scores ? (
         <ScoreTable
           title="Leaderboard"
           scores={scores}
           myScore={score}
           getUsername={getUsernameFromHash}
         />
+      ) : (
+        <Loader />
       )}
     </div>
   );

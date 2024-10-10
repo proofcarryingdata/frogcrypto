@@ -550,7 +550,7 @@ export function SpiritFrogMinter() {
           className={`btn-frog ${isLeapAnimating ? "animate-leap" : ""}`}
           disabled={isLeapAnimating}
         >
-          Take the Leap of Faith!
+          Hop to Your Destiny!
         </button>
       </div>
     </TypistText>
