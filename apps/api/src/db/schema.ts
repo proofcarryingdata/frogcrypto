@@ -65,6 +65,7 @@ export const userScoresTable = pgTable(
     score: integer("score").notNull().default(0),
     friendCount: integer("friend_count").notNull().default(0),
     isAdmin: boolean("is_admin").notNull().default(false),
+    socialId: uuid("social_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

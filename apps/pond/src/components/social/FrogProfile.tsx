@@ -1,3 +1,4 @@
+import { stat } from "node:fs";
 import {
   type IFrogData,
   type ProfileFrogPOD,
@@ -9,21 +10,28 @@ import { Link } from "wouter";
 import { FrogAttributes, FrogSocialAttributes } from "../shared/FrogCard";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 
+const DESCRIPTION_MAX_LENGTH = 100;
+
 function FrogDescription({ frog }: { frog: IFrogData }) {
   const [expanded, setExpanded] = useState(false);
+  const isDescriptionLong = frog.description.length > DESCRIPTION_MAX_LENGTH;
 
   return (
     <p className="text-sm text-gray-700 text-left">
-      {expanded ? frog.description : `${frog.description.slice(0, 100)}...`}
-      <button
-        type="button"
-        onClick={() => {
-          setExpanded(!expanded);
-        }}
-        className="text-green-600 hover:text-green-700 transition-colors pl-1"
-      >
-        {expanded ? "See less" : "See more"}
-      </button>
+      {expanded || !isDescriptionLong
+        ? frog.description
+        : `${frog.description.slice(0, DESCRIPTION_MAX_LENGTH)}...`}
+      {isDescriptionLong ? (
+        <button
+          type="button"
+          onClick={() => {
+            setExpanded(!expanded);
+          }}
+          className="text-green-600 hover:text-green-700 transition-colors pl-1"
+        >
+          {expanded ? "See less" : "See more"}
+        </button>
+      ) : null}
     </p>
   );
 }
@@ -31,36 +39,22 @@ function FrogDescription({ frog }: { frog: IFrogData }) {
 function FrogProfile({
   frog,
   profileId,
-  isMyProfile,
-  friendStatus = "none",
+  status,
   friendCount,
   frogCount,
   onAddFriend,
   onEditProfile,
 }: {
   frog: IFrogData | ProfileFrogPOD;
-  profileId: string;
-  isMyProfile: boolean;
-  friendStatus?: "none" | "pending" | "friends";
-  friendCount: number;
-  frogCount: number;
+  status: "none" | "pending" | "friends" | "unclaimed" | "mine";
+  profileId?: string;
+  friendCount?: number;
+  frogCount?: number;
   onAddFriend?: () => void;
   onEditProfile?: () => void;
 }) {
   const renderFriendButton = () => {
-    if (isMyProfile) {
-      return (
-        <button
-          type="button"
-          onClick={onEditProfile}
-          className="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-colors"
-        >
-          Edit Profile
-        </button>
-      );
-    }
-
-    switch (friendStatus) {
+    switch (status) {
       case "none":
         return (
           <button
@@ -102,6 +96,18 @@ function FrogProfile({
             ✓ Friends
           </button>
         );
+      case "mine":
+        return (
+          <button
+            type="button"
+            onClick={onEditProfile}
+            className="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-colors"
+          >
+            Edit Profile
+          </button>
+        );
+      case "unclaimed":
+        return null;
     }
   };
 
@@ -115,7 +121,7 @@ function FrogProfile({
             className="w-full h-full object-cover"
           />
         </div>
-        {isMyProfile ? (
+        {status === "mine" ? (
           <Link href="/share" className="absolute inset-0">
             <div className="bg-white bottom-0 right-0 absolute">
               <QrCode />
@@ -126,7 +132,9 @@ function FrogProfile({
 
       <div className="text-center px-6 py-4 flex flex-col gap-2">
         <h2 className="text-xl font-bold text-gray-800 mb-2">
-          {`0x${shortCommitment(profileId)}'s ${frog.name}`}
+          {profileId
+            ? `0x${shortCommitment(profileId)}'s ${frog.name}`
+            : frog.name}
         </h2>
 
         {isProfileFrogPOD(frog) ? <FrogSocialAttributes frog={frog} /> : null}
@@ -134,7 +142,7 @@ function FrogProfile({
         <div className="flex justify-center space-x-4 mb-4 text-sm [&_button]:px-2 [&_button]:py-1 [&_button]:rounded-lg">
           {renderFriendButton()}
 
-          {isMyProfile && friendCount > 0 ? (
+          {status === "mine" && friendCount && friendCount > 0 ? (
             <Link href="/friends">
               <button type="button" className="border text-gray-500">
                 {friendCount} Friends
@@ -142,12 +150,12 @@ function FrogProfile({
             </Link>
           ) : (
             <button type="button" disabled className="border text-gray-500">
-              {friendCount} Friends
+              {friendCount ?? "???"} Friends
             </button>
           )}
           <Link href="/scores">
             <button type="button" className="border text-gray-500">
-              {frogCount} 🐸
+              {frogCount ?? "???"} 🐸
             </button>
           </Link>
         </div>

@@ -4,6 +4,9 @@ import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { SuperJSON, registerCustom } from "superjson";
 import { SERVER_URL } from "@frogcrypto/shared";
+import { type inferReactQueryProcedureOptions } from "@trpc/react-query";
+
+export type ReactQueryOptions = inferReactQueryProcedureOptions<AppRouter>;
 
 registerCustom<POD, string>(
   {

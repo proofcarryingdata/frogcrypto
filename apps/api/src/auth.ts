@@ -1,4 +1,5 @@
 import {
+  compressBigInt,
   decompressBigInt,
   logger,
   PwtSpec,
@@ -34,7 +35,9 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   }
 
   const [user] = await db
-    .select()
+    .select({
+      isAdmin: userScoresTable.isAdmin,
+    })
     .from(userScoresTable)
     .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));
 
@@ -49,7 +52,7 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   return {
     user: {
       semaphoreId,
-      semaphoreIdBase64: user.semaphoreId,
+      semaphoreIdBase64: compressBigInt(semaphoreId),
       isAdmin: user.isAdmin,
     },
   };

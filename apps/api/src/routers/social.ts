@@ -1,10 +1,11 @@
 import { decompressBigInt } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, isNotNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
+import { validate as uuidValidate } from "uuid";
 import { db } from "../db";
-import { socialRequestsTable } from "../db/schema";
+import { socialRequestsTable, userScoresTable } from "../db/schema";
 import { recordFriendCount, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
@@ -239,4 +240,35 @@ export const socialRouter = router({
       .orderBy(desc(userScoresView.score))
       .limit(100);
   }),
+
+  claimProfile: authedProcedure
+    .input(
+      z.object({
+        profileId: z.custom<string>(
+          (x) => typeof x === "string" && uuidValidate(x)
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { profileId } = input;
+
+      const res = await db
+        .update(userScoresTable)
+        .set({
+          socialId: profileId,
+        })
+        .where(
+          and(
+            eq(userScoresTable.semaphoreId, String(ctx.user.semaphoreId)),
+            isNull(userScoresTable.socialId)
+          )
+        );
+
+      if (res.rowCount === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You already claimed your profile",
+        });
+      }
+    }),
 });

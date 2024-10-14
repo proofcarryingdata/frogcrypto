@@ -1,9 +1,9 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { Context } from "./context";
 import { SuperJSON, registerCustom } from "superjson";
 import { logger } from "@frogcrypto/shared";
 import { ZodError } from "zod";
 import { POD } from "@pcd/pod";
+import type { Context } from "./context";
 
 registerCustom<POD, string>(
   {

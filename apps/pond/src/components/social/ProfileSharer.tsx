@@ -6,16 +6,18 @@ import QRCode from "react-qr-code";
 import { Link, useLocation } from "wouter";
 import { useZxing } from "react-zxing";
 import { useMyProfilePOD } from "../../hooks/useProfilePOD";
-import { useSemaphoreIdBase64 } from "../../hooks/useUserState";
+import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
 import { Button } from "../shared/Button";
+import FrogNecklaceTeaser from "./FrogNecklaceTeaser";
 
 export function ProfileSharer() {
   const [mode, setMode] = useState<"scan" | "frogme">("frogme");
-  const semaphoreIdBase64 = useSemaphoreIdBase64() ?? "";
   const { data: myProfilePOD } = useMyProfilePOD();
-  const profileUrl = `${window.location.origin}/social/${encodeURIComponent(
-    semaphoreIdBase64
-  )}`;
+  const { data } = useUserState();
+  const socialId = data?.myScore.socialId;
+  const profileUrl = socialId
+    ? `${window.location.origin}/social/${encodeURIComponent(socialId)}`
+    : undefined;
 
   const [, setLocation] = useLocation();
   const { ref } = useZxing({
@@ -48,6 +50,10 @@ export function ProfileSharer() {
 
   if (!myProfilePOD) {
     return <Loader />;
+  }
+
+  if (!profileUrl) {
+    return <FrogNecklaceTeaser />;
   }
 
   return (

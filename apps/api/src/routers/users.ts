@@ -11,11 +11,12 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import _ from "lodash";
 import { z } from "zod";
+import { validate as uuidValidate } from "uuid";
 import { db } from "../db";
 import { getAllFrogs } from "../db/frog-cache";
 import { getSpiritFrog } from "../db/frogs";
 import { userFeedsTable, userScoresTable } from "../db/schema";
-import { getUserScore } from "../db/users";
+import { getUserScore, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
 import { FEEDS } from "./feeds";
@@ -73,14 +74,13 @@ export const usersRouter = router({
             rarity: z.number(),
           })
         ),
-        myScore: z
-          .object({
-            semaphoreIdHash: z.string(),
-            score: z.number(),
-            rank: z.number(),
-            friendCount: z.number(),
-          })
-          .optional(),
+        myScore: z.object({
+          semaphoreIdHash: z.string(),
+          score: z.number(),
+          rank: z.number(),
+          friendCount: z.number(),
+          socialId: z.string().nullable(),
+        }),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>().optional(),
       })
@@ -96,6 +96,12 @@ export const usersRouter = router({
       );
 
       const myScore = await getUserScore(semaphoreId);
+      if (!myScore) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "User not found",
+        });
+      }
 
       const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
 
@@ -105,14 +111,15 @@ export const usersRouter = router({
         ),
         possibleFrogs: await getAllFrogs(),
         myScore,
-        spiritFrog: await getSpiritFrog(myScore?.semaphoreIdHash),
+        spiritFrog: await getSpiritFrog(myScore.semaphoreIdHash),
       };
     }),
   getSpiritFrog: authedProcedure
     .input(
       z.object({
-        // TODO: change this to qr code uuid otherwise one could brute force all spirit frogs
-        profileId: z.string(),
+        profileId: z.custom<string>(
+          (x) => typeof x === "string" && uuidValidate(x)
+        ),
       })
     )
     .output(
@@ -125,17 +132,25 @@ export const usersRouter = router({
       })
     )
     .query(async ({ input: { profileId } }) => {
-      const semaphoreId = decompressBigInt(profileId);
-      const myScore = await getUserScore(semaphoreId);
+      const [user] = await db
+        .with(userScoresView)
+        .select({
+          semaphoreId: userScoresView.semaphoreId,
+          semaphoreIdHash: userScoresView.semaphoreIdHash,
+          score: userScoresView.score,
+          friendCount: userScoresView.friendCount,
+        })
+        .from(userScoresView)
+        .where(eq(userScoresView.socialId, profileId));
 
-      if (!myScore) {
+      if (!user) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
         });
       }
 
-      const spiritFrog = await getSpiritFrog(myScore.semaphoreIdHash);
+      const spiritFrog = await getSpiritFrog(user.semaphoreIdHash);
       if (!spiritFrog) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -144,9 +159,9 @@ export const usersRouter = router({
       }
 
       return {
-        friendCount: myScore.friendCount,
-        frogCount: myScore.score,
-        semaphoreIdBase64: compressBigInt(semaphoreId),
+        friendCount: user.friendCount,
+        frogCount: user.score,
+        semaphoreIdBase64: compressBigInt(BigInt(user.semaphoreId)),
         spiritFrog,
       };
     }),

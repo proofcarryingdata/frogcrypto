@@ -56,13 +56,14 @@ export const userScoresView = db.$with("user_scores_view").as(
         "rank"
       ),
       friendCount: userScoresTable.friendCount,
+      socialId: userScoresTable.socialId,
     })
     .from(userScoresTable)
 );
 
 export async function getUserScore(
   semaphoreId: string | bigint
-): Promise<FrogCryptoScore | undefined> {
+): Promise<(FrogCryptoScore & { socialId: string | null }) | undefined> {
   const [score] = await db
     .with(userScoresView)
     .select()

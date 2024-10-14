@@ -3,7 +3,7 @@ import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { Button } from "../shared/Button";
 import Loader from "../shared/Loader";
 import Modal from "../shared/Modal";
-import { trpc } from "../../trpc";
+import { useUserState } from "../../hooks/useUserState";
 import FrogProfile from "./FrogProfile";
 
 function MyProfile() {
@@ -16,13 +16,7 @@ function MyProfile() {
   const [farcasterUsername, setFarcasterUsername] = useState(
     myProfilePOD?.farcasterUsername ?? ""
   );
-  const { data: myProfile, isLoading: isLoadingMyProfile } =
-    trpc.users.getSpiritFrog.useQuery(
-      {
-        profileId: myProfilePOD?.profileId ?? "",
-      },
-      { enabled: Boolean(myProfilePOD) }
-    );
+  const { data: userState, isLoading: isLoadingUserState } = useUserState();
 
   const { mutate: updateProfile, isPending } = useSetMyProfilePOD();
 
@@ -46,9 +40,9 @@ function MyProfile() {
     setIsEditModalOpen(false);
   };
 
-  const isLoading = isLoadingProfilePOD || isLoadingMyProfile;
+  const isLoading = isLoadingProfilePOD || isLoadingUserState;
   if (isLoading) return <Loader />;
-  if (!myProfilePOD || !myProfile) {
+  if (!myProfilePOD || !userState) {
     // FIXME: user needs to create a profile POD
     throw new Error("No profile POD found");
   }
@@ -58,10 +52,9 @@ function MyProfile() {
       <FrogProfile
         frog={myProfilePOD}
         profileId={myProfilePOD.profileId}
-        isMyProfile
-        friendStatus="friends"
-        friendCount={myProfile.friendCount}
-        frogCount={myProfile.frogCount}
+        status="mine"
+        friendCount={userState.myScore.friendCount}
+        frogCount={userState.myScore.score}
         onEditProfile={handleEditProfile}
       />
 

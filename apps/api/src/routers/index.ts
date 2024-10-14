@@ -1,6 +1,7 @@
 /**
  * This file contains the root router of your tRPC-backend
  */
+import { type inferRouterOutputs } from "@trpc/server";
 import { publicProcedure, router } from "../trpc";
 import { feedsRouter } from "./feeds";
 import { usersRouter } from "./users";
@@ -17,3 +18,4 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+export type RouterOutputs = inferRouterOutputs<AppRouter>;
