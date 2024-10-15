@@ -23,7 +23,7 @@ import {
   numberToUint8Array,
   publicKeyToUUID,
 } from "../utils";
-import { CYBERFROG_KEYS } from "../cyberfrogs";
+import { CYBERFROG_KEYS, MOCK_FEEDS, parseCyberfrogData } from "../cyberfrogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -176,34 +176,145 @@ export const feedsRouter = router({
           .optional(),
       }),
     )
-    .mutation(async ({ input: { signature, nonce } }) => {
-      console.log("Nonce", nonce);
-      const recoveryBit = parseInt(signature.slice(-1));
-      console.log("Recovery bit", recoveryBit);
-      // get the remaining bytes (64 chars) of the signature
-      const remainingBytes = signature.slice(0, -1);
-      console.log("Signature", remainingBytes);
-      console.log("Signature length: ", remainingBytes.length);
-      const sig = secp256k1.Signature.fromCompact(remainingBytes);
-      const fullSig = sig.addRecoveryBit(recoveryBit);
-      // convert nonce to uint8 array
-      const paddedMessage = new Uint8Array(32);
-      const nonceUint8 = numberToUint8Array(nonce);
-      paddedMessage.set(nonceUint8, 0);
-      const hash = sha256.create().update(paddedMessage).digest();
-      console.log("hash: ", bytesToHex(hash));
-      const x = fullSig.recoverPublicKey(hash).toRawBytes();
-      const hexPubKey = bytesToHex(x);
-      console.log("Recovered pub key", hexPubKey);
-      const isCyberFrog = CYBERFROG_KEYS.includes(hexPubKey);
-      console.log("Is valid cyberfrog?", isCyberFrog);
-      const frogUUID = publicKeyToUUID(hexPubKey);
-      console.log("Frog UUID", frogUUID);
-      // now verify the signature
-      const isValid = secp256k1.verify(fullSig, hash, hexPubKey);
-      console.log("Is valid?", isValid);
-      return {
-        pod: undefined,
-      };
-    }),
+    .mutation(
+      async ({
+        input: { signature, nonce },
+        ctx: {
+          user: { semaphoreId },
+        },
+      }) => {
+        const {
+          publicKey,
+          signature: parsedSignature,
+          messageHash,
+        } = parseCyberfrogData(signature, nonce);
+        const validCyberFrogId = CYBERFROG_KEYS.includes(publicKey);
+        if (!validCyberFrogId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invalid cyberfrog ID",
+          });
+        }
+        const sigValid = secp256k1.verify(
+          parsedSignature,
+          messageHash,
+          publicKey,
+        );
+        if (!sigValid) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Signature invalid",
+          });
+        }
+        const feedId = publicKeyToUUID(publicKey);
+
+        // TODO: use server feed
+        const feed = MOCK_FEEDS.find((f) => f.id === feedId);
+        if (!feed) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Feed not found",
+          });
+        }
+        if (feed.activeUntil <= Date.now() / 1000) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Feed is not active",
+          });
+        }
+        // TODO: check nullifier
+
+        await db
+          .insert(userFeedsTable)
+          .values({
+            feedId,
+            semaphoreId: semaphoreId.toString(),
+          })
+          .onConflictDoNothing();
+
+        return db
+          .transaction(async (tx) => {
+            const lastFetchedAt = await updateUserFeedState(
+              tx,
+              semaphoreId.toString(),
+              feedId,
+            );
+            if (!lastFetchedAt) {
+              const e = new Error("User feed state unexpectedly not found!");
+              logger.error("Error encountered while serving feed", e);
+              throw e;
+            }
+            const { nextFetchAt } = computeUserFeedState(
+              {
+                lastFetchedAt,
+              },
+              feed,
+            );
+            if (nextFetchAt > Date.now()) {
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: `Next fetch available at ${String(nextFetchAt)}`,
+              });
+            }
+            const frogDataSpec = await sampleFrogData(feed.biomes);
+            if (!frogDataSpec) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Frog Not Found",
+              });
+            }
+
+            const frogData = generateFrogData(
+              frogDataSpec,
+              BigInt(semaphoreId),
+            );
+
+            const { score: scoreAfterRoll } = await incrementScore(
+              tx,
+              semaphoreId.toString(),
+              // non-frog frog doesn't get point
+              frogData.biome === Biome.Unknown ? 0 : 1,
+            );
+
+            if (scoreAfterRoll > FROG_SCORE_CAP) {
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: "Frog faucet off.",
+              });
+            }
+
+            // rollback last fetched timestamp if user has free rolls left
+            if (scoreAfterRoll <= FROG_FREEROLLS) {
+              await updateUserFeedState(
+                tx,
+                semaphoreId.toString(),
+                feedId,
+                lastFetchedAt,
+              );
+            }
+
+            const frogPOD = POD.sign(
+              toFrogPODEntries(frogData),
+              ISSUER_PRIVATE_KEY,
+            );
+
+            return {
+              pod: frogPOD,
+            };
+          })
+          .catch((e: unknown) => {
+            if (
+              e instanceof Error &&
+              e.message.includes("could not obtain lock")
+            ) {
+              throw new TRPCError({
+                code: "TOO_MANY_REQUESTS",
+                message: "There is another frog request in flight!",
+              });
+            }
+
+            throw e;
+          });
+      },
+    ),
 });
