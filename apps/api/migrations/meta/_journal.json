@@ -57,6 +57,13 @@
       "when": 1728947350892,
       "tag": "0007_legal_chimera",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1729019017930,
+      "tag": "0008_cool_landau",
+      "breakpoints": true
     }
   ]
 }

@@ -14,13 +14,12 @@ import { bytesToHex } from "@noble/hashes/utils";
 import { z } from "zod";
 import { db } from "../db";
 import { getFeeds, updateUserFeedState } from "../db/feeds";
-import { generateFrogData, sampleFrogData } from "../db/frogs";
-import { userFeedsTable } from "../db/schema";
+import { generateFrogData, getCyberfrogNullifier, sampleFrogData } from "../db/frogs";
+import { cyberfrogNullifiersTable, userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import {
   computeUserFeedState,
-  numberToUint8Array,
   publicKeyToUUID,
 } from "../utils";
 import { CYBERFROG_KEYS, MOCK_FEEDS, parseCyberfrogData } from "../cyberfrogs";
@@ -222,7 +221,20 @@ export const feedsRouter = router({
             message: "Feed is not active",
           });
         }
-        // TODO: check nullifier
+
+        const nullifier = bytesToHex(
+          sha256.create().update(publicKey).update(nonce.toString()).digest(),
+        );
+
+        const nullifierExists = await getCyberfrogNullifier(nullifier);
+        if (nullifierExists) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Cyberfrog already claimed",
+          });
+        }
+
+        await db.insert(cyberfrogNullifiersTable).values({ nullifier });
 
         await db
           .insert(userFeedsTable)

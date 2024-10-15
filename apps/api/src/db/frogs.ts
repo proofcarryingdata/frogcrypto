@@ -8,11 +8,11 @@ import {
   type IFrogData,
   Rarity,
 } from "@frogcrypto/shared";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import _ from "lodash";
 import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
 import { getSpiritFrogs } from "./frog-cache";
-import { frogsTable } from "./schema";
+import { cyberfrogNullifiersTable, frogsTable } from "./schema";
 import { createRawSqlArray, jsonbField } from "./utils";
 import { db } from "./index";
 
@@ -105,4 +105,14 @@ export function generateFrogData(
     timestampSigned: Date.now(),
     ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
   };
+}
+
+export async function getCyberfrogNullifier(
+  nullifier: string,
+): Promise<boolean> {
+  const nullifierExists = await db
+    .select()
+    .from(cyberfrogNullifiersTable)
+    .where(eq(cyberfrogNullifiersTable.nullifier, nullifier));
+  return nullifierExists.length > 0;
 }

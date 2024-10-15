@@ -11,6 +11,7 @@ import { logger } from "@frogcrypto/shared";
 
  * NOTE: we might not need this, we could just ecrecover the public key from the signature,
  * Convert it to a UUID, and check if that UUID is a valid Feed ID.
+ * i.e. store it in the feed vs in the code here.
  */
 export const CYBERFROG_KEYS = [
   "0296a8039b329f8240e8e9827f4018dfab038e3f05ef03cfc368e139f33fa69491",
