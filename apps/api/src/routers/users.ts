@@ -1,5 +1,6 @@
 import {
   compressBigInt,
+  decompressBigInt,
   logger,
   PlayerIDSpec,
   userPublicKeyToUserId,
@@ -9,16 +10,23 @@ import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import _ from "lodash";
-import { z } from "zod";
 import { validate as uuidValidate } from "uuid";
+import { z } from "zod";
 import { db } from "../db";
+import { getFeeds } from "../db/feeds";
 import { getAllFrogs } from "../db/frog-cache";
 import { getSpiritFrog } from "../db/frogs";
 import { userFeedsTable, userScoresTable } from "../db/schema";
 import { getUserScore, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
-import { getFeeds } from "../db/feeds";
+
+// const GPC_ARTIFACTS_PATH = path.join(
+//   __dirname,
+//   process.env.NODE_ENV === "development"
+//     ? "../node_modules/@pcd/proto-pod-gpc-artifacts"
+//     : "."
+// );
 
 export const usersRouter = router({
   auth: publicProcedure
@@ -49,10 +57,37 @@ export const usersRouter = router({
       logger.info(`Got auth POD for user ${owner} with signer ${signerPk}`);
 
       // TODO: verify ticket proof
+      // const { proof, boundConfig, revealedClaims } = parse<{
+      //   proof: GPCProof;
+      //   boundConfig: GPCBoundConfig;
+      //   revealedClaims: GPCRevealedClaims;
+      // }>(playerIDPOD.value.proof.value);
+      // const { proofConfig, membershipLists, externalNullifier, watermark } =
+      //   TicketProofRequest.getProofRequest();
+      // revealedClaims.membershipLists = membershipLists;
+      // revealedClaims.watermark = watermark;
+      // if (typeof revealedClaims.owner !== "undefined") {
+      //   Object.assign(revealedClaims.owner, { externalNullifier });
+      // }
+      // // const isVerified = await gpcVerify(
+      // //   proof,
+      // //   {
+      // //     ...proofConfig,
+      // //     circuitIdentifier: boundConfig.circuitIdentifier,
+      // //   },
+      // //   revealedClaims,
+      // //   GPC_ARTIFACTS_PATH
+      // // );
+      // // if (!isVerified) {
+      // //   throw new TRPCError({
+      // //     code: "UNAUTHORIZED",
+      // //     message: "Ticket proof failed to verify",
+      // //   });
+      // // }
 
       await db
         .insert(userScoresTable)
-        .values({ semaphoreId: owner })
+        .values({ semaphoreId: String(decompressBigInt(owner)) })
         .onConflictDoNothing();
     }),
   me: authedProcedure
