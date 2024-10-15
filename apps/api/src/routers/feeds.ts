@@ -18,7 +18,12 @@ import { generateFrogData, sampleFrogData } from "../db/frogs";
 import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
-import { computeUserFeedState, numberToUint8Array } from "../utils";
+import {
+  computeUserFeedState,
+  numberToUint8Array,
+  publicKeyToUUID,
+} from "../utils";
+import { CYBERFROG_KEYS } from "../cyberfrogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -190,6 +195,10 @@ export const feedsRouter = router({
       const x = fullSig.recoverPublicKey(hash).toRawBytes();
       const hexPubKey = bytesToHex(x);
       console.log("Recovered pub key", hexPubKey);
+      const isCyberFrog = CYBERFROG_KEYS.includes(hexPubKey);
+      console.log("Is valid cyberfrog?", isCyberFrog);
+      const frogUUID = publicKeyToUUID(hexPubKey);
+      console.log("Frog UUID", frogUUID);
       // now verify the signature
       const isValid = secp256k1.verify(fullSig, hash, hexPubKey);
       console.log("Is valid?", isValid);

@@ -8,6 +8,7 @@ import {
   COMMON_TEMPERAMENT_SET,
 } from "@frogcrypto/shared";
 import type { UserFeed } from "./db/schema";
+import { sha256 } from "@noble/hashes/sha2";
 
 /**
  * Individual feed level state for a user.
@@ -78,4 +79,27 @@ export function numberToUint8Array(num: number): Uint8Array {
     num = num >> 8;
   }
   return arr;
+}
+
+/*
+ * Converts an ECDSA public key to UUIDv5 format by sha256 hashing it.
+ * The first 16 bytes of the hash are used for the UUID.
+ */
+export function publicKeyToUUID(publicKeyHex: string): string {
+  const publicKeyBuffer = Buffer.from(publicKeyHex, "hex");
+  const hash = sha256.create().update(publicKeyBuffer).digest();
+  // Use the first 16 bytes of the hash to form the UUID
+  const uuidBytes = Buffer.from(hash.slice(0, 16));
+  // Set the version to 5 (UUIDv5) -- bits 12-15 of the UUID (byte index 6)
+  uuidBytes[6] = (uuidBytes[6] & 0x0f) | 0x50; // 0x50 = version 5
+  // Set the variant to RFC 4122 -- bits 6-7 of the clock_seq_hi_and_reserved (byte index 8)
+  uuidBytes[8] = (uuidBytes[8] & 0x3f) | 0x80;
+  const uuid = [
+    uuidBytes.toString("hex", 0, 4), // time_low (4 bytes)
+    uuidBytes.toString("hex", 4, 6), // time_mid (2 bytes)
+    uuidBytes.toString("hex", 6, 8), // time_hi_and_version (2 bytes)
+    uuidBytes.toString("hex", 8, 10), // clock_seq (2 bytes)
+    uuidBytes.toString("hex", 10, 16), // node (6 bytes)
+  ].join("-");
+  return uuid;
 }
