@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@frogcrypto/shared": "workspace:*",
+    "@noble/curves": "^1.6.0",
+    "@noble/hashes": "^1.5.0",
     "@parcnet-js/podspec": "1.0.0",
     "@pcd/gpc": "^0.0.8",
     "@pcd/gpcircuits": "^0.1.7",

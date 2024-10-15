@@ -8,6 +8,9 @@ import {
 } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { sha256 } from "@noble/hashes/sha2";
+import { bytesToHex } from "@noble/hashes/utils";
 import { z } from "zod";
 import { db } from "../db";
 import { getFeeds, updateUserFeedState } from "../db/feeds";
@@ -15,7 +18,7 @@ import { generateFrogData, sampleFrogData } from "../db/frogs";
 import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
-import { computeUserFeedState } from "../utils";
+import { computeUserFeedState, numberToUint8Array } from "../utils";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -31,12 +34,12 @@ export const feedsRouter = router({
     .input(
       z.object({
         feedId: z.string(),
-      })
+      }),
     )
     .output(
       z.object({
         pod: z.custom<POD>((x) => x instanceof POD && x.verifySignature()),
-      })
+      }),
     )
     .mutation(
       async ({
@@ -72,7 +75,7 @@ export const feedsRouter = router({
             const lastFetchedAt = await updateUserFeedState(
               tx,
               semaphoreId.toString(),
-              feedId
+              feedId,
             );
             if (!lastFetchedAt) {
               const e = new Error("User feed state unexpectedly not found!");
@@ -84,7 +87,7 @@ export const feedsRouter = router({
               {
                 lastFetchedAt,
               },
-              feed
+              feed,
             );
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
@@ -103,14 +106,14 @@ export const feedsRouter = router({
 
             const frogData = generateFrogData(
               frogDataSpec,
-              BigInt(semaphoreId)
+              BigInt(semaphoreId),
             );
 
             const { score: scoreAfterRoll } = await incrementScore(
               tx,
               semaphoreId.toString(),
               // non-frog frog doesn't get point
-              frogData.biome === Biome.Unknown ? 0 : 1
+              frogData.biome === Biome.Unknown ? 0 : 1,
             );
 
             if (scoreAfterRoll > FROG_SCORE_CAP) {
@@ -126,13 +129,13 @@ export const feedsRouter = router({
                 tx,
                 semaphoreId.toString(),
                 feedId,
-                lastFetchedAt
+                lastFetchedAt,
               );
             }
 
             const frogPOD = POD.sign(
               toFrogPODEntries(frogData),
-              ISSUER_PRIVATE_KEY
+              ISSUER_PRIVATE_KEY,
             );
 
             return {
@@ -152,22 +155,44 @@ export const feedsRouter = router({
 
             throw e;
           });
-      }
+      },
     ),
   getCyberFrog: authedProcedure
     .input(
       z.object({
         signature: z.string(),
-      })
+        nonce: z.number(),
+      }),
     )
     .output(
       z.object({
         pod: z
           .custom<POD>((x) => x instanceof POD && x.verifySignature())
           .optional(),
-      })
+      }),
     )
-    .mutation(async ({ input: { signature } }) => {
+    .mutation(async ({ input: { signature, nonce } }) => {
+      console.log("Nonce", nonce);
+      const recoveryBit = parseInt(signature.slice(-1));
+      console.log("Recovery bit", recoveryBit);
+      // get the remaining bytes (64 chars) of the signature
+      const remainingBytes = signature.slice(0, -1);
+      console.log("Signature", remainingBytes);
+      console.log("Signature length: ", remainingBytes.length);
+      const sig = secp256k1.Signature.fromCompact(remainingBytes);
+      const fullSig = sig.addRecoveryBit(recoveryBit);
+      // convert nonce to uint8 array
+      const paddedMessage = new Uint8Array(32);
+      const nonceUint8 = numberToUint8Array(nonce);
+      paddedMessage.set(nonceUint8, 0);
+      const hash = sha256.create().update(paddedMessage).digest();
+      console.log("hash: ", bytesToHex(hash));
+      const x = fullSig.recoverPublicKey(hash).toRawBytes();
+      const hexPubKey = bytesToHex(x);
+      console.log("Recovered pub key", hexPubKey);
+      // now verify the signature
+      const isValid = secp256k1.verify(fullSig, hash, hexPubKey);
+      console.log("Is valid?", isValid);
       return {
         pod: undefined,
       };
