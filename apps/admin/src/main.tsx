@@ -1,15 +1,13 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Provider } from "jotai";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { trpc, trpcClient } from "./trpc";
 import App from "./app";
+import { ParcnetIframeProvider } from "./app/useParcnetClient";
 import "./index.css";
-import { Provider } from "jotai";
-import { EmbeddedZupassProvider } from "./app/useZapp";
+import { trpc, trpcClient } from "./trpc";
 
 const queryClient = new QueryClient();
-
-const zapp = { name: "frogcrypto:admin", permissions: ["read", "write"] };
 
 const el = document.getElementById("root");
 if (el) {
@@ -19,9 +17,9 @@ if (el) {
       <Provider>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <EmbeddedZupassProvider zapp={zapp}>
+            <ParcnetIframeProvider>
               <App />
-            </EmbeddedZupassProvider>
+            </ParcnetIframeProvider>
           </QueryClientProvider>
         </trpc.Provider>
       </Provider>

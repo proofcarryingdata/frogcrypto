@@ -1,6 +1,32 @@
 import { and, eq } from "drizzle-orm";
-import { userFeedsTable } from "./schema";
-import { type Transaction } from ".";
+import { logger, type ServerFeed } from "@frogcrypto/shared";
+import { feedsTable, userFeedsTable } from "./schema";
+import { db, type Transaction } from ".";
+
+let cachedFeeds: ServerFeed[] = [];
+let refreshInterval: NodeJS.Timeout | null = null;
+
+export function getFeeds(): ServerFeed[] {
+  return cachedFeeds;
+}
+
+export async function refreshFeeds(): Promise<void> {
+  const feeds = await db.select().from(feedsTable);
+  cachedFeeds = feeds.map((feed) => ({
+    id: feed.id,
+    ...feed.feed,
+  }));
+}
+
+// Call this function when your server starts
+export async function initializeFeedCache() {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
+  refreshInterval = setInterval(refreshFeeds, 1000 * 60);
+  await refreshFeeds();
+  logger.info("Feed cache initialized");
+}
 
 /**
  * Update the last time a user has polled a feed.

@@ -1,6 +1,5 @@
 import {
   compressBigInt,
-  decompressBigInt,
   logger,
   PlayerIDSpec,
   userPublicKeyToUserId,
@@ -19,7 +18,7 @@ import { userFeedsTable, userScoresTable } from "../db/schema";
 import { getUserScore, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
-import { FEEDS } from "./feeds";
+import { getFeeds } from "../db/feeds";
 
 export const usersRouter = router({
   auth: publicProcedure
@@ -103,7 +102,7 @@ export const usersRouter = router({
         });
       }
 
-      const allFeeds = FEEDS.filter((feed) => feedIds.includes(feed.id));
+      const allFeeds = getFeeds().filter((feed) => feedIds.includes(feed.id));
 
       return {
         feeds: allFeeds.map((feed) =>

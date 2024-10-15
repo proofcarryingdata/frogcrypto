@@ -1,6 +1,7 @@
 import { logger } from "@frogcrypto/shared";
 import { createServer } from "./server";
 import { initializeFrogCache } from "./db/frog-cache";
+import { initializeFeedCache } from "./db/feeds";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -9,6 +10,7 @@ const server = createServer();
 
 async function main() {
   await initializeFrogCache();
+  await initializeFeedCache();
 
   if (!isProduction) {
     server.listen(port, () => {

@@ -120,6 +120,7 @@ function useInitializeUser() {
       return true;
     },
     enabled: Boolean(z) && Boolean(rootId),
+    refetchInterval: 1000 * 60 * 60,
   });
 
   return ready;

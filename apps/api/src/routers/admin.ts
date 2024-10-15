@@ -1,9 +1,11 @@
+import { FrogCryptoFrogDataSchema, ServerFeedSchema } from "@frogcrypto/shared";
 import { inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { FrogCryptoFrogDataSchema } from "@frogcrypto/shared";
 import { db } from "../db";
-import { frogsTable } from "../db/schema";
+import { feedsTable, frogsTable } from "../db/schema";
 import { adminProcedure, router } from "../trpc";
+import { refreshFeeds } from "../db/feeds";
+import { refreshFrogCache } from "../db/frog-cache";
 
 /**
  * Admin router for managing frogs.
@@ -34,6 +36,8 @@ export const adminRouter = router({
           target: [frogsTable.id],
           set: { uuid: sql`excluded.uuid`, frog: sql`excluded.frog` },
         });
+
+      await refreshFrogCache();
     }),
 
   /**
@@ -43,5 +47,47 @@ export const adminRouter = router({
     .input(z.array(z.number()))
     .mutation(async ({ input }) => {
       await db.delete(frogsTable).where(inArray(frogsTable.id, input));
+
+      await refreshFrogCache();
+    }),
+
+  /**
+   * List feeds in the database.
+   */
+  listFeeds: adminProcedure.query(() => {
+    return db.select().from(feedsTable);
+  }),
+
+  /**
+   * Upsert feeds in the database.
+   */
+  upsertFeeds: adminProcedure
+    .input(z.array(ServerFeedSchema))
+    .mutation(async ({ input: feeds }) => {
+      const values = feeds.map((feed) => ({
+        id: feed.id,
+        feed,
+      }));
+
+      await db
+        .insert(feedsTable)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [feedsTable.id],
+          set: { feed: sql`excluded.feed` },
+        });
+
+      await refreshFeeds();
+    }),
+
+  /**
+   * Delete feeds from the database.
+   */
+  deleteFeeds: adminProcedure
+    .input(z.array(z.string()))
+    .mutation(async ({ input }) => {
+      await db.delete(feedsTable).where(inArray(feedsTable.id, input));
+
+      await refreshFeeds();
     }),
 });

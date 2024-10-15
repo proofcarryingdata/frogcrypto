@@ -1,17 +1,16 @@
 import {
+  Biome,
   FeedSchema,
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
   logger,
-  type ServerFeed,
-  Biome,
   toFrogPODEntries,
 } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { db } from "../db";
-import { updateUserFeedState } from "../db/feeds";
+import { getFeeds, updateUserFeedState } from "../db/feeds";
 import { generateFrogData, sampleFrogData } from "../db/frogs";
 import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
@@ -23,31 +22,11 @@ if (!ISSUER_PRIVATE_KEY) {
   throw new Error("ISSUER_PRIVATE_KEY is not set");
 }
 
-export const FEEDS = [
-  {
-    id: "7d27baf6-c568-4069-92c7-fc5daae854f6",
-    name: "Swamp",
-    description:
-      "Veiled in mist and teeming with life, the labyrinthine Swamp is home to a plethora of frogs.",
-    private: false,
-    activeUntil: 1893484800,
-    cooldown: 15,
-    biomes: {
-      Jungle: { dropWeightScaler: 0.1 },
-      Desert: { dropWeightScaler: 0.1 },
-      Swamp: { dropWeightScaler: 1 },
-      TheCapital: { dropWeightScaler: 0.1 },
-      CelestialPond: { dropWeightScaler: 0.005 },
-      TheWrithingVoid: { dropWeightScaler: 0.005 },
-      Unknown: { dropWeightScaler: 0.2 },
-    },
-  },
-] satisfies ServerFeed[];
-
 export const feedsRouter = router({
   list: publicProcedure.output(z.array(FeedSchema)).query(() => {
-    return FEEDS;
+    return getFeeds().filter((f) => !f.private);
   }),
+
   search: authedProcedure
     .input(
       z.object({
@@ -66,7 +45,7 @@ export const feedsRouter = router({
           user: { semaphoreId },
         },
       }) => {
-        const feed = FEEDS.find((f) => f.id === feedId);
+        const feed = getFeeds().find((f) => f.id === feedId);
         if (!feed) {
           throw new TRPCError({
             code: "NOT_FOUND",

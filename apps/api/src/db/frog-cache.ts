@@ -6,7 +6,7 @@ import {
   Rarity,
   toFrogData,
 } from "@frogcrypto/shared";
-import { max, sql } from "drizzle-orm";
+import { max } from "drizzle-orm";
 import { frogsTable } from "./schema";
 import { db } from ".";
 
@@ -17,6 +17,7 @@ const CACHE_DURATION = 1000 * 60; // 1 minute
 let cachedSpiritFrogs: FrogCryptoFrogData[] = [];
 let cachedDexFrogs: DexFrog[] = [];
 let lastUpdateTimestamp: Date | null = null;
+let refreshInterval: NodeJS.Timeout | null = null;
 
 export async function getSpiritFrogs(): Promise<FrogCryptoFrogData[]> {
   await refreshCacheIfNeeded();
@@ -47,11 +48,11 @@ async function refreshCacheIfNeeded() {
 
   const latestUpdate = await getLatestUpdateTimestamp();
   if (!lastUpdateTimestamp || latestUpdate > lastUpdateTimestamp) {
-    await refreshCache();
+    await refreshFrogCache();
   }
 }
 
-async function refreshCache() {
+export async function refreshFrogCache() {
   const allFrogs = await db
     .select()
     .from(frogsTable)
@@ -74,6 +75,10 @@ async function refreshCache() {
 
 // Call this function when your server starts
 export async function initializeFrogCache() {
-  await refreshCache();
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
+  refreshInterval = setInterval(refreshFrogCache, 1000 * 60);
+  await refreshFrogCache();
   logger.info("Frog cache initialized");
 }

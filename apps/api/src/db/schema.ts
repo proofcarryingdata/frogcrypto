@@ -1,4 +1,8 @@
-import { type FrogCryptoFrogData } from "@frogcrypto/shared";
+import {
+  type ServerFeed,
+  type Feed,
+  type FrogCryptoFrogData,
+} from "@frogcrypto/shared";
 import {
   boolean,
   integer,
@@ -75,6 +79,15 @@ export const userScoresTable = pgTable(
     semaphoreId: unique().on(table.semaphoreId),
   })
 );
+
+export const feedsTable = pgTable("feeds", {
+  id: uuid("uuid").primaryKey(),
+  feed: jsonb("feed").$type<Omit<ServerFeed, "id">>().notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
 
 export const frogsTable = pgTable(
   "frogs",
