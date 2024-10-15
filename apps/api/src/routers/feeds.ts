@@ -14,14 +14,15 @@ import { bytesToHex } from "@noble/hashes/utils";
 import { z } from "zod";
 import { db } from "../db";
 import { getFeeds, updateUserFeedState } from "../db/feeds";
-import { generateFrogData, getCyberfrogNullifier, sampleFrogData } from "../db/frogs";
+import {
+  generateFrogData,
+  sampleFrogData,
+  tryConsumeCyberfrogNullifier,
+} from "../db/frogs";
 import { cyberfrogNullifiersTable, userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
-import {
-  computeUserFeedState,
-  publicKeyToUUID,
-} from "../utils";
+import { computeUserFeedState, publicKeyToUUID } from "../utils";
 import { CYBERFROG_KEYS, MOCK_FEEDS, parseCyberfrogData } from "../cyberfrogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
@@ -226,15 +227,15 @@ export const feedsRouter = router({
           sha256.create().update(publicKey).update(nonce.toString()).digest(),
         );
 
-        const nullifierExists = await getCyberfrogNullifier(nullifier);
-        if (nullifierExists) {
+        // If something fails after this point, the nullifier is not reverted
+        // and will still be treated as consumed.
+        const nullifierConsumeSuccess = await tryConsumeCyberfrogNullifier(nullifier);
+        if (!nullifierConsumeSuccess) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "Cyberfrog already claimed",
           });
         }
-
-        await db.insert(cyberfrogNullifiersTable).values({ nullifier });
 
         await db
           .insert(userFeedsTable)
@@ -268,6 +269,8 @@ export const feedsRouter = router({
                 message: `Next fetch available at ${String(nextFetchAt)}`,
               });
             }
+
+            // TODO: map device to individual frog logic
             const frogDataSpec = await sampleFrogData(feed.biomes);
             if (!frogDataSpec) {
               throw new TRPCError({
@@ -293,16 +296,6 @@ export const feedsRouter = router({
                 code: "FORBIDDEN",
                 message: "Frog faucet off.",
               });
-            }
-
-            // rollback last fetched timestamp if user has free rolls left
-            if (scoreAfterRoll <= FROG_FREEROLLS) {
-              await updateUserFeedState(
-                tx,
-                semaphoreId.toString(),
-                feedId,
-                lastFetchedAt,
-              );
             }
 
             const frogPOD = POD.sign(

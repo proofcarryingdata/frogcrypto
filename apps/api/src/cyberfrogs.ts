@@ -23,32 +23,37 @@ export const MOCK_FEEDS = CYBERFROG_KEYS.map((key) => {
     name: "CyberSwamp",
     description:
       "Veiled in mist and teeming with life, the labyrinthine CyberSwamp is home to a plethora of Cyberfrogs.",
-    private: false,
+    private: true,
     activeUntil: 1893484800,
     cooldown: 2,
     biomes: {
       Jungle: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
       Desert: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
       Swamp: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
-      TheCapital: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
-      CelestialPond: { dropWeightScaler: 0.005 },
-      TheWrithingVoid: { dropWeightScaler: 0.005 },
-      Unknown: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
     },
   };
 });
 
-export interface CyberfrogSignature {
+export interface CyberfrogData {
   signature: SignatureType;
   messageHash: Uint8Array;
   nonce: number;
   publicKey: string;
 }
 
+/*
+ * Parses a Cyberfrog claim link into recovered public key, signature, and input message/nonce for verification.
+
+ * Cyberfrog claim links are generated on the device in the following format:
+ * <signature><recoveryBit>?nonce=<nonce>
+ * The recovery bit is the last character of the signature, we need this to recover the public key
+ * Cyberfrog devices sign a SHA256 hash of the nonce.
+ * To recover the public key, we need to hash the nonce on the server side so the input is the same as on the device.
+ */
 export const parseCyberfrogData = (
   signature: string,
   nonce: number,
-): CyberfrogSignature => {
+): CyberfrogData => {
   try {
     const recoveryBit = parseInt(signature.slice(-1));
     const remainingBytes = signature.slice(0, -1);
@@ -64,7 +69,7 @@ export const parseCyberfrogData = (
       messageHash: hash,
       nonce,
       publicKey,
-    } as CyberfrogSignature;
+    } as CyberfrogData;
   } catch (error) {
     logger.error("Error in parseCyberfrogData", error);
     throw error;

@@ -8,7 +8,7 @@ import {
   type IFrogData,
   Rarity,
 } from "@frogcrypto/shared";
-import { sql, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import _ from "lodash";
 import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
 import { getSpiritFrogs } from "./frog-cache";
@@ -107,12 +107,11 @@ export function generateFrogData(
   };
 }
 
-export async function getCyberfrogNullifier(
-  nullifier: string,
-): Promise<boolean> {
-  const nullifierExists = await db
-    .select()
-    .from(cyberfrogNullifiersTable)
-    .where(eq(cyberfrogNullifiersTable.nullifier, nullifier));
-  return nullifierExists.length > 0;
+export async function tryConsumeCyberfrogNullifier(nullifier: string): Promise<boolean> {
+  const result = await db
+    .insert(cyberfrogNullifiersTable)
+    .values({ nullifier })
+    .onConflictDoNothing();
+
+  return result.rowCount === 1;
 }
