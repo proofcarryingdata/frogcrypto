@@ -12,7 +12,7 @@ import { sql } from "drizzle-orm";
 import _ from "lodash";
 import { parseFrogTemperament, sampleFrogAttribute } from "../utils";
 import { getSpiritFrogs } from "./frog-cache";
-import { frogsTable } from "./schema";
+import { cyberfrogNullifiersTable, frogsTable } from "./schema";
 import { createRawSqlArray, jsonbField } from "./utils";
 import { db } from "./index";
 
@@ -105,4 +105,13 @@ export function generateFrogData(
     timestampSigned: Date.now(),
     ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
   };
+}
+
+export async function tryConsumeCyberfrogNullifier(nullifier: string): Promise<boolean> {
+  const result = await db
+    .insert(cyberfrogNullifiersTable)
+    .values({ nullifier })
+    .onConflictDoNothing();
+
+  return result.rowCount === 1;
 }

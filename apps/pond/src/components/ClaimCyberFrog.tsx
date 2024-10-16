@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useLocation, useParams } from "wouter";
+import { useLocation, useParams, useSearch } from "wouter";
 import toast from "react-hot-toast";
 import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
@@ -9,14 +9,19 @@ import Loader from "./shared/Loader";
 
 function ClaimCyberFrog() {
   const [, setLocation] = useLocation();
-  const { signature } = useParams<{ signature: string }>();
+  const { signature, nonce } = useParams<{
+    signature: string;
+    nonce: number;
+  }>();
+  const searchString = useSearch();
+
   const z = useParcnetClient();
 
   const { mutateAsync: getCyberFrog } = trpc.feeds.getCyberFrog.useMutation();
 
   const handleClaim = () => {
     void toast.promise(
-      getCyberFrog({ signature })
+      getCyberFrog({ signature, nonce: parseInt(searchString.split("=")[1]) })
         .then((data) => {
           if (data.pod) {
             return z.pod
@@ -33,7 +38,7 @@ function ClaimCyberFrog() {
         success: "Cyber Frog claimed!",
         error: (e: unknown) =>
           `Error claiming Cyber Frog: ${e instanceof Error ? e.message : "Unknown error"}`,
-      }
+      },
     );
   };
 
