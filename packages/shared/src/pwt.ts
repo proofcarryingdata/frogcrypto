@@ -1,17 +1,22 @@
-import { poseidon2 } from 'poseidon-lite/poseidon2';
+import { poseidon2 } from "poseidon-lite/poseidon2";
 
-import * as p from '@parcnet-js/podspec';
-import { decodePublicKey, POD } from '@pcd/pod';
+import * as p from "@parcnet-js/podspec";
+import { decodePublicKey, POD } from "@pcd/pod";
 
-import { logger } from './';
+import { logger } from "./";
 
 export const PwtSpec = p.entries({
-  aud: { type: "string", value: "frogcrypto" },
+  aud: {
+    type: "string",
+    isMemberOf: [
+      {
+        type: "string",
+        value: "frogcrypto",
+      },
+    ],
+  },
   exp: { type: "int" },
-  // signer commitment
   iss: { type: "cryptographic" },
-  // root semaphore id
-  sub: { type: "cryptographic" },
 });
 
 export function verifyPwtAndGetSemaphoreId(pod: POD): bigint {
@@ -32,6 +37,10 @@ export function verifyPwtAndGetSemaphoreId(pod: POD): bigint {
       "Invalid PWT: mismatch between PWT iss and signer public key"
     );
   }
+  if (parsed.value.exp.value < BigInt(Date.now())) {
+    logger.error("PWT expired");
+    throw new Error("Invalid PWT: expired");
+  }
 
-  return (parsed.value.iss.value);
+  return parsed.value.iss.value;
 }

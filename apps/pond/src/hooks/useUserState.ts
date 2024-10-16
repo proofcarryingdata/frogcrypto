@@ -6,14 +6,17 @@ import { useMemo } from "react";
 import { trpc } from "../trpc";
 import { useFeedIds } from "./useSubscriptions";
 
-export const rootIdAtom = atomWithStorage<string | null>("rootId", null);
+export const semaphoreIdBase64Atom = atomWithStorage<string | null>(
+  "semaphoreIdBase64",
+  null
+);
 export const semaphoreIdAtom = atom((get) => {
-  const rootId = get(rootIdAtom);
-  if (!rootId) return null;
-  return decompressBigInt(rootId);
+  const semaphoreIdBase64 = get(semaphoreIdBase64Atom);
+  if (!semaphoreIdBase64) return null;
+  return decompressBigInt(semaphoreIdBase64);
 });
 export const useSemaphoreId = () => useAtomValue(semaphoreIdAtom);
-export const useSemaphoreIdBase64 = () => useAtomValue(rootIdAtom);
+export const useSemaphoreIdBase64 = () => useAtomValue(semaphoreIdBase64Atom);
 
 export function useUserState() {
   const feedIds = useFeedIds();

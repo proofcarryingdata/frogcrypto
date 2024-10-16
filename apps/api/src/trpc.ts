@@ -65,8 +65,11 @@ export const mergeRouters = t.mergeRouters;
 export const authedProcedure = t.procedure.use(function isAuthed(opts) {
   const user = opts.ctx.session?.user;
 
-  if (!user?.semaphoreId) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+  if (!user?.isLoggedIn) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User not logged in",
+    });
   }
 
   return opts.next({
@@ -85,7 +88,10 @@ export const adminProcedure = t.procedure.use(function isAuthed(opts) {
   const user = opts.ctx.session?.user;
 
   if (!user?.isAdmin) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User not admin",
+    });
   }
 
   return opts.next({

@@ -19,12 +19,12 @@ import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
 import NotFound from "./components/NotFound";
 import ClaimCyberFrog from "./components/ClaimCyberFrog";
 import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
-import ErrorBoundary from "./components/shared/ErrorBoundary";
+import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
 
 function FrogCrypto() {
   const { data: frogs } = useFrogs();
   const { data: userState } = useUserState();
-  const myScore = userState?.myScore?.score;
+  const myScore = userState?.myScore.score;
   const { subscriptions } = useSubscriptions();
   const socialTabAvailable = useSocialTabAvailable();
   const { data: pendingFrogRequestsCount } = usePendingFrogRequestsCount();
@@ -94,7 +94,7 @@ function App() {
   useTsParticles();
 
   const isConnected = useParcnetClientConnected();
-  const hasIdentity = useInitializeUser();
+  const { hasIdentity, error } = useInitializeUser();
   const isReady = isConnected && hasIdentity;
 
   return (
@@ -104,7 +104,11 @@ function App() {
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>
 
-        <ErrorBoundary>{isReady ? <FrogCrypto /> : <Loader />}</ErrorBoundary>
+        {error ? (
+          <Unauthorized />
+        ) : (
+          <ErrorBoundary>{isReady ? <FrogCrypto /> : <Loader />}</ErrorBoundary>
+        )}
       </div>
     </main>
   );

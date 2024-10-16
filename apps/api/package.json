@@ -4,13 +4,12 @@
   "private": true,
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "tsup --watch --onSuccess \"node dist/index.js\"",
+    "dev": "tsup --watch --onSuccess \"NODE_ENV=development node dist/index.js\"",
     "build": "tsup",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
-    "test": "jest --detectOpenHandles",
-    "vercel-build": "pnpm run build"
+    "test": "jest --detectOpenHandles"
   },
   "jest": {
     "preset": "@frogcrypto/jest-presets/node"
@@ -18,7 +17,10 @@
   "dependencies": {
     "@frogcrypto/shared": "workspace:*",
     "@parcnet-js/podspec": "1.0.0",
+    "@pcd/gpc": "^0.0.8",
+    "@pcd/gpcircuits": "^0.1.7",
     "@pcd/pod": "^0.1.7",
+    "@pcd/proto-pod-gpc-artifacts": "^0.11.0",
     "@semaphore-protocol/identity": "^4.2.0",
     "@trpc/server": "11.0.0-rc.502",
     "@vercel/postgres": "^0.10.0",

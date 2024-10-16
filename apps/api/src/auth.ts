@@ -1,15 +1,12 @@
 import {
   compressBigInt,
-  decompressBigInt,
   logger,
-  PwtSpec,
   verifyPwtAndGetSemaphoreId,
 } from "@frogcrypto/shared";
-import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type express from "express";
-import { TRPCError } from "@trpc/server";
 import { db } from "./db";
 import { userScoresTable } from "./db/schema";
 
@@ -17,11 +14,12 @@ export interface AuthSession {
   user: {
     semaphoreId: bigint;
     semaphoreIdBase64: string;
+    isLoggedIn: boolean;
     isAdmin: boolean;
   };
 }
 
-async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
+async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
   const pod = POD.deserialize(token);
   let semaphoreId: bigint;
   try {
@@ -41,19 +39,12 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
     .from(userScoresTable)
     .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));
 
-  if (!user) {
-    logger.error("User not found for signer public key", pod.signerPublicKey);
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid PWT: user not found",
-    });
-  }
-
   return {
     user: {
       semaphoreId,
       semaphoreIdBase64: compressBigInt(semaphoreId),
-      isAdmin: user.isAdmin,
+      isAdmin: Boolean(user?.isAdmin),
+      isLoggedIn: Boolean(user),
     },
   };
 }
