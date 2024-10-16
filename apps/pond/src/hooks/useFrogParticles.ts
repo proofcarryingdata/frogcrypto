@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
 import {
   type Container,
   type IMove,
   type IOpacity,
   type IRangedCoordinates,
   type IShape,
-  type ParticlesOptions,
   type RecursivePartial,
   tsParticles,
-} from "tsparticles-engine";
-import type { EmitterContainer } from "tsparticles-plugin-emitters";
-import { type Emitter } from "tsparticles-plugin-emitters/types/Options/Classes/Emitter";
+} from "@tsparticles/engine";
+import type { EmitterContainer } from "@tsparticles/plugin-emitters";
+import { useCallback, useEffect, useState } from "react";
 
 const fpsLimit = 120;
 
@@ -20,11 +18,11 @@ export function useFrogParticles(
   const [container, setContainer] = useState<Container | null>(null);
 
   useEffect(() => {
-    if (!ref) {
+    if (!ref?.current) {
       return;
     }
 
-    tsParticles
+    void tsParticles
       .load({
         element: ref.current,
         options: {
@@ -56,20 +54,21 @@ export function useFrogParticles(
             },
             shape: {
               type: "image",
-              image: {
-                replaceColor: true,
-                src: "/images/frog.svg",
+              options: {
+                image: {
+                  replaceColor: true,
+                  src: "/images/frog.svg",
+                },
               },
             },
             opacity: {
               value: 1,
             },
             size: {
-              value: { min: 1000, max: 2000 },
+              value: { min: 5, max: 10 },
               animation: {
                 enable: true,
                 speed: 10,
-                minimumValue: 1,
                 sync: true,
                 startValue: "min",
                 count: 1,
@@ -81,7 +80,11 @@ export function useFrogParticles(
               direction: "top",
               random: true,
               straight: false,
-              outMode: "bounce-horizontal",
+              outModes: {
+                default: "out",
+                left: "bounce",
+                right: "bounce",
+              },
               gravity: {
                 enable: true,
               },
@@ -94,7 +97,9 @@ export function useFrogParticles(
                 enable: true,
                 mode: "trail",
               },
-              resize: true,
+              resize: {
+                enable: true,
+              },
             },
             modes: {
               trail: {
@@ -106,7 +111,9 @@ export function useFrogParticles(
           detectRetina: true,
         },
       })
-      .then((container) => { setContainer(container ?? null); });
+      .then((c) => {
+        setContainer(c ?? null);
+      });
   }, [ref]);
 
   return container;
@@ -198,8 +205,8 @@ export function useFrogConfetti(): () => Promise<void> {
     if (container && !container.destroyed) {
       const alias = container as EmitterContainer;
 
-      if (alias.addEmitter) {
-        alias.addEmitter({
+      if ("addEmitter" in alias) {
+        void alias.addEmitter({
           startCount,
           position,
           size: {
@@ -231,402 +238,97 @@ export function useFrogConfetti(): () => Promise<void> {
       }
     }
 
-    tsParticles
+    void tsParticles
       .load({
-        fullScreen: {
-          enable: true,
-          zIndex: 100,
-        },
-        fpsLimit,
-        particles: {
-          number: {
-            value: 0,
-          },
-          shape,
-          opacity,
-          size: {
-            value: 10,
-          },
-          links: {
-            enable: false,
-          },
-          life: {
-            count: 1,
-          },
-          move,
-          rotate: {
-            value: {
-              min: 0,
-              max: 360,
-            },
-            direction: "random",
-            animation: {
-              enable: true,
-              speed: 60,
-            },
-          },
-          tilt: {
-            direction: "random",
+        options: {
+          fullScreen: {
             enable: true,
-            value: {
-              min: 0,
-              max: 360,
+            zIndex: 100,
+          },
+          fpsLimit,
+          particles: {
+            number: {
+              value: 0,
             },
-            animation: {
+            shape,
+            opacity,
+            size: {
+              value: 10,
+            },
+            links: {
+              enable: false,
+            },
+            life: {
+              count: 1,
+            },
+            move,
+            rotate: {
+              value: {
+                min: 0,
+                max: 360,
+              },
+              direction: "random",
+              animation: {
+                enable: true,
+                speed: 60,
+              },
+            },
+            tilt: {
+              direction: "random",
               enable: true,
-              speed: 60,
+              value: {
+                min: 0,
+                max: 360,
+              },
+              animation: {
+                enable: true,
+                speed: 60,
+              },
             },
-          },
-          roll: {
-            darken: {
+            roll: {
+              darken: {
+                enable: true,
+                value: 25,
+              },
               enable: true,
-              value: 25,
+              speed: {
+                min: 15,
+                max: 25,
+              },
             },
-            enable: true,
-            speed: {
-              min: 15,
-              max: 25,
-            },
-          },
-          wobble: {
-            distance: 30,
-            enable: true,
-            speed: {
-              min: -15,
-              max: 15,
+            wobble: {
+              distance: 30,
+              enable: true,
+              speed: {
+                min: -15,
+                max: 15,
+              },
             },
           },
-        },
-        detectRetina: true,
-        emitters: {
-          name: "confetti",
-          startCount,
-          position,
-          size: {
-            width: 0,
-            height: 0,
-          },
-          rate: {
-            delay: 0,
-            quantity: 0,
-          },
-          life: {
-            duration: 0.1,
-            count: 1,
+          detectRetina: true,
+          emitters: {
+            name: "confetti",
+            startCount,
+            position,
+            size: {
+              width: 0,
+              height: 0,
+            },
+            rate: {
+              delay: 0,
+              quantity: 0,
+            },
+            life: {
+              duration: 0.1,
+              count: 1,
+            },
           },
         },
       })
-      .then((container) => { setContainer(container ?? null); });
+      .then((c) => {
+        setContainer(c ?? null);
+      });
   }, [container]);
 
   return confetti;
-}
-
-export function useCelestialPondParticles(
-  ref: React.RefObject<HTMLDivElement> | null
-): Container | null {
-  const [container, setContainer] = useState<Container | null>(null);
-
-  useEffect(() => {
-    if (!ref) {
-      return;
-    }
-
-    tsParticles
-      .load({
-        element: ref.current,
-        options: {
-          detectRetina: true,
-          fullScreen: {
-            enable: false,
-            zIndex: 1,
-          },
-          particles: {
-            number: {
-              value: 700,
-              density: {
-                enable: true,
-              },
-            },
-            color: {
-              value: "#ffffff",
-            },
-            shape: {
-              type: "circle",
-            },
-            opacity: {
-              value: { min: 0.1, max: 0.5 },
-              animation: {
-                enable: true,
-                speed: 3,
-                sync: false,
-              },
-            },
-            size: {
-              value: { min: 0.1, max: 5 },
-              animation: {
-                enable: true,
-                speed: 20,
-                sync: false,
-              },
-            },
-            links: {
-              enable: true,
-              distance: 150,
-              color: "#ffffff",
-              opacity: 0.4,
-              width: 1,
-            },
-            move: {
-              enable: true,
-              speed: 0.5,
-              direction: "none",
-              random: false,
-              straight: false,
-              outModes: "out",
-            },
-            twinkle: {
-              particles: {
-                enable: true,
-                color: "#ffff6a",
-                frequency: 0.005,
-                opacity: 0.5,
-              },
-              lines: {
-                enable: true,
-                color: "#0d47a1",
-                frequency: 0.0005,
-                opacity: 1,
-              },
-            },
-            interactivity: {
-              events: {
-                onHover: {
-                  enable: true,
-                  mode: "repulse",
-                },
-                resize: true,
-              },
-              modes: {
-                repulse: {
-                  distance: 200,
-                },
-              },
-            },
-          },
-        },
-      })
-      .then((container) => { setContainer(container ?? null); });
-  }, [ref]);
-
-  return container;
-}
-
-export function useWrithingVoidParticles(
-  ref: React.RefObject<HTMLDivElement> | null
-): () => Promise<Container | undefined> {
-  const play = useCallback(async () => {
-    if (!ref) {
-      return;
-    }
-
-    const absorberBaseSize =
-      Math.min(window.innerWidth, window.innerHeight) / 5 || 50;
-    const particles: RecursivePartial<ParticlesOptions> = {
-      shape: {
-        type: "image",
-        image: {
-          replaceColor: true,
-          src: "/images/frog.svg",
-        },
-      },
-      color: {
-        value: [
-          "#004b23",
-          "#006400",
-          "#007200",
-          "#008000",
-          "#38b000",
-          "#70e000",
-          "#9ef01a",
-          "#ccff33",
-        ],
-        animation: {
-          h: {
-            enable: false,
-            speed: 0,
-          },
-          s: {
-            enable: false,
-            speed: 0,
-          },
-          l: {
-            enable: true,
-            speed: 5,
-            sync: false,
-            offset: {
-              min: 0,
-              max: 80,
-            },
-          },
-        },
-      },
-      lineLinked: {
-        enable: false,
-      },
-      size: {
-        value: 10,
-        random: {
-          enable: true,
-          minimumValue: 5,
-        },
-      },
-    };
-    const emitter = (
-      move: RecursivePartial<IMove>
-    ): RecursivePartial<Emitter> => ({
-      particles: {
-        ...particles,
-        move: {
-          enable: true,
-          speed: {
-            min: 5,
-            max: 15,
-          },
-          random: true,
-          outMode: "none",
-          straight: false,
-          ...move,
-        },
-      },
-      life: {
-        delay: 3,
-        duration: 16,
-        count: 1,
-        wait: true,
-      },
-      rate: {
-        delay: 0.1,
-        quantity: 1,
-      },
-    });
-
-    return tsParticles.load({
-      detectRetina: true,
-      fullScreen: {
-        enable: true,
-        zIndex: 2000,
-      },
-      particles: {
-        ...particles,
-        move: {
-          enable: true,
-          speed: {
-            min: 5,
-            max: 10,
-          },
-          direction: "none",
-          random: false,
-          straight: false,
-          outModes: "none",
-        },
-        number: {
-          value: 0,
-        },
-      },
-      absorbers: {
-        size: {
-          density: 15,
-          value: absorberBaseSize,
-          limit: {
-            radius: absorberBaseSize * 2,
-          },
-        },
-        position: {
-          x: 50,
-          y: 50,
-        },
-        opacity: 0,
-        orbit: true,
-      },
-      interactivity: {
-        detectsOn: "canvas",
-        events: {
-          onHover: {
-            enable: true,
-            mode: "repulse",
-          },
-          onClick: {
-            enable: true,
-            mode: "push",
-          },
-          resize: true,
-        },
-        modes: {
-          repulse: {
-            distance: 100,
-          },
-          push: {
-            quantity: 20,
-          },
-        },
-      },
-      emitters: [
-        {
-          ...emitter({
-            direction: "bottom",
-            angle: {
-              value: 30,
-              offset: 0,
-            },
-          }),
-          position: {
-            x: 0,
-            y: 0,
-          },
-        },
-        {
-          ...emitter({
-            direction: "right",
-            angle: {
-              value: { min: 30, max: 90 },
-              offset: 0,
-            },
-          }),
-          position: {
-            x: 0,
-            y: 100,
-          },
-        },
-        {
-          ...emitter({
-            direction: "left",
-            angle: {
-              value: 30,
-              offset: 0,
-            },
-          }),
-          position: {
-            x: 100,
-            y: 0,
-          },
-        },
-        {
-          ...emitter({
-            direction: "top",
-            angle: {
-              value: 30,
-              offset: 0,
-            },
-          }),
-          position: {
-            x: 100,
-            y: 100,
-          },
-        },
-      ],
-    });
-  }, [ref]);
-
-  return play;
 }

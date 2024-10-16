@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { loadFull } from "tsparticles";
-import { tsParticles } from "tsparticles-engine";
+import { tsParticles } from "@tsparticles/engine";
 
 let loadPromise: Promise<void> | undefined;
 
