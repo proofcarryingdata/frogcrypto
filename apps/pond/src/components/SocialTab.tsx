@@ -27,27 +27,35 @@ function NavBar() {
     (pendingRequests?.length ?? 0) > 0 || (otherProfilePODs?.length ?? 0) > 0;
 
   return (
-    <div className="btn-group gap-0 [&>*:not(:first-child)]:rounded-l-none [&>*:not(:last-child)]:rounded-r-none self-end">
+    <div className="px-2 flex justify-between [&>*]:select-none">
       <Link
         href="/"
-        className={`btn ${location === "/" ? "bg-green-600" : "bg-gray-400"}`}
+        className={` ${location === "/" ? "text-link-active" : "text-link"}`}
       >
-        <User />
+        All users
+      </Link>
+      <Link
+        href="/profile"
+        className={` ${location === "/profile" ? "text-link-active" : "text-link"}`}
+      >
+        Profile
       </Link>
       {showFriendsTab ? (
         <Link
           href="/friends"
-          className={`btn ${location === "/friends" ? "bg-green-600" : "bg-gray-400"}`}
+          className={` ${location === "/friends" ? "text-link-active" : "text-link"}`}
         >
-          <Compass />
+          Friends
         </Link>
-      ) : null}
-      <Link
-        href="/scores"
-        className={`btn ${location === "/scores" ? "bg-green-600" : "bg-gray-400"}`}
-      >
-        <Trophy />
-      </Link>
+      ) : (
+        <span className="text-link-disabled">Friends</span>
+      )}
+      <div className="relative">
+        <span className="text-link-disabled">Newsfeed</span>
+        <span className="absolute bottom-0 right-0 -mb-2 -mr-2 p-1 bg-orange-500 text-white text-[8px] bg-opacity-90">
+          SOON
+        </span>
+      </div>
     </div>
   );
 }
@@ -72,19 +80,26 @@ function SocialTab() {
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-6 w-full flex-1 overflow-scroll">
+      <img
+        src="/images/frogsocial.png"
+        alt="FrogSocial"
+        draggable={false}
+        className="select-none"
+      />
+
       {location === "/share" ? null : <NavBar />}
 
       <Switch>
-        <Route path="/" component={MyProfile} />
+        <Route path="/" component={FrogScore} />
+        <Route path="/profile" component={MyProfile} />
         <Route path="/friends" component={FrogFriends} />
-        <Route path="/scores" component={FrogScore} />
         <Route path="/share" component={ProfileSharer} />
         <Route path="/:id" component={OtherProfile} />
 
         <Route component={NotFound} />
       </Switch>
-    </>
+    </div>
   );
 }
 

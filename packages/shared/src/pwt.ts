@@ -5,7 +5,18 @@ import { decodePublicKey, POD } from "@pcd/pod";
 
 import { logger } from "./";
 
+export const POD_TYPE_FROGCRYPTO_PWT = "frogcrypto.pwt";
+
 export const PwtSpec = p.entries({
+  pod_type: {
+    type: "string",
+    isMemberOf: [
+      {
+        type: "string",
+        value: POD_TYPE_FROGCRYPTO_PWT,
+      },
+    ],
+  },
   aud: {
     type: "string",
     isMemberOf: [

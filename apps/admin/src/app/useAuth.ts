@@ -1,4 +1,4 @@
-import { PwtSpec } from "@frogcrypto/shared";
+import { POD_TYPE_FROGCRYPTO_PWT, PwtSpec } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { useQuery } from "@tanstack/react-query";
 import { setToken } from "../trpc";
@@ -23,6 +23,7 @@ const useAuth = () => {
       }
       const pwt = await z.pod.sign(
         PwtSpec.parse({
+          pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PWT },
           aud: { type: "string", value: "frogcrypto" },
           exp: {
             type: "int",
@@ -43,6 +44,7 @@ const useAuth = () => {
     },
     enabled: Boolean(z) && Boolean(semaphoreId),
     refetchInterval: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
   });
 
   return { ready, semaphoreId };

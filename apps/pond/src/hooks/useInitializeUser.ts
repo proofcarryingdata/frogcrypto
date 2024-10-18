@@ -1,12 +1,12 @@
 import {
-  PwtSpec,
-  decompressBigInt,
+  compressBigInt,
   FROGCRYPTO_FOLDER_NAME,
   getPlayerIDEntries,
-  PlayerIDSpec,
-  compressBigInt,
-  TicketProofRequest,
   logger,
+  PlayerIDSpec,
+  POD_TYPE_FROGCRYPTO_PWT,
+  PwtSpec,
+  TicketProofRequest,
 } from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
@@ -121,6 +121,7 @@ function useInitializeUser() {
 
       const pwt = await z.pod.sign(
         PwtSpec.parse({
+          pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PWT },
           aud: { type: "string", value: "frogcrypto" },
           exp: {
             type: "int",
@@ -140,6 +141,7 @@ function useInitializeUser() {
     },
     enabled: Boolean(z) && Boolean(semaphoreId),
     refetchInterval: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
   });
 
   const { data: hasIdentity, error: meError } = trpc.users.me.useQuery(

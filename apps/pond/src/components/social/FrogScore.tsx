@@ -3,6 +3,8 @@ import React, { useMemo } from "react";
 import { useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
+import Frog, { FROG_LEVELS } from "../shared/Frog";
+import Divider from "../shared/Divider";
 
 /**
  * The Score tab shows the user their score and the leaderboard.
@@ -16,15 +18,17 @@ function FrogScore(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-col items-stretch gap-4">
-      <ScoreTable
-        title="You"
-        scores={[score]}
-        getUsername={getUsernameFromHash}
-      />
+    <div className="flex flex-col items-stretch gap-4 border-teal border mx-2 px-2">
+      <h2 className="text-lg font-bold bg-teal text-white px-2 py-1 -mx-2">
+        Leaderboard
+      </h2>
+
+      <ScoreTable scores={[score]} getUsername={getUsernameFromHash} />
+
+      <Divider />
+
       {scores ? (
         <ScoreTable
-          title="Leaderboard"
           scores={scores}
           myScore={score}
           getUsername={getUsernameFromHash}
@@ -37,13 +41,11 @@ function FrogScore(): JSX.Element {
 }
 
 function ScoreTable({
-  title,
   scores,
   myScore,
   getUsername,
 }: {
   getUsername: (semaphoreId: string) => string;
-  title: string;
   scores: FrogCryptoScore[];
   myScore?: FrogCryptoScore;
 }): JSX.Element {
@@ -51,28 +53,9 @@ function ScoreTable({
 
   return (
     <table className="w-full">
-      <thead>
-        <tr>
-          <th className="w-[35px]" />
-          <th className="text-center" />
-          <th className="w-[100px]" />
-        </tr>
-        <tr>
-          <th colSpan={3} className="text-center">
-            {title}
-          </th>
-        </tr>
-      </thead>
       <tbody>
         {scoresByLevel.map((group) => (
           <React.Fragment key={group.title}>
-            {myScore ? (
-              <tr>
-                <td colSpan={3} className="text-center py-1">
-                  {group.emoji} {group.title}
-                </td>
-              </tr>
-            ) : null}
             {group.scores.map((score) => (
               <tr
                 key={score.semaphoreIdHash}
@@ -84,7 +67,13 @@ function ScoreTable({
               >
                 <td>{score.rank}</td>
                 <td>{getUsername(score.semaphoreIdHash)}</td>
-                <td className="text-right">{score.score}</td>
+                <td className="text-right">
+                  <Frog
+                    score={score.score}
+                    colorize
+                    className="justify-end text-sm"
+                  />
+                </td>
               </tr>
             ))}
           </React.Fragment>
@@ -95,36 +84,19 @@ function ScoreTable({
 }
 
 /**
- * The score thresholds for each level.
- */
-const SCORES = [
-  { score: 0, emoji: "⚪️", title: "NOVICE" },
-  { score: 5, emoji: "🟡", title: "APPRENTICE" },
-  { score: 10, emoji: "🟠", title: "JOURNEYMAN" },
-  { score: 19, emoji: "🔴", title: "EXPERT" },
-  { score: 36, emoji: "🟣", title: "MASTER" },
-  { score: 69, emoji: "🔵", title: "GRANDMASTER" },
-  { score: 133, emoji: "🟢", title: "LEGEND" },
-  { score: 256, emoji: "👑", title: "SOVEREIGN" },
-  { score: 420, emoji: "🦉", title: "SAGE" },
-  { score: 701, emoji: "🐸", title: "AVATAR OF FROGELION" },
-  { score: 1000, emoji: "⌨️", title: "<scripter />" },
-];
-
-/**
  * Returns the emoji and title for a given score.
  */
 export function scoreToEmoji(score: number): string {
-  const index = SCORES.findIndex((item) => item.score > score);
+  const index = FROG_LEVELS.findIndex((item) => item.score > score);
   if (index === -1) {
-    const maxScore = SCORES[SCORES.length - 1];
+    const maxScore = FROG_LEVELS[FROG_LEVELS.length - 1];
     if (!maxScore) {
       throw new Error("No max score found");
     }
     return `${maxScore.emoji} ${maxScore.title}`;
   }
-  const curr = SCORES[index - 1];
-  const next = SCORES[index];
+  const curr = FROG_LEVELS[index - 1];
+  const next = FROG_LEVELS[index];
   if (!curr || !next) {
     throw new Error("No current or next score found");
   }
@@ -143,7 +115,7 @@ function groupScores(scores: FrogCryptoScore[]): {
   emoji: string;
   title: string;
 }[] {
-  const groups = SCORES.map((item) => ({
+  const groups = FROG_LEVELS.map((item) => ({
     ...item,
     scores: [] as FrogCryptoScore[],
   })).reverse();
@@ -151,8 +123,9 @@ function groupScores(scores: FrogCryptoScore[]): {
   scores
     .sort((a, b) => b.score - a.score)
     .forEach((score) => {
-      const index = SCORES.findIndex((item) => item.score > score.score);
-      const curr = SCORES[index === -1 ? SCORES.length - 1 : index - 1];
+      const index = FROG_LEVELS.findIndex((item) => item.score > score.score);
+      const curr =
+        FROG_LEVELS[index === -1 ? FROG_LEVELS.length - 1 : index - 1];
       if (!curr) {
         return;
       }

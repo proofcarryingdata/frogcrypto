@@ -20,6 +20,7 @@ import NotFound from "./components/NotFound";
 import ClaimCyberFrog from "./components/ClaimCyberFrog";
 import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
 import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
+import Frog from "./components/shared/Frog";
 
 function FrogCrypto() {
   const { data: frogs } = useFrogs();
@@ -40,7 +41,7 @@ function FrogCrypto() {
 
   return (
     <>
-      <span className="text-frog-score self-center">{myScore ?? "?"} 🐸</span>
+      <Frog className="self-center" score={myScore ?? "?"} />
 
       {(myScore ?? 0) >= 2 && (
         <nav className="flex w-full gap-4 [&>*]:text-center">
@@ -72,7 +73,7 @@ function FrogCrypto() {
             </Link>
           ) : (
             <span className="btn relative opacity-50 cursor-not-allowed bg-gray-400">
-              ??? (5 🐸)
+              ??? (<Frog score={5} />)
             </span>
           )}
         </nav>

@@ -14,19 +14,19 @@ export function Unauthorized(): React.ReactElement {
     <div className="flex flex-col items-center justify-center min-h-[200px] p-6 bg-green-50 rounded-lg border border-green-200">
       <AlertTriangle className="w-12 h-12 text-green-500 mb-4" />
       <h2 className="text-xl font-bold text-green-700 mb-2">Access Denied</h2>
-      <p className="mb-4">
+      <p className="text-green-600 mb-4 text-center">
         Oops! It looks like you don&apos;t have permission to enter this area.
       </p>
-      <p className="text-sm">
+      <p className="text-sm text-green-500 max-w-md text-center">
         We tried to verify your account, but we couldn&apos;t confirm your
         access rights. This could be because:
       </p>
-      <ul className="text-sm list-disc list-inside mt-2">
+      <ul className="text-sm text-green-500 list-disc list-inside mt-2">
         <li>Your account doesn&apos;t have the necessary permissions</li>
         <li>This area isn&apos;t open to the public yet</li>
         <li>There was an error verifying your credentials</li>
       </ul>
-      <p className="text-xs mt-4 italic">
+      <p className="text-xs text-green-400 mt-4 text-center italic">
         If you believe this is a mistake, please contact support or try logging
         in again.
       </p>

@@ -65,6 +65,20 @@
       @apply opacity-50 blur-sm transition-all duration-[3000ms];
     }
   }
+
+  .text-link {
+    @apply opacity-20 text-lg;
+
+    &:hover {
+      @apply opacity-60;
+    }
+  }
+  .text-link-active {
+    @apply text-lg font-semibold;
+  }
+  .text-link-disabled {
+    @apply opacity-20 cursor-not-allowed;
+  }
 }
 
 html,

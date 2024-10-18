@@ -3,6 +3,9 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      colors: {
+        teal: "#235B48",
+      },
       fontSize: {
         "frog-score": ["1.25rem", "1.25rem"],
       },

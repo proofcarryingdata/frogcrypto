@@ -9,6 +9,7 @@ import React, { useState } from "react";
 import { Link } from "wouter";
 import { FrogAttributes, FrogSocialAttributes } from "../shared/FrogCard";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
+import Frog from "../shared/Frog";
 
 const DESCRIPTION_MAX_LENGTH = 100;
 
@@ -155,7 +156,7 @@ function FrogProfile({
           )}
           <Link href="/scores">
             <button type="button" className="border text-gray-500">
-              {frogCount ?? "???"} 🐸
+              <Frog score={frogCount ?? "???"} />
             </button>
           </Link>
         </div>
