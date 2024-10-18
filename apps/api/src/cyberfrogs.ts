@@ -1,38 +1,9 @@
-import { SignatureType } from "@noble/curves/abstract/weierstrass";
-import { numberToUint8Array, publicKeyToUUID } from "./utils";
+import { type SignatureType } from "@noble/curves/abstract/weierstrass";
 import { sha256 } from "@noble/hashes/sha2";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { bytesToHex } from "@noble/hashes/utils";
 import { logger } from "@frogcrypto/shared";
-
-/*
- * Each cyberfrog has an ECDSA keypair, we need to know what all the valid public keys are
- * so we can verify signatures from them.
-
- * NOTE: we might not need this, we could just ecrecover the public key from the signature,
- * Convert it to a UUID, and check if that UUID is a valid Feed ID.
- * i.e. store it in the feed vs in the code here.
- */
-export const CYBERFROG_KEYS = [
-  "0296a8039b329f8240e8e9827f4018dfab038e3f05ef03cfc368e139f33fa69491",
-];
-
-export const MOCK_FEEDS = CYBERFROG_KEYS.map((key) => {
-  return {
-    id: publicKeyToUUID(key),
-    name: "CyberSwamp",
-    description:
-      "Veiled in mist and teeming with life, the labyrinthine CyberSwamp is home to a plethora of Cyberfrogs.",
-    private: true,
-    activeUntil: 1893484800,
-    cooldown: 2,
-    biomes: {
-      Jungle: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
-      Desert: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
-      Swamp: { dropWeightScaler: Math.random() * 0.9 + 0.1 },
-    },
-  };
-});
+import { numberToUint8Array } from "./utils";
 
 export interface CyberfrogData {
   signature: SignatureType;
@@ -52,7 +23,7 @@ export interface CyberfrogData {
  */
 export const parseCyberfrogData = (
   signature: string,
-  nonce: number,
+  nonce: number
 ): CyberfrogData => {
   try {
     const recoveryBit = parseInt(signature.slice(-1));

@@ -19,11 +19,11 @@ import {
   sampleFrogData,
   tryConsumeCyberfrogNullifier,
 } from "../db/frogs";
-import { cyberfrogNullifiersTable, userFeedsTable } from "../db/schema";
+import { userFeedsTable } from "../db/schema";
 import { incrementScore } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState, publicKeyToUUID } from "../utils";
-import { CYBERFROG_KEYS, MOCK_FEEDS, parseCyberfrogData } from "../cyberfrogs";
+import { parseCyberfrogData } from "../cyberfrogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -39,12 +39,12 @@ export const feedsRouter = router({
     .input(
       z.object({
         feedId: z.string(),
-      }),
+      })
     )
     .output(
       z.object({
         pod: z.custom<POD>((x) => x instanceof POD && x.verifySignature()),
-      }),
+      })
     )
     .mutation(
       async ({
@@ -80,7 +80,7 @@ export const feedsRouter = router({
             const lastFetchedAt = await updateUserFeedState(
               tx,
               semaphoreId.toString(),
-              feedId,
+              feedId
             );
             if (!lastFetchedAt) {
               const e = new Error("User feed state unexpectedly not found!");
@@ -92,7 +92,7 @@ export const feedsRouter = router({
               {
                 lastFetchedAt,
               },
-              feed,
+              feed
             );
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
@@ -111,14 +111,14 @@ export const feedsRouter = router({
 
             const frogData = generateFrogData(
               frogDataSpec,
-              BigInt(semaphoreId),
+              BigInt(semaphoreId)
             );
 
             const { score: scoreAfterRoll } = await incrementScore(
               tx,
               semaphoreId.toString(),
               // non-frog frog doesn't get point
-              frogData.biome === Biome.Unknown ? 0 : 1,
+              frogData.biome === Biome.Unknown ? 0 : 1
             );
 
             if (scoreAfterRoll > FROG_SCORE_CAP) {
@@ -134,13 +134,13 @@ export const feedsRouter = router({
                 tx,
                 semaphoreId.toString(),
                 feedId,
-                lastFetchedAt,
+                lastFetchedAt
               );
             }
 
             const frogPOD = POD.sign(
               toFrogPODEntries(frogData),
-              ISSUER_PRIVATE_KEY,
+              ISSUER_PRIVATE_KEY
             );
 
             return {
@@ -160,21 +160,21 @@ export const feedsRouter = router({
 
             throw e;
           });
-      },
+      }
     ),
   getCyberFrog: authedProcedure
     .input(
       z.object({
         signature: z.string(),
         nonce: z.number(),
-      }),
+      })
     )
     .output(
       z.object({
         pod: z
           .custom<POD>((x) => x instanceof POD && x.verifySignature())
           .optional(),
-      }),
+      })
     )
     .mutation(
       async ({
@@ -188,17 +188,10 @@ export const feedsRouter = router({
           signature: parsedSignature,
           messageHash,
         } = parseCyberfrogData(signature, nonce);
-        const validCyberFrogId = CYBERFROG_KEYS.includes(publicKey);
-        if (!validCyberFrogId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Invalid cyberfrog ID",
-          });
-        }
         const sigValid = secp256k1.verify(
           parsedSignature,
           messageHash,
-          publicKey,
+          publicKey
         );
         if (!sigValid) {
           throw new TRPCError({
@@ -207,9 +200,9 @@ export const feedsRouter = router({
           });
         }
         const feedId = publicKeyToUUID(publicKey);
+        logger.info("CyberSwamp Activated: ", publicKey, feedId);
 
-        // TODO: use server feed
-        const feed = MOCK_FEEDS.find((f) => f.id === feedId);
+        const feed = getFeeds().find((f) => f.id === feedId);
         if (!feed) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -224,12 +217,13 @@ export const feedsRouter = router({
         }
 
         const nullifier = bytesToHex(
-          sha256.create().update(publicKey).update(nonce.toString()).digest(),
+          sha256.create().update(publicKey).update(nonce.toString()).digest()
         );
 
         // If something fails after this point, the nullifier is not reverted
         // and will still be treated as consumed.
-        const nullifierConsumeSuccess = await tryConsumeCyberfrogNullifier(nullifier);
+        const nullifierConsumeSuccess =
+          await tryConsumeCyberfrogNullifier(nullifier);
         if (!nullifierConsumeSuccess) {
           throw new TRPCError({
             code: "FORBIDDEN",
@@ -250,7 +244,7 @@ export const feedsRouter = router({
             const lastFetchedAt = await updateUserFeedState(
               tx,
               semaphoreId.toString(),
-              feedId,
+              feedId
             );
             if (!lastFetchedAt) {
               const e = new Error("User feed state unexpectedly not found!");
@@ -261,7 +255,7 @@ export const feedsRouter = router({
               {
                 lastFetchedAt,
               },
-              feed,
+              feed
             );
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
@@ -270,7 +264,6 @@ export const feedsRouter = router({
               });
             }
 
-            // TODO: map device to individual frog logic
             const frogDataSpec = await sampleFrogData(feed.biomes);
             if (!frogDataSpec) {
               throw new TRPCError({
@@ -281,14 +274,14 @@ export const feedsRouter = router({
 
             const frogData = generateFrogData(
               frogDataSpec,
-              BigInt(semaphoreId),
+              BigInt(semaphoreId)
             );
 
             const { score: scoreAfterRoll } = await incrementScore(
               tx,
               semaphoreId.toString(),
               // non-frog frog doesn't get point
-              frogData.biome === Biome.Unknown ? 0 : 1,
+              frogData.biome === Biome.Unknown ? 0 : 1
             );
 
             if (scoreAfterRoll > FROG_SCORE_CAP) {
@@ -300,7 +293,7 @@ export const feedsRouter = router({
 
             const frogPOD = POD.sign(
               toFrogPODEntries(frogData),
-              ISSUER_PRIVATE_KEY,
+              ISSUER_PRIVATE_KEY
             );
 
             return {
@@ -320,6 +313,6 @@ export const feedsRouter = router({
 
             throw e;
           });
-      },
+      }
     ),
 });
