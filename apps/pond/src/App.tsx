@@ -44,16 +44,18 @@ function FrogCrypto() {
       <Frog className="self-center" score={myScore ?? "?"} />
 
       {(myScore ?? 0) >= 2 && (
-        <nav className="flex w-full gap-4 [&>*]:text-center">
+        <nav className="flex w-full px-1 gap-3 [&>*]:text-center [&>*]:truncate">
           <Link
             href="/"
             className={`btn ${location === "/" ? "bg-green-600" : "bg-gray-400"}`}
+            title="get frogs"
           >
             get frogs
           </Link>
           <Link
             href="/dex"
             className={`btn ${location === "/dex" ? "bg-green-600" : "bg-gray-400"}`}
+            title="frogedex"
           >
             frogedex
           </Link>
@@ -63,6 +65,7 @@ function FrogCrypto() {
               className={`btn relative ${
                 location.startsWith("/social") ? "bg-green-600" : "bg-gray-400"
               }`}
+              title="frog social"
             >
               frog social
               {pendingFrogRequestsCount ? (
@@ -99,8 +102,8 @@ function App() {
   const isReady = isConnected && hasIdentity;
 
   return (
-    <main className="flex justify-center w-screen min-h-screen py-8">
-      <div className="flex flex-col gap-6 w-full max-w-sm items-stretch px-2">
+    <main className="flex justify-center w-screen min-h-screen py-6">
+      <div className="flex flex-col gap-4 w-full max-w-sm items-stretch px-2">
         <h1 className="font-superfunky text-2xl self-center">
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>

@@ -5,7 +5,7 @@ import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import Frog, { FROG_LEVELS } from "../shared/Frog";
 import Divider from "../shared/Divider";
-
+import SocialContainer from "./SocialContainer";
 /**
  * The Score tab shows the user their score and the leaderboard.
  */
@@ -18,11 +18,7 @@ function FrogScore(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-col items-stretch gap-4 border-teal border mx-2 px-2">
-      <h2 className="text-lg font-bold bg-teal text-white px-2 py-1 -mx-2">
-        Leaderboard
-      </h2>
-
+    <SocialContainer title="Leaderboard">
       <ScoreTable scores={[score]} getUsername={getUsernameFromHash} />
 
       <Divider />
@@ -36,7 +32,7 @@ function FrogScore(): JSX.Element {
       ) : (
         <Loader />
       )}
-    </div>
+    </SocialContainer>
   );
 }
 

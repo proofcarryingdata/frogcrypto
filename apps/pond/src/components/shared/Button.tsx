@@ -212,3 +212,20 @@ export const Button = forwardRef(
   }
 );
 Button.displayName = "Button";
+
+export function SocialButton({
+  children,
+  className,
+  ...props
+}: React.ComponentPropsWithRef<"button"> & { className?: string }) {
+  return (
+    <button
+      type="button"
+      className={`bg-teal text-white px-1 py-0.5 min-w-16 ${className ?? ""}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+SocialButton.displayName = "SocialButton";

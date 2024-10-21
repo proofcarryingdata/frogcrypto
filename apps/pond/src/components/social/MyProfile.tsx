@@ -1,10 +1,11 @@
+import { shortCommitmentHex } from "@frogcrypto/shared";
 import React, { useState } from "react";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
-import { Button } from "../shared/Button";
+import { useUserState } from "../../hooks/useUserState";
+import { SocialButton } from "../shared/Button";
 import Loader from "../shared/Loader";
 import Modal from "../shared/Modal";
-import { useUserState } from "../../hooks/useUserState";
-import FrogProfile from "./FrogProfile";
+import SocialContainer from "./SocialContainer";
 
 function MyProfile() {
   const { data: myProfilePOD, isLoading: isLoadingProfilePOD } =
@@ -48,15 +49,35 @@ function MyProfile() {
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <FrogProfile
-        frog={myProfilePOD}
-        profileId={myProfilePOD.profileId}
-        status="mine"
-        friendCount={userState.myScore.friendCount}
-        frogCount={userState.myScore.score}
-        onEditProfile={handleEditProfile}
-      />
+    <div className="container flex flex-col gap-4">
+      <SocialContainer title="Picture">
+        <div className="relative w-32 h-32 mx-auto">
+          <img
+            src={myProfilePOD.imageUrl}
+            alt={myProfilePOD.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </SocialContainer>
+
+      <SocialContainer title="Information">
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-1">
+            <span className="font-semibold">Public Key</span>
+            <span>{shortCommitmentHex(myProfilePOD.ownerSemaphoreId)}</span>
+
+            <span className="font-semibold">Telegram</span>
+            <span>{myProfilePOD.telegramUsername || "<not set>"}</span>
+
+            <span className="font-semibold">Farcaster</span>
+            <span>{myProfilePOD.farcasterUsername || "<not set>"}</span>
+          </div>
+
+          <SocialButton className="self-end" onClick={handleEditProfile}>
+            Edit
+          </SocialButton>
+        </div>
+      </SocialContainer>
 
       <Modal
         isOpen={isEditModalOpen}
@@ -64,57 +85,56 @@ function MyProfile() {
           setIsEditModalOpen(false);
         }}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <h3 className="text-xl font-bold mb-4">Edit Your Profile</h3>
-          <div>
-            <label
-              htmlFor="telegramUsername"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Telegram Username
-            </label>
-            <input
-              type="text"
-              id="telegramUsername"
-              value={telegramUsername}
-              onChange={(e) => {
-                setTelegramUsername(e.target.value);
-              }}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="farcasterUsername"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Farcaster Username
-            </label>
-            <input
-              type="text"
-              id="farcasterUsername"
-              value={farcasterUsername}
-              onChange={(e) => {
-                setFarcasterUsername(e.target.value);
-              }}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button
-              type="button"
-              onClick={() => {
-                setIsEditModalOpen(false);
-              }}
-              className="bg-gray-200 text-gray-800 hover:text-white"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Updating..." : "Update Profile"}
-            </Button>
-          </div>
-        </form>
+        <SocialContainer title="Edit Information">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="telegramUsername"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Telegram
+              </label>
+              <input
+                type="text"
+                id="telegramUsername"
+                value={telegramUsername}
+                onChange={(e) => {
+                  setTelegramUsername(e.target.value);
+                }}
+                className="border border-teal border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal focus:ring-opacity-50 focus:ring-1"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="farcasterUsername"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Farcaster
+              </label>
+              <input
+                type="text"
+                id="farcasterUsername"
+                value={farcasterUsername}
+                onChange={(e) => {
+                  setFarcasterUsername(e.target.value);
+                }}
+                className="border border-teal border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal focus:ring-opacity-50 focus:ring-1"
+              />
+            </div>
+            <div className="flex justify-between">
+              <SocialButton
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                }}
+              >
+                Cancel
+              </SocialButton>
+              <SocialButton type="submit" disabled={isPending}>
+                {isPending ? "Saving..." : "Save"}
+              </SocialButton>
+            </div>
+          </form>
+        </SocialContainer>
       </Modal>
     </div>
   );

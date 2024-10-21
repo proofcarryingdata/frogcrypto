@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Link, Route, Switch, useLocation } from "wouter";
-import { Compass, Trophy, User } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useMyProfilePOD, useOtherProfilePODs } from "../hooks/useProfilePOD";
 import { useSocialTabAvailable } from "../hooks/useUserState";
@@ -27,7 +26,7 @@ function NavBar() {
     (pendingRequests?.length ?? 0) > 0 || (otherProfilePODs?.length ?? 0) > 0;
 
   return (
-    <div className="px-2 flex justify-between [&>*]:select-none">
+    <div className="px-2 mb-1 flex justify-between [&>*]:select-none">
       <Link
         href="/"
         className={` ${location === "/" ? "text-link-active" : "text-link"}`}
@@ -80,12 +79,12 @@ function SocialTab() {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full flex-1 overflow-scroll">
+    <div className="flex flex-col gap-2 w-full flex-1 overflow-auto">
       <img
         src="/images/frogsocial.png"
         alt="FrogSocial"
         draggable={false}
-        className="select-none"
+        className="select-none w-screen"
       />
 
       {location === "/share" ? null : <NavBar />}
