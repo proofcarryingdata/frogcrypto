@@ -106,7 +106,7 @@ function MyProfile() {
                 onChange={(e) => {
                   setTelegramUsername(e.target.value);
                 }}
-                className="border border-teal-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal-600 focus:ring-opacity-50 focus:ring-1 p-1"
+                className="border border-green-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-green-600 focus:ring-opacity-50 focus:ring-1 p-1"
               />
             </div>
             <div>
@@ -123,7 +123,7 @@ function MyProfile() {
                 onChange={(e) => {
                   setFarcasterUsername(e.target.value);
                 }}
-                className="border border-teal-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal-600 focus:ring-opacity-50 focus:ring-1 p-1"
+                className="border border-green-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-green-600 focus:ring-opacity-50 focus:ring-1 p-1"
               />
             </div>
             <div className="flex justify-between">

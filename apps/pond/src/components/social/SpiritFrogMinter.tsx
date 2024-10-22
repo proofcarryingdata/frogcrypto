@@ -429,6 +429,7 @@ export function SpiritFrogMinter() {
       ownerSemaphoreId: semaphoreIdBase64,
 
       profileId: semaphoreIdBase64,
+      profileName: "",
       telegramUsername: "",
       farcasterUsername: "",
 

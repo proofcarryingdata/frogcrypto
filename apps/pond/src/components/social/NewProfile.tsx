@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-import { type ProfileFrogPOD } from "@frogcrypto/shared";
+import { getUsernameFromHash, type ProfileFrogPOD } from "@frogcrypto/shared";
 import Loader from "../shared/Loader";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
@@ -22,6 +22,7 @@ function NewProfile() {
       ownerSemaphoreId: semaphoreIdBase64,
 
       profileId: semaphoreIdBase64,
+      profileName: getUsernameFromHash(userState.myScore.semaphoreIdHash),
       telegramUsername: "",
       farcasterUsername: "",
 

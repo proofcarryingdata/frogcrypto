@@ -4,6 +4,7 @@ import * as p from "@parcnet-js/podspec";
 import { POD_INT_MAX, PODEntries, PODIntValue } from "@pcd/pod";
 
 import { compressBigInt, decompressBigInt } from "../bigint";
+import { logger } from "../logger";
 import { Biome, IFrogData, Rarity, Temperament } from "./base";
 
 export type FrogPOD = IFrogData & {
@@ -111,28 +112,31 @@ export function parseFrogEnum(
 export const ProfileFrogSpec = p.entries({
   ...FrogSpec.schema,
   profileId: { type: "cryptographic" },
+  profileName: { type: "string" },
   telegramUsername: { type: "string" },
   farcasterUsername: { type: "string" },
 });
 
 export type ProfileFrogPOD = FrogPOD & {
   profileId: string;
+  profileName: string;
   telegramUsername: string;
   farcasterUsername: string;
 };
 
-export function parseProfileFrogPOD(pod: p.PODData): ProfileFrogPOD {
+export function parseProfileFrogPOD(pod: p.PODData): ProfileFrogPOD | null {
   const entries = pod.entries;
   const res = ProfileFrogSpec.safeParse(entries);
   if (!res.isValid) {
-    console.debug("Invalid profile frog POD", res.issues);
-    throw new Error("Invalid profile frog POD");
+    logger.debug("Invalid profile frog POD", res.issues);
+    return null;
   }
   const parsed = res.value;
 
   return {
     ...parseFrogPOD(pod),
     profileId: compressBigInt(parsed.profileId.value),
+    profileName: parsed.profileName.value,
     telegramUsername: parsed.telegramUsername.value,
     farcasterUsername: parsed.farcasterUsername.value,
   };

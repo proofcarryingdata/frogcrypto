@@ -221,7 +221,7 @@ export function SocialButton({
   return (
     <button
       type="button"
-      className={`bg-teal-600 text-white px-1 py-0.5 min-w-16 ${className ?? ""}`}
+      className={`bg-moss-600 text-white px-1 py-0.5 min-w-16 ${className ?? ""}`}
       {...props}
     >
       {children}

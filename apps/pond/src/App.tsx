@@ -45,17 +45,17 @@ function FrogCrypto() {
       <Frog className="self-center" score={myScore ?? "?"} />
 
       {(myScore ?? 0) >= 2 && (
-        <nav className="flex w-full px-1 gap-3 [&>*]:text-center [&>*]:whitespace-nowrap">
+        <nav className="flex w-full gap-3 [&>*]:text-center [&>*]:whitespace-nowrap">
           <Link
             href="/"
-            className={`btn ${location === "/" ? "bg-green-600" : "bg-gray-400"}`}
+            className={`btn ${location === "/" ? "bg-green-500" : "bg-teal-500"}`}
             title="get frogs"
           >
             get frogs
           </Link>
           <Link
             href="/dex"
-            className={`btn ${location === "/dex" ? "bg-green-600" : "bg-gray-400"}`}
+            className={`btn ${location === "/dex" ? "bg-green-500" : "bg-teal-500"}`}
             title="frogedex"
           >
             frogedex
@@ -64,7 +64,7 @@ function FrogCrypto() {
             <Link
               href={pendingFrogRequestsCount ? "/social/friends" : "/social"}
               className={`btn relative ${
-                location.startsWith("/social") ? "bg-green-600" : "bg-gray-400"
+                location.startsWith("/social") ? "bg-green-500" : "bg-teal-500"
               }`}
             >
               frog social

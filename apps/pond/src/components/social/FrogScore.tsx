@@ -21,7 +21,7 @@ function FrogScore(): JSX.Element {
     <SocialContainer title="Leaderboard">
       <ScoreTable scores={[score]} getUsername={getUsernameFromHash} />
 
-      <div className="min-h-px max-h-px w-full bg-teal-600 bg-opacity-30" />
+      <div className="min-h-px max-h-px w-full bg-green-600 bg-opacity-30" />
 
       {scores ? (
         <ScoreTable

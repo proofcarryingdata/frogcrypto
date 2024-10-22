@@ -31,7 +31,7 @@ function GetFrogTab() {
 
   return (
     <>
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col gap-2 mt-2">
         {subscriptions.map((feed) => {
           const userFeedState = userStateByFeedId[feed.id];
           if (!userFeedState) {
@@ -43,7 +43,7 @@ function GetFrogTab() {
               key={feed.id}
               feed={feed}
               nextFetchAt={userFeedState.nextFetchAt}
-              score={userState?.myScore?.score}
+              score={userState?.myScore.score}
               active={Boolean(userFeedState.active)}
             />
           );
@@ -51,14 +51,9 @@ function GetFrogTab() {
       </div>
 
       {Boolean(frogs?.length) && (
-        <>
-          <Divider />
-          <div className="flex flex-col gap-4 w-full pb-8">
-            {frogs?.map((frog) => (
-              <FrogCard key={frog.signature} frog={frog} />
-            ))}
-          </div>
-        </>
+        <div className="flex flex-col gap-4 mt-2">
+          {frogs?.map((frog) => <FrogCard key={frog.signature} frog={frog} />)}
+        </div>
       )}
     </>
   );

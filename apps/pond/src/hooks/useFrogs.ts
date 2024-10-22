@@ -53,8 +53,9 @@ const useFrogs = () => {
         )
       );
 
-      return data.map((p) =>
-        p.entries.profileId ? parseProfileFrogPOD(p) : parseFrogPOD(p)
+      return data.map(
+        (p) =>
+          (p.entries.profileId && parseProfileFrogPOD(p)) || parseFrogPOD(p)
       );
     },
   });
@@ -86,7 +87,8 @@ export const useProfileFrogs = <TData = ProfileFrogPOD[]>(
     select: (data: PODData[]): TData => {
       const pods = data
         .filter((p) => p.entries.profileId)
-        .map((p) => parseProfileFrogPOD(p));
+        .map((p) => parseProfileFrogPOD(p))
+        .filter((p): p is ProfileFrogPOD => p !== null);
 
       const select = opts?.select ?? ((x): TData => x as TData);
       return select(pods);

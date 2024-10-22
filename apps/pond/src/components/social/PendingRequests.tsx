@@ -30,29 +30,34 @@ export function PendingRequests({
 
   return (
     <SocialContainer title="Invitations">
-      {pendingRequests.map((request) => (
-        <FrogProfileRow
-          key={request.id}
-          frog={parseProfileFrogPOD(
-            podToPODData(POD.deserialize(request.requestPOD ?? ""))
-          )}
-          profileId={request.requestedBy}
-          onFocusFrog={onFocusFrog}
-        >
-          <SocialButton
-            type="button"
-            disabled={isRespondingToRequest}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+      {pendingRequests.map((request) => {
+        const frog = parseProfileFrogPOD(
+          podToPODData(POD.deserialize(request.requestPOD ?? ""))
+        );
+        if (!frog) return null;
 
-              respondToRequest(request);
-            }}
+        return (
+          <FrogProfileRow
+            key={request.id}
+            frog={frog}
+            profileId={request.requestedBy}
+            onFocusFrog={onFocusFrog}
           >
-            Accept
-          </SocialButton>
-        </FrogProfileRow>
-      ))}
+            <SocialButton
+              type="button"
+              disabled={isRespondingToRequest}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                respondToRequest(request);
+              }}
+            >
+              Accept
+            </SocialButton>
+          </FrogProfileRow>
+        );
+      })}
     </SocialContainer>
   );
 }

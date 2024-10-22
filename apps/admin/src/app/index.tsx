@@ -15,7 +15,7 @@ function App(): JSX.Element {
   return (
     <div className="min-h-screen max-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-teal-600 text-white p-4">
+      <header className="bg-green-600 text-white p-4">
         <h1 className="text-xl font-normal">FrogCrypto Pond Control</h1>
         <span className="text-xs">Semaphore ID: {String(semaphoreId)}</span>
       </header>
@@ -25,7 +25,7 @@ function App(): JSX.Element {
         <div className="flex gap-4">
           <button
             type="button"
-            className={`${tab === "frog" ? "bg-teal-600 text-white" : "bg-gray-200 text-gray-600"} px-4 py-2 rounded-md`}
+            className={`${tab === "frog" ? "bg-green-600 text-white" : "bg-gray-200 text-gray-600"} px-4 py-2 rounded-md`}
             onClick={() => {
               setTab("frog");
             }}
@@ -34,7 +34,7 @@ function App(): JSX.Element {
           </button>
           <button
             type="button"
-            className={`${tab === "feed" ? "bg-teal-600 text-white" : "bg-gray-200 text-gray-600"} px-4 py-2 rounded-md`}
+            className={`${tab === "feed" ? "bg-green-600 text-white" : "bg-gray-200 text-gray-600"} px-4 py-2 rounded-md`}
             onClick={() => {
               setTab("feed");
             }}

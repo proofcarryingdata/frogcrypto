@@ -4,7 +4,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        teal: {
+        green: {
+          50: "#E6F7ED",
+          100: "#CCEFDB",
+          200: "#99DFB7",
+          300: "#66CF93",
+          400: "#33BF6F",
+          500: "#17A34A",
+          600: "#12823B",
+          700: "#0E622C",
+          800: "#09411E",
+          900: "#05210F",
+        },
+        moss: {
           50: "#E6F3EF",
           100: "#CCE7DF",
           200: "#99CFBF",
@@ -16,6 +28,29 @@ module.exports = {
           800: "#122C24",
           900: "#091512",
         },
+        teal: {
+          50: "#E6F3F3",
+          100: "#CCE7E8",
+          200: "#99CFD1",
+          300: "#66B7BA",
+          400: "#339FA3",
+          500: "#2C9397",
+          600: "#23767A",
+          700: "#1A585C",
+          800: "#123B3D",
+          900: "#091D1F",
+        },
+        rarity: {
+          common: "#2D9061",
+          rare: "#4595B2",
+          epic: "#683EAA",
+          legendary: "#F19E38",
+          mythic:
+            "linear-gradient(261deg, #D1FFD3 2.82%, #EAF 39.21%, #5BFFFF 99.02%)",
+        },
+      },
+      boxShadow: {
+        frog: "0px 0px 12px 2px rgb(0 0 0 / 0.05)",
       },
       fontSize: {
         "frog-score": ["1.25rem", "1.25rem"],

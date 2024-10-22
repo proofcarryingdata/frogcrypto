@@ -35,7 +35,7 @@ function FrogProfileBox({
         className="w-16 h-16 object-cover mb-1"
       />
 
-      <h3 className="text-sm font-semibold text-teal-700">
+      <h3 className="text-sm font-semibold text-green-700">
         {`0x${shortCommitment(semaphoreIdBase64)}`}
       </h3>
 
