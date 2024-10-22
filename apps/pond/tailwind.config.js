@@ -105,5 +105,15 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities, theme }) {
+      const newUtilities = {
+        ".bg-dot-pattern": {
+          background:
+            "linear-gradient( 90deg, #ececec calc(22px - 3px), transparent 1% ) center / 22px 22px, linear-gradient( #ececec calc(22px - 3px), transparent 1% ) center / 22px 22px, #e4e4e4",
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
+  ],
 };

@@ -11,11 +11,15 @@ export function getFeeds(): ServerFeed[] {
 }
 
 export async function refreshFeeds(): Promise<void> {
-  const feeds = await db.select().from(feedsTable);
-  cachedFeeds = feeds.map((feed) => ({
-    id: feed.id,
-    ...feed.feed,
-  }));
+  try {
+    const feeds = await db.select().from(feedsTable);
+    cachedFeeds = feeds.map((feed) => ({
+      id: feed.id,
+      ...feed.feed,
+    }));
+  } catch (e) {
+    logger.error("Failed to refresh feeds", e);
+  }
 }
 
 // Call this function when your server starts

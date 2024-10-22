@@ -15,38 +15,7 @@ import { usePossibleFrogs } from "../hooks/useUserState";
 import useFrogs from "../hooks/useFrogs";
 import { FrogsModal } from "./shared/FrogsModal";
 import Loader from "./shared/Loader";
-
-const RARITIES: Record<Rarity, { label: string; color: string }> = {
-  [Rarity.Common]: {
-    label: "NORM",
-    color: "#2D9061",
-  },
-  [Rarity.Rare]: {
-    label: "RARE",
-    color: "#4595B2",
-  },
-  [Rarity.Epic]: {
-    label: "EPIC",
-    color: "#683EAA",
-  },
-  [Rarity.Legendary]: {
-    label: "LGND",
-    color: "#F19E38",
-  },
-  [Rarity.Mythic]: {
-    label: "MYTH",
-    color:
-      "linear-gradient(261deg, #D1FFD3 2.82%, #EAF 39.21%, #5BFFFF 99.02%)",
-  },
-  [Rarity.Unknown]: {
-    label: "UNKN",
-    color: "#2D9061",
-  },
-  [Rarity.Object]: {
-    label: "OBJT",
-    color: "#2D9061",
-  },
-};
+import { RARITY_COLORS } from "./shared/FrogCard";
 
 /**
  * The FrogeDex tab allows users to view their progress towards collecting all frogs.
@@ -89,7 +58,8 @@ export function DexTab() {
 
       <div className="flex items-center gap-2 ml-auto">
         <span>
-          Owned: {Object.keys(groupedPODs).length.toString().padStart(3, "0")}
+          Owned: {Object.keys(groupedPODs).length.toString().padStart(3, "0")} /{" "}
+          {possibleFrogs.length.toString().padStart(3, "0")}
         </span>
         <button
           type="button"
@@ -133,7 +103,7 @@ export function DexTab() {
           onClose={(): void => {
             setFocusedFrogs([]);
           }}
-          color={RARITIES[focusedFrogs[0].rarity].color}
+          color={RARITY_COLORS[focusedFrogs[0].rarity].color}
         />
       ) : null}
     </>
@@ -150,8 +120,8 @@ function DexList({
   onClick: Dispatch<SetStateAction<FrogPOD[]>>;
 }): JSX.Element {
   return (
-    <table className="min-w-full divide-y divide-gray-200">
-      <tbody className="bg-white divide-y divide-gray-200">
+    <table className="rounded-lg bg-white">
+      <tbody className="divide-y divide-gray-200">
         {possibleFrogs.map(({ id, rarity }) => {
           const frogPODs = pods[id];
 
@@ -163,11 +133,11 @@ function DexList({
                   <div
                     className="px-2 py-1 border rounded text-center"
                     style={{
-                      borderColor: RARITIES[rarity].color,
+                      borderColor: RARITY_COLORS[rarity].color,
                       background: "rgba(45, 144, 97, 0.1)",
                     }}
                   >
-                    {RARITIES[rarity].label}
+                    {RARITY_COLORS[rarity].label}
                   </div>
                 </td>
                 <td className="px-4 py-2 text-gray-500">???</td>
@@ -188,12 +158,12 @@ function DexList({
                 <div
                   className="px-2 py-1 rounded text-center"
                   style={{
-                    border: `1px solid ${RARITIES[rarity].color}`,
-                    background: RARITIES[rarity].color,
+                    border: `1px solid ${RARITY_COLORS[rarity].color}`,
+                    background: RARITY_COLORS[rarity].color,
                     color: "#fff",
                   }}
                 >
-                  {RARITIES[rarity].label}
+                  {RARITY_COLORS[rarity].label}
                 </div>
               </td>
               <td className="px-4 py-2">{frogPODs.frog.name}</td>
@@ -220,8 +190,10 @@ function DexGrid({
         const frogPODs = pods[id];
 
         return (
-          <div key={id} className="flex flex-col items-center bg-white">
+          <div key={id} className="flex flex-col items-center">
             <div
+              tabIndex={0}
+              role="button"
               className="w-full text-white rounded-lg cursor-pointer flex flex-col items-stretch justify-center border"
               onClick={
                 frogPODs
@@ -231,34 +203,30 @@ function DexGrid({
                   : undefined
               }
             >
-              <span
-                className="px-2 py-1 text-center truncate text-sm rounded-t-lg"
-                style={{
-                  background: RARITIES[rarity].color,
-                }}
-                title={frogPODs ? frogPODs.frog.name : "???"}
-              >
-                {frogPODs ? frogPODs.frog.name : "???"}
-              </span>
               {frogPODs ? (
                 <img
                   src={frogPODs.frog.imageUrl}
                   alt={frogPODs.frog.name}
-                  className="w-full h-auto object-cover rounded-b-lg aspect-square"
+                  className="w-full h-auto object-cover rounded-lg aspect-square"
                   draggable={false}
                 />
               ) : (
                 <img
                   src="/images/pixel_frog.png"
                   alt="???"
-                  className="w-full h-auto object-cover rounded-b-lg aspect-square opacity-20"
+                  className="w-full h-auto object-cover rounded-lg aspect-square opacity-20"
                   draggable={false}
                 />
               )}
+
+              <span
+                className={`px-2 text-center truncate text-sm font-semibold ${RARITY_COLORS[rarity].text}`}
+                title={frogPODs ? frogPODs.frog.name : "???"}
+              >
+                {frogPODs ? frogPODs.frog.name : "???"}
+              </span>
             </div>
-            {frogPODs ? (
-              <span className="mt-2">x{frogPODs.pods.length}</span>
-            ) : null}
+            {frogPODs ? <span>x{frogPODs.pods.length}</span> : null}
           </div>
         );
       })}

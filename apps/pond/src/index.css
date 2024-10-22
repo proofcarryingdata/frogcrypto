@@ -83,5 +83,5 @@
 
 html,
 body {
-  @apply m-0 p-0 border-none bg-gray-100;
+  @apply m-0 p-0 border-none;
 }

@@ -31,7 +31,7 @@ function GetFrogTab() {
 
   return (
     <>
-      <div className="flex flex-col gap-2 mt-2">
+      <div className="flex flex-col gap-2">
         {subscriptions.map((feed) => {
           const userFeedState = userStateByFeedId[feed.id];
           if (!userFeedState) {

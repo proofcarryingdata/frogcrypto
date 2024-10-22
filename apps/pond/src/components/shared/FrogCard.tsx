@@ -12,40 +12,57 @@ import {
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import ImageZoom from "./ImageZoom";
 
-const RARE_COLORS: Record<
+export const RARITY_COLORS: Record<
   Rarity,
   {
+    label: string;
     shadow: string;
     text: string;
+    color: string;
   }
 > = {
   [Rarity.Common]: {
+    label: "NORM",
     shadow: "shadow-rarity-common",
     text: "text-rarity-common",
+    color: "#2D9061",
   },
   [Rarity.Rare]: {
+    label: "RARE",
     shadow: "shadow-rarity-rare",
     text: "text-rarity-rare",
+    color: "#4595B2",
   },
   [Rarity.Epic]: {
+    label: "EPIC",
     shadow: "shadow-rarity-epic",
     text: "text-rarity-epic",
+    color: "#683EAA",
   },
   [Rarity.Legendary]: {
+    label: "LGND",
     shadow: "shadow-rarity-legendary",
     text: "text-rarity-legendary",
+    color: "#F19E38",
   },
   [Rarity.Mythic]: {
+    label: "MYTH",
     shadow: "shadow-rarity-mythic",
     text: "text-rarity-mythic",
+    color:
+      "linear-gradient(261deg, #D1FFD3 2.82%, #EAF 39.21%, #5BFFFF 99.02%)",
   },
   [Rarity.Unknown]: {
+    label: "UNKN",
     shadow: "shadow-rarity-common",
     text: "text-rarity-common",
+    color: "#2D9061",
   },
   [Rarity.Object]: {
+    label: "OBJT",
     shadow: "shadow-rarity-common",
     text: "text-rarity-common",
+    color: "#2D9061",
   },
 };
 
@@ -67,13 +84,13 @@ const biomeValue = (biome: Biome): string => {
 function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
   const profileFrog = isProfileFrogPOD(frog) ? frog : undefined;
   const [showMore, setShowMore] = useState(expanded ?? Boolean(profileFrog));
-  const textColor = RARE_COLORS[frog.rarity].text || "";
+  const textColor = RARITY_COLORS[frog.rarity].text || "";
 
   return (
     <div className="w-full flex flex-col bg-white rounded-lg">
       <div className="w-full flex flex-col gap-4 items-center p-4">
         <ImageZoom
-          className={`rounded-lg shadow-frog ${RARE_COLORS[frog.rarity].shadow || ""}`}
+          className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}
           src={frog.imageUrl}
           draggable={false}
           loading="lazy"
@@ -85,7 +102,7 @@ function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
 
         <div className="flex flex-col items-center gap-1">
           <span
-            className={`${RARE_COLORS[frog.rarity].text || ""} text-center uppercase font-bold text-xl`}
+            className={`${RARITY_COLORS[frog.rarity].text || ""} text-center uppercase font-bold text-xl`}
           >
             {profileFrog ? profileFrog.profileName : frog.name}
           </span>
@@ -230,16 +247,6 @@ export function FrogAttribute({
   value: string | number | React.ReactNode | undefined;
   color?: string;
 }) {
-  // const attrColor = (
-  //   val: string | number | React.ReactNode | undefined
-  // ): string => {
-  //   if (typeof val === "number") {
-  //     if (val <= 3) return "text-red-600";
-  //     if (val >= 7) return "text-green-600";
-  //   }
-  //   return "text-gray-700";
-  // };
-
   return (
     <div className="flex flex-col items-center gap-1 font-mono">
       <span

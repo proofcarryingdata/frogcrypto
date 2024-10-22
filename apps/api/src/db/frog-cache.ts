@@ -53,24 +53,28 @@ async function refreshCacheIfNeeded() {
 }
 
 export async function refreshFrogCache() {
-  const allFrogs = await db
-    .select()
-    .from(frogsTable)
-    .then((frogs) => frogs.map((frog) => toFrogData(frog)))
-    .then((frogs) => frogs.sort((a, b) => a.id - b.id));
+  try {
+    const allFrogs = await db
+      .select()
+      .from(frogsTable)
+      .then((frogs) => frogs.map((frog) => toFrogData(frog)))
+      .then((frogs) => frogs.sort((a, b) => a.id - b.id));
 
-  cachedDexFrogs = allFrogs
-    .map((frog) => ({
-      ...frog,
-      rarity: parseFrogEnum(Rarity, frog.rarity),
-    }))
-    .filter((frog) => frog.rarity !== Number(Rarity.Object));
+    cachedDexFrogs = allFrogs
+      .map((frog) => ({
+        ...frog,
+        rarity: parseFrogEnum(Rarity, frog.rarity),
+      }))
+      .filter((frog) => frog.rarity !== Number(Rarity.Object));
 
-  cachedSpiritFrogs = allFrogs.filter((frog) =>
-    SPIRIT_FROG_IDS.includes(frog.id)
-  );
+    cachedSpiritFrogs = allFrogs.filter((frog) =>
+      SPIRIT_FROG_IDS.includes(frog.id)
+    );
 
-  lastUpdateTimestamp = new Date();
+    lastUpdateTimestamp = new Date();
+  } catch (e) {
+    logger.error("Failed to refresh frog cache", e);
+  }
 }
 
 // Call this function when your server starts
