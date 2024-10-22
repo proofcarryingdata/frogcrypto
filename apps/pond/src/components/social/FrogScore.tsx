@@ -4,8 +4,8 @@ import { useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import Frog, { FROG_LEVELS } from "../shared/Frog";
-import Divider from "../shared/Divider";
 import SocialContainer from "./SocialContainer";
+
 /**
  * The Score tab shows the user their score and the leaderboard.
  */
@@ -21,7 +21,7 @@ function FrogScore(): JSX.Element {
     <SocialContainer title="Leaderboard">
       <ScoreTable scores={[score]} getUsername={getUsernameFromHash} />
 
-      <Divider />
+      <div className="min-h-px max-h-px w-full bg-teal-600 bg-opacity-30" />
 
       {scores ? (
         <ScoreTable
@@ -61,7 +61,14 @@ function ScoreTable({
                     : ""
                 }
               >
-                <td>{score.rank}</td>
+                <td className="w-10">
+                  <img
+                    src={score.imgUrl ?? ""}
+                    alt="Frog"
+                    className="w-8 h-8 object-cover"
+                  />
+                </td>
+                <td>{score.rank}.</td>
                 <td>{getUsername(score.semaphoreIdHash)}</td>
                 <td className="text-right">
                   <Frog

@@ -1,45 +1,47 @@
 import React from "react";
-import { Link } from "wouter";
-import {
-  type IFrogData,
-  type ProfileFrogPOD,
-  shortCommitment,
-} from "@frogcrypto/shared";
+import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 
 interface FrogProfileCompactProps {
-  frog: IFrogData | ProfileFrogPOD;
+  frog: ProfileFrogPOD;
   profileId: string;
+  onFocusFrog: (frog: ProfileFrogPOD) => void;
   children?: React.ReactNode;
 }
 
-function FrogProfileCompact({
+function FrogProfileRow({
   frog,
   profileId,
   children,
+  onFocusFrog,
 }: FrogProfileCompactProps) {
   return (
-    <Link href={`~/social/${encodeURIComponent(profileId)}`}>
-      <div className="flex items-center p-2 hover:bg-gray-100 transition-colors cursor-pointer">
-        <img
-          src={frog.imageUrl}
-          alt={frog.name}
-          className="w-12 h-12 rounded-full object-cover mr-4"
-        />
-        <div className="flex-grow">
-          <h3 className="text-sm font-semibold text-gray-800">
-            {`0x${shortCommitment(profileId)}'s ${frog.name}`}
-          </h3>
-          {isProfileFrogPOD(frog) && (
-            <p className="text-xs text-gray-600">
-              {frog.telegramUsername ? `@${frog.telegramUsername}` : ""}
-            </p>
-          )}
-        </div>
-        <div className="ml-2">{children}</div>
+    <div
+      tabIndex={0}
+      role="button"
+      className="flex items-center hover:bg-gray-100 transition-colors cursor-pointer"
+      onClick={() => {
+        onFocusFrog(frog);
+      }}
+    >
+      <img
+        src={frog.imageUrl}
+        alt={frog.name}
+        className="w-12 h-12 object-cover mr-4"
+      />
+      <div className="flex-grow">
+        <h3 className="text-sm font-semibold text-gray-800">
+          {`0x${shortCommitment(profileId)}'s ${frog.name}`}
+        </h3>
+        {isProfileFrogPOD(frog) && (
+          <p className="text-xs text-gray-600">
+            {frog.telegramUsername ? `@${frog.telegramUsername}` : ""}
+          </p>
+        )}
       </div>
-    </Link>
+      <div className="ml-2">{children}</div>
+    </div>
   );
 }
 
-export default FrogProfileCompact;
+export default FrogProfileRow;

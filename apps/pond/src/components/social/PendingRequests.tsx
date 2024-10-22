@@ -1,4 +1,4 @@
-import { parseProfileFrogPOD } from "@frogcrypto/shared";
+import { parseProfileFrogPOD, type ProfileFrogPOD } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import React from "react";
 import { podToPODData } from "@parcnet-js/podspec";
@@ -6,9 +6,15 @@ import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import { useSemaphoreIdBase64 } from "../../hooks/useUserState";
+import { SocialButton } from "../shared/Button";
 import FrogProfileRow from "./FrogProfileRow";
+import SocialContainer from "./SocialContainer";
 
-export function PendingRequests() {
+export function PendingRequests({
+  onFocusFrog,
+}: {
+  onFocusFrog: (frog: ProfileFrogPOD) => void;
+}) {
   const semaphoreId = useSemaphoreIdBase64();
   const { data: pendingRequests, isLoading } =
     trpc.social.getPendingRequests.useQuery(undefined, {
@@ -23,8 +29,7 @@ export function PendingRequests() {
   if (!pendingRequests || pendingRequests.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold">Invitations</h2>
+    <SocialContainer title="Invitations">
       {pendingRequests.map((request) => (
         <FrogProfileRow
           key={request.id}
@@ -32,22 +37,23 @@ export function PendingRequests() {
             podToPODData(POD.deserialize(request.requestPOD ?? ""))
           )}
           profileId={request.requestedBy}
+          onFocusFrog={onFocusFrog}
         >
-          <button
+          <SocialButton
             type="button"
-            className="bg-green-500 text-white px-2 py-1 text-sm rounded-full hover:bg-green-600 disabled:opacity-50 disabled:cursor-wait transition-colors"
             disabled={isRespondingToRequest}
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
 
               respondToRequest(request);
             }}
           >
             Accept
-          </button>
+          </SocialButton>
         </FrogProfileRow>
       ))}
-    </div>
+    </SocialContainer>
   );
 }
 

@@ -1,4 +1,4 @@
-import { shortCommitmentHex } from "@frogcrypto/shared";
+import { getUsernameFromHash, shortCommitmentHex } from "@frogcrypto/shared";
 import React, { useState } from "react";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useUserState } from "../../hooks/useUserState";
@@ -63,6 +63,11 @@ function MyProfile() {
       <SocialContainer title="Information">
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-2 gap-1">
+            <span className="font-semibold">Name</span>
+            <span>
+              {getUsernameFromHash(userState.myScore.semaphoreIdHash)}
+            </span>
+
             <span className="font-semibold">Public Key</span>
             <span>{shortCommitmentHex(myProfilePOD.ownerSemaphoreId)}</span>
 
@@ -85,40 +90,40 @@ function MyProfile() {
           setIsEditModalOpen(false);
         }}
       >
-        <SocialContainer title="Edit Information">
+        <SocialContainer title="Edit Profile">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-1">
               <label
-                htmlFor="telegramUsername"
+                htmlFor="telegramHandle"
                 className="block text-sm font-medium text-gray-700"
               >
                 Telegram
               </label>
               <input
                 type="text"
-                id="telegramUsername"
+                id="telegramHandle"
                 value={telegramUsername}
                 onChange={(e) => {
                   setTelegramUsername(e.target.value);
                 }}
-                className="border border-teal border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal focus:ring-opacity-50 focus:ring-1"
+                className="border border-teal-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal-600 focus:ring-opacity-50 focus:ring-1 p-1"
               />
             </div>
             <div>
               <label
-                htmlFor="farcasterUsername"
+                htmlFor="farcasterHandle"
                 className="block text-sm font-medium text-gray-700"
               >
                 Farcaster
               </label>
               <input
                 type="text"
-                id="farcasterUsername"
+                id="farcasterHandle"
                 value={farcasterUsername}
                 onChange={(e) => {
                   setFarcasterUsername(e.target.value);
                 }}
-                className="border border-teal border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal focus:ring-opacity-50 focus:ring-1"
+                className="border border-teal-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-teal-600 focus:ring-opacity-50 focus:ring-1 p-1"
               />
             </div>
             <div className="flex justify-between">

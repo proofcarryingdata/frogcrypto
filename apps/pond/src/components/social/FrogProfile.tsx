@@ -39,7 +39,7 @@ function FrogDescription({ frog }: { frog: IFrogData }) {
 
 function FrogProfile({
   frog,
-  profileId,
+  semaphoreIdBase64,
   status,
   friendCount,
   frogCount,
@@ -48,7 +48,7 @@ function FrogProfile({
 }: {
   frog: IFrogData | ProfileFrogPOD;
   status: "none" | "pending" | "friends" | "unclaimed" | "mine";
-  profileId?: string;
+  semaphoreIdBase64?: string;
   friendCount?: number;
   frogCount?: number;
   onAddFriend?: () => void;
@@ -133,8 +133,8 @@ function FrogProfile({
 
       <div className="text-center px-6 py-4 flex flex-col gap-2">
         <h2 className="text-xl font-bold text-gray-800 mb-2">
-          {profileId
-            ? `0x${shortCommitment(profileId)}'s ${frog.name}`
+          {semaphoreIdBase64
+            ? `0x${shortCommitment(semaphoreIdBase64)}'s ${frog.name}`
             : frog.name}
         </h2>
 

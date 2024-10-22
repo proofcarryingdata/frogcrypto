@@ -21,6 +21,7 @@ import ClaimCyberFrog from "./components/ClaimCyberFrog";
 import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
 import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
 import Frog from "./components/shared/Frog";
+import NewProfile from "./components/social/NewProfile";
 
 function FrogCrypto() {
   const { data: frogs } = useFrogs();
@@ -44,7 +45,7 @@ function FrogCrypto() {
       <Frog className="self-center" score={myScore ?? "?"} />
 
       {(myScore ?? 0) >= 2 && (
-        <nav className="flex w-full px-1 gap-3 [&>*]:text-center [&>*]:truncate">
+        <nav className="flex w-full px-1 gap-3 [&>*]:text-center [&>*]:whitespace-nowrap">
           <Link
             href="/"
             className={`btn ${location === "/" ? "bg-green-600" : "bg-gray-400"}`}
@@ -65,7 +66,6 @@ function FrogCrypto() {
               className={`btn relative ${
                 location.startsWith("/social") ? "bg-green-600" : "bg-gray-400"
               }`}
-              title="frog social"
             >
               frog social
               {pendingFrogRequestsCount ? (
@@ -76,7 +76,7 @@ function FrogCrypto() {
             </Link>
           ) : (
             <span className="btn relative opacity-50 cursor-not-allowed bg-gray-400">
-              ??? (<Frog score={5} />)
+              ??? (<Frog score={5} className="text-sm" colorize={false} />)
             </span>
           )}
         </nav>
@@ -85,7 +85,7 @@ function FrogCrypto() {
       <Switch>
         <Route path="/" component={GetFrogTab} />
         <Route path="/dex" component={DexTab} />
-        <Route path="/social/tadpole" component={SpiritFrogMinter} />
+        <Route path="/social/tadpole" component={NewProfile} />
         <Route path="/social" component={SocialTab} nest />
         <Route path="/cyber/:signature" component={ClaimCyberFrog} />
         <Route component={NotFound} />

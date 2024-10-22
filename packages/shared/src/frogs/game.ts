@@ -1,4 +1,4 @@
-import { Rarity } from './base';
+import { Rarity } from "./base";
 
 /**
  * Number of free rolls that a user globally
@@ -22,6 +22,7 @@ export interface FrogCryptoScore {
   score: number;
   rank: number;
   friendCount: number;
+  imgUrl?: string;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { decompressBigInt } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { validate as uuidValidate } from "uuid";
 import { db } from "../db";
@@ -9,6 +9,7 @@ import { socialRequestsTable, userScoresTable } from "../db/schema";
 import { recordFriendCount, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
+import { getSpiritFrog } from "../db/frogs";
 
 const MAX_REQUESTS_PER_DAY = 100;
 const REQUEST_VISIBILITY_DAYS = 30; // Requests older than this will not be returned in queries
@@ -232,30 +233,53 @@ export const socialRouter = router({
       });
     }),
 
-  scoreboard: publicProcedure.query(async () => {
-    return db
-      .with(userScoresView)
-      .select()
-      .from(userScoresView)
-      .orderBy(desc(userScoresView.score))
-      .limit(100);
-  }),
+  scoreboard: publicProcedure
+    .output(
+      z.array(
+        z.object({
+          friendCount: z.number(),
+          rank: z.number(),
+          score: z.number(),
+          semaphoreIdHash: z.string(),
+          imgUrl: z.string(),
+        })
+      )
+    )
+    .query(async () => {
+      return db
+        .with(userScoresView)
+        .select()
+        .from(userScoresView)
+        .orderBy(desc(userScoresView.score))
+        .where(gt(userScoresView.score, 0))
+        .limit(50)
+        .then((scores) => {
+          return Promise.all(
+            scores.map(async (score) => ({
+              ...score,
+              imgUrl: await getSpiritFrog(score.semaphoreIdHash).then(
+                (frog) => frog?.imageUrl ?? ""
+              ),
+            }))
+          );
+        });
+    }),
 
   claimProfile: authedProcedure
     .input(
       z.object({
-        profileId: z.custom<string>(
+        socialId: z.custom<string>(
           (x) => typeof x === "string" && uuidValidate(x)
         ),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { profileId } = input;
+      const { socialId } = input;
 
       const res = await db
         .update(userScoresTable)
         .set({
-          socialId: profileId,
+          socialId,
         })
         .where(
           and(

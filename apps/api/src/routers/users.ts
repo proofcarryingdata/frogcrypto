@@ -114,6 +114,7 @@ export const usersRouter = router({
           rank: z.number(),
           friendCount: z.number(),
           socialId: z.string().nullable(),
+          imgUrl: z.string(),
         }),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>().optional(),
@@ -138,44 +139,57 @@ export const usersRouter = router({
       }
 
       const allFeeds = getFeeds().filter((feed) => feedIds.includes(feed.id));
+      const spiritFrog = await getSpiritFrog(myScore.semaphoreIdHash);
 
       return {
         feeds: allFeeds.map((feed) =>
           computeUserFeedState(userFeeds[feed.id], feed)
         ),
         possibleFrogs: await getAllFrogs(),
-        myScore,
-        spiritFrog: await getSpiritFrog(myScore.semaphoreIdHash),
+        myScore: { ...myScore, imgUrl: spiritFrog?.imageUrl ?? "" },
+        spiritFrog,
       };
     }),
-  getSpiritFrog: authedProcedure
+  getUser: authedProcedure
     .input(
-      z.object({
-        profileId: z.custom<string>(
-          (x) => typeof x === "string" && uuidValidate(x)
-        ),
-      })
+      z
+        .object({
+          id: z.custom<string>((x) => typeof x === "string" && uuidValidate(x)),
+          type: z.literal("socialId"),
+        })
+        .or(
+          z.object({
+            id: z.string(),
+            type: z.literal("semaphoreIdBase64"),
+          })
+        )
     )
     .output(
       z.object({
         friendCount: z.number(),
         frogCount: z.number(),
         semaphoreIdBase64: z.string(),
+        socialId: z.string().nullable(),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>(),
       })
     )
-    .query(async ({ input: { profileId } }) => {
+    .query(async ({ input: { id, type } }) => {
       const [user] = await db
         .with(userScoresView)
         .select({
           semaphoreId: userScoresView.semaphoreId,
           semaphoreIdHash: userScoresView.semaphoreIdHash,
+          socialId: userScoresView.socialId,
           score: userScoresView.score,
           friendCount: userScoresView.friendCount,
         })
         .from(userScoresView)
-        .where(eq(userScoresView.socialId, profileId));
+        .where(
+          type === "socialId"
+            ? eq(userScoresView.socialId, id)
+            : eq(userScoresView.semaphoreId, String(decompressBigInt(id)))
+        );
 
       if (!user) {
         throw new TRPCError({
@@ -196,6 +210,7 @@ export const usersRouter = router({
         friendCount: user.friendCount,
         frogCount: user.score,
         semaphoreIdBase64: compressBigInt(BigInt(user.semaphoreId)),
+        socialId: user.socialId,
         spiritFrog,
       };
     }),

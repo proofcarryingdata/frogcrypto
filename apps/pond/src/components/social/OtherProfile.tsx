@@ -1,4 +1,10 @@
-import { Biome, type IFrogData, Rarity, Temperament } from "@frogcrypto/shared";
+import {
+  Biome,
+  decompressBigInt,
+  type IFrogData,
+  Rarity,
+  Temperament,
+} from "@frogcrypto/shared";
 import { AlertTriangle } from "lucide-react";
 import React, { useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
@@ -18,12 +24,12 @@ function ClaimedProfile({
   spiritFrog,
   friendCount,
   frogCount,
-  profileId,
+  semaphoreIdBase64,
 }: {
   spiritFrog: IFrogData;
   friendCount: number;
   frogCount: number;
-  profileId: string;
+  semaphoreIdBase64: string;
 }) {
   const { data: myProfilePOD, isLoading: isLoadingMyProfilePOD } =
     useMyProfilePOD();
@@ -31,17 +37,18 @@ function ClaimedProfile({
   const { data: frogs, isLoading: isLoadingFrogs } = useProfileFrogs();
 
   const knownFrog = useMemo(() => {
-    if (!profileId) return undefined;
-    return frogs?.find((frog) => frog.profileId === profileId);
-  }, [frogs, profileId]);
+    return frogs?.find((frog) => frog.profileId === semaphoreIdBase64);
+  }, [frogs, semaphoreIdBase64]);
 
   const { data: pendingRequests } = trpc.social.getPendingRequests.useQuery();
   const pendingRequest = useMemo(() => {
-    if (!profileId || !pendingRequests) return undefined;
+    if (!pendingRequests) return undefined;
     return pendingRequests.find(
-      (request) => request.party1 === profileId || request.party2 === profileId
+      (request) =>
+        request.party1 === semaphoreIdBase64 ||
+        request.party2 === semaphoreIdBase64
     );
-  }, [profileId, pendingRequests]);
+  }, [semaphoreIdBase64, pendingRequests]);
 
   const status = useMemo(() => {
     if (knownFrog)
@@ -49,32 +56,32 @@ function ClaimedProfile({
         ? "mine"
         : "friends";
     if (pendingRequest) return "pending";
-    return "unclaimed";
+    return "none";
   }, [knownFrog, pendingRequest, myProfilePOD?.profileId]);
 
   const { mutate: sendFrogRequest } = useSendFrogRequest();
   const { mutate: acceptRequest } = useAcceptFrogRequest();
   const onClick = useMemo(() => {
     if (pendingRequest) {
-      if (pendingRequest.requestedBy === profileId) {
+      if (pendingRequest.requestedBy === semaphoreIdBase64) {
         return () => {
           acceptRequest(pendingRequest);
         };
       }
-    } else if (profileId) {
+    } else if (semaphoreIdBase64) {
       return () => {
-        sendFrogRequest(profileId);
+        sendFrogRequest(semaphoreIdBase64);
       };
     }
     return undefined;
-  }, [pendingRequest, profileId, acceptRequest, sendFrogRequest]);
+  }, [pendingRequest, semaphoreIdBase64, acceptRequest, sendFrogRequest]);
 
   if (isLoadingFrogs || isLoadingMyProfilePOD) return <Loader />;
 
   return (
     <FrogProfile
       frog={knownFrog ?? spiritFrog}
-      profileId={profileId}
+      semaphoreIdBase64={semaphoreIdBase64}
       status={status}
       friendCount={friendCount}
       frogCount={frogCount}
@@ -84,10 +91,10 @@ function ClaimedProfile({
 }
 
 function UnclaimedProfile({
-  profileId,
+  socialId,
   claimable,
 }: {
-  profileId: string;
+  socialId: string;
   claimable: boolean;
 }) {
   const unclaimedFrog: IFrogData = {
@@ -112,7 +119,10 @@ function UnclaimedProfile({
   const { mutate: claimProfile, isPending: isClaimingProfile } =
     trpc.social.claimProfile.useMutation({
       onSuccess: async () => {
-        await utils.users.getSpiritFrog.invalidate({ profileId });
+        await utils.users.getUser.invalidate({
+          id: socialId,
+          type: "socialId",
+        });
         toast.success("Ribbit! You've claimed this frog profile! 🐸");
       },
       onError: (error) => {
@@ -144,7 +154,7 @@ function UnclaimedProfile({
               type="button"
               disabled={isClaimingProfile}
               onClick={() => {
-                claimProfile({ profileId });
+                claimProfile({ socialId });
               }}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition duration-300"
             >
@@ -160,11 +170,27 @@ function UnclaimedProfile({
 function OtherProfile() {
   const [, setLocation] = useLocation();
   const { id } = useParams();
-  const profileId = useMemo(() => {
+  const parsedId = useMemo<
+    | { id: string; type: "socialId" }
+    | { id: string; type: "semaphoreIdBase64" }
+    | undefined
+  >(() => {
     if (!id) return undefined;
-    const socialId = decodeURIComponent(id);
-    if (!uuidValidate(socialId)) return undefined;
-    return socialId;
+    const decodedId = decodeURIComponent(id);
+    if (uuidValidate(decodedId))
+      return {
+        id: decodedId,
+        type: "socialId",
+      };
+    try {
+      decompressBigInt(decodedId);
+      return {
+        id: decodedId,
+        type: "semaphoreIdBase64",
+      };
+    } catch {
+      return undefined;
+    }
   }, [id]);
   const semaphoreIdBase64 = useSemaphoreIdBase64();
   const { data: userState, isPending: isLoadingUserState } = useUserState();
@@ -173,37 +199,32 @@ function OtherProfile() {
     data: userData,
     error: userDataError,
     isLoading: isLoadingUserData,
-  } = trpc.users.getSpiritFrog.useQuery(
-    {
-      profileId: profileId ?? "",
+  } = trpc.users.getUser.useQuery(parsedId ?? { id: "", type: "socialId" }, {
+    enabled: Boolean(parsedId),
+    retry(_failureCount, error) {
+      if (error.data?.code === "NOT_FOUND") {
+        return false;
+      }
+      return true;
     },
-    {
-      enabled: Boolean(profileId),
-      retry(_failureCount, error) {
-        if (error.data?.code === "NOT_FOUND") {
-          return false;
-        }
-        return true;
-      },
-    }
-  );
+  });
   useEffect(() => {
     if (
       (userDataError && userDataError.data?.code !== "NOT_FOUND") ??
-      !profileId
+      !parsedId
     ) {
       toast.error("Ribbit! This frog seems to have hopped away. 🐸");
       setLocation("/");
     }
-  }, [setLocation, userDataError, profileId]);
+  }, [setLocation, userDataError, parsedId]);
 
-  if (isLoadingUserData || isLoadingUserState || !profileId) return <Loader />;
+  if (isLoadingUserData || isLoadingUserState || !parsedId) return <Loader />;
 
   if (!userData)
     return (
       <UnclaimedProfile
-        profileId={profileId}
-        claimable={!userState?.myScore.socialId}
+        socialId={parsedId.id}
+        claimable={!userState?.myScore.socialId && parsedId.type === "socialId"}
       />
     );
 
@@ -211,7 +232,7 @@ function OtherProfile() {
     return <MyProfile />;
   }
 
-  return <ClaimedProfile {...userData} profileId={profileId} />;
+  return <ClaimedProfile {...userData} />;
 }
 
 export default OtherProfile;

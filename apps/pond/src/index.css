@@ -67,17 +67,17 @@
   }
 
   .text-link {
-    @apply opacity-20 text-lg;
+    @apply text-lg text-teal-400;
 
     &:hover {
-      @apply opacity-60;
+      @apply text-teal-600;
     }
   }
   .text-link-active {
     @apply text-lg font-semibold;
   }
   .text-link-disabled {
-    @apply opacity-20 cursor-not-allowed;
+    @apply text-lg opacity-20 cursor-not-allowed;
   }
 }
 

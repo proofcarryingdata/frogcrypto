@@ -4,7 +4,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        teal: "#235B48",
+        teal: {
+          50: "#E6F3EF",
+          100: "#CCE7DF",
+          200: "#99CFBF",
+          300: "#66B79F",
+          400: "#189C73",
+          500: "#1B7C5E",
+          600: "#235B48",
+          700: "#1A4336",
+          800: "#122C24",
+          900: "#091512",
+        },
       },
       fontSize: {
         "frog-score": ["1.25rem", "1.25rem"],

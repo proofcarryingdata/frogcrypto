@@ -37,13 +37,18 @@ export const FROG_LEVELS = [
 
 function FrogEmoji() {
   return (
-    <img src={frogSvgUrl} alt="Frog" className="w-5 h-5" draggable={false} />
+    <img
+      src={frogSvgUrl}
+      alt="Frog"
+      className="h-full aspect-square"
+      draggable={false}
+    />
   );
 }
 
 function Frog({
   score,
-  colorize,
+  colorize = true,
   className,
 }: {
   score?: number | string;
@@ -61,10 +66,10 @@ function Frog({
       : "text-gray-500";
 
   return (
-    <div className={`flex gap-1 ${className ?? ""}`}>
-      <span className={`text-frog-score ${colorize ? colorClass : ""}`}>
-        {score}
-      </span>
+    <div
+      className={`flex gap-1 text-frog-score items-center ${className ?? ""}  `}
+    >
+      <span className={colorize ? colorClass : ""}>{score}</span>
       <FrogEmoji />
     </div>
   );

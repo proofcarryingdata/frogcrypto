@@ -1,8 +1,14 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { type ProfileFrogPOD } from "@frogcrypto/shared";
+import _ from "lodash";
 import { useProfileFrogs } from "../../hooks/useFrogs";
 import { useSemaphoreIdBase64 } from "../../hooks/useUserState";
+import Modal from "../shared/Modal";
 import FrogProfileRow from "./FrogProfileRow";
 import PendingRequests from "./PendingRequests";
+import FrogFriendProfile from "./FrogFriendProfile";
+import SocialContainer from "./SocialContainer";
+import FrogProfileBox from "./FrogProfileBox";
 
 function FrogFriends(): React.ReactElement {
   const { data: frogs } = useProfileFrogs();
@@ -13,23 +19,42 @@ function FrogFriends(): React.ReactElement {
     [frogs, semaphoreId]
   );
 
+  const [focusedFrog, setFocusedFrog] = useState<ProfileFrogPOD | undefined>(
+    undefined
+  );
+
   return (
     <div>
-      <PendingRequests />
+      <PendingRequests onFocusFrog={setFocusedFrog} />
       {friends && friends.length > 0 ? (
-        <div className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold">Friends ({friends.length})</h2>
-          <div>
+        <SocialContainer title="Your Friends">
+          <div className="grid grid-cols-2 gap-3">
             {friends.map((friend) => (
-              <FrogProfileRow
+              <FrogProfileBox
                 key={friend.profileId}
                 frog={friend}
-                profileId={friend.profileId}
+                semaphoreIdBase64={friend.profileId}
+                onFocusFrog={setFocusedFrog}
               />
             ))}
           </div>
-        </div>
+        </SocialContainer>
       ) : null}
+      <Modal
+        isOpen={Boolean(focusedFrog)}
+        onClose={() => {
+          setFocusedFrog(undefined);
+        }}
+      >
+        {focusedFrog ? (
+          <FrogFriendProfile
+            frog={focusedFrog}
+            onClose={() => {
+              setFocusedFrog(undefined);
+            }}
+          />
+        ) : null}
+      </Modal>
     </div>
   );
 }

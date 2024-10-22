@@ -8,8 +8,8 @@ function SocialContainer({
   title: string;
 }) {
   return (
-    <div className="flex flex-col items-stretch gap-3 pb-3 border-teal border px-3">
-      <h2 className="text-lg font-semibold bg-teal text-white px-3 py-1 -mx-3">
+    <div className="flex flex-col items-stretch gap-3 pb-3 border-teal-600 border px-3">
+      <h2 className="text-lg font-semibold bg-teal-600 text-white px-3 py-1 -mx-3">
         {title}
       </h2>
 

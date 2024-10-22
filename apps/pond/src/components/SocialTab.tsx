@@ -51,7 +51,7 @@ function NavBar() {
       )}
       <div className="relative">
         <span className="text-link-disabled">Newsfeed</span>
-        <span className="absolute bottom-0 right-0 -mb-2 -mr-2 p-1 bg-orange-500 text-white text-[8px] bg-opacity-90">
+        <span className="absolute rounded-sm bottom-0 right-0 -mr-1 px-0.5 bg-orange-500 text-white text-[6px] bg-opacity-90">
           SOON
         </span>
       </div>

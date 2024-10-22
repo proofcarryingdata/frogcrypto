@@ -87,7 +87,7 @@ function Frog({
 
   return (
     <div
-      className={`flex gap-1 items-center text-frog-score ${className ?? ""}`}
+      className={`inline-flex min-w-0 gap-1 items-center text-frog-score ${className ?? ""}`}
     >
       <span className={colorize ? color : ""}>{score}</span>
       <FrogEmoji />
