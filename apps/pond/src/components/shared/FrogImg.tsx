@@ -1,5 +1,6 @@
-import { type IFrogData } from "@frogcrypto/shared";
-import React, { forwardRef } from "react";
+import { logger, type IFrogData } from "@frogcrypto/shared";
+import React, { forwardRef, Suspense } from "react";
+import Loader from "./Loader";
 
 class IDCache {
   db: IDBDatabase | null = null;
@@ -32,7 +33,7 @@ class IDCache {
         this.db = request.result;
 
         this.db.onerror = () => {
-          console.error("Error creating/accessing db");
+          logger.error("Error creating/accessing db");
         };
         resolve();
       };
@@ -40,7 +41,7 @@ class IDCache {
   }
 
   putImage(key: string, url: string) {
-    return new Promise<Blob>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       if (!this.db) {
         reject("DB not initialized. Call the init method");
         return;
@@ -48,12 +49,12 @@ class IDCache {
 
       const db = this.db;
 
-      fetch(url)
+      void fetch(url)
         .then((res) => res.blob())
         .then((blob) => {
           const transaction = db.transaction(["cache"], "readwrite");
           transaction.objectStore("cache").put(blob, key);
-          resolve(blob);
+          resolve(URL.createObjectURL(blob));
         });
     });
   }
@@ -78,9 +79,10 @@ class IDCache {
       const transaction = this.db?.transaction(["cache"], "readwrite");
       if (!transaction) {
         resolve(null);
+        return;
       }
-      transaction!.objectStore("cache").get(key).onsuccess = (event) => {
-        const blob = (event.target as IDBRequest).result;
+      transaction.objectStore("cache").get(key).onsuccess = (event) => {
+        const blob = (event.target as IDBRequest<Blob>).result;
         if (!blob) {
           resolve(null);
           return;
@@ -115,15 +117,12 @@ const imgCache = {
   read(src: string) {
     if (!this.__cache[src]) {
       this.__cache[src] = idCache.init().then(() =>
-        idCache.getImage(src).then((blob) => {
-          if (blob) {
+        idCache
+          .getImage(src)
+          .then((blob) => blob ?? idCache.putImage(src, src))
+          .then((blob) => {
             this.__cache[src] = blob;
-          } else {
-            idCache.putImage(src, src).then((blob) => {
-              this.__cache[src] = URL.createObjectURL(blob);
-            });
-          }
-        })
+          })
       );
     }
     const cached = this.__cache[src];
@@ -138,9 +137,12 @@ const imgCache = {
 function SuspenseImg({
   src,
   alt,
+  className,
   ...rest
 }: { src: string; alt: string } & React.ImgHTMLAttributes<HTMLImageElement>) {
-  return <img src={imgCache.read(src)} alt={alt} {...rest} />;
+  return (
+    <img src={imgCache.read(src)} alt={alt} className={className} {...rest} />
+  );
 }
 
 function FrogImg({
@@ -151,13 +153,15 @@ function FrogImg({
   frog: Pick<IFrogData, "imageUrl" | "name">;
 } & React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <SuspenseImg
-      src={frog.imageUrl}
-      alt={frog.name}
-      draggable={false}
-      className={className ?? "w-full h-auto object-cover"}
-      {...rest}
-    />
+    <Suspense fallback={<Loader className={className} />}>
+      <SuspenseImg
+        src={frog.imageUrl}
+        alt={frog.name}
+        draggable={false}
+        className={className ?? "w-full h-auto object-cover"}
+        {...rest}
+      />
+    </Suspense>
   );
 }
 

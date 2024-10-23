@@ -19,20 +19,18 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <Suspense fallback={<Loader />}>
-      <Provider>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <ParcnetIframeProvider>
-              <App />
-              <Toaster />
-              {window.self === window.top && (
-                <ReactQueryDevtools initialIsOpen={false} />
-              )}
-            </ParcnetIframeProvider>
-          </QueryClientProvider>
-        </trpc.Provider>
-      </Provider>
-    </Suspense>
+    <Provider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <ParcnetIframeProvider>
+            <App />
+            <Toaster />
+            {window.self === window.top && (
+              <ReactQueryDevtools initialIsOpen={false} />
+            )}
+          </ParcnetIframeProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </Provider>
   </StrictMode>
 );
