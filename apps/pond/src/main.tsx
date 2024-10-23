@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react";
+import React, { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ParcnetIframeProvider } from "./hooks/useParcnetClient";
 import App from "./App";
 import { trpc, trpcClient } from "./trpc";
+import Loader from "./components/shared/Loader";
 
 const queryClient = new QueryClient();
 
@@ -18,18 +19,20 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <Provider>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <ParcnetIframeProvider>
-            <App />
-            <Toaster />
-            {window.self === window.top && (
-              <ReactQueryDevtools initialIsOpen={false} />
-            )}
-          </ParcnetIframeProvider>
-        </QueryClientProvider>
-      </trpc.Provider>
-    </Provider>
+    <Suspense fallback={<Loader />}>
+      <Provider>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <ParcnetIframeProvider>
+              <App />
+              <Toaster />
+              {window.self === window.top && (
+                <ReactQueryDevtools initialIsOpen={false} />
+              )}
+            </ParcnetIframeProvider>
+          </QueryClientProvider>
+        </trpc.Provider>
+      </Provider>
+    </Suspense>
   </StrictMode>
 );

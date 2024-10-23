@@ -4,6 +4,7 @@ import { useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import Frog, { FROG_LEVELS } from "../shared/Frog";
+import FrogImg from "../shared/FrogImg";
 import SocialContainer from "./SocialContainer";
 
 /**
@@ -62,9 +63,11 @@ function ScoreTable({
                 }
               >
                 <td className="w-10">
-                  <img
-                    src={score.imgUrl ?? ""}
-                    alt="Frog"
+                  <FrogImg
+                    frog={{
+                      imageUrl: score.imgUrl ?? "",
+                      name: getUsername(score.semaphoreIdHash),
+                    }}
                     className="w-8 h-8 object-cover"
                   />
                 </td>

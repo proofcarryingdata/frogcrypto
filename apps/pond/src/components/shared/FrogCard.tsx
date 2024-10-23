@@ -10,7 +10,7 @@ import {
   Biome,
 } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
-import ImageZoom from "./ImageZoom";
+import FrogImg from "./FrogImg";
 
 export const RARITY_COLORS: Record<
   Rarity,
@@ -89,15 +89,10 @@ function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
   return (
     <div className="w-full flex flex-col bg-white rounded-lg">
       <div className="w-full flex flex-col gap-4 items-center p-4">
-        <ImageZoom
+        <FrogImg
+          frog={frog}
           className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}
-          src={frog.imageUrl}
-          draggable={false}
           loading="lazy"
-          style={{ width: "100%", height: "auto", zIndex: "1000" }}
-          options={{
-            background: "rgba(0, 0, 0, 0.5)",
-          }}
         />
 
         <div className="flex flex-col items-center gap-1">

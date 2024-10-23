@@ -16,6 +16,7 @@ import useFrogs from "../hooks/useFrogs";
 import { FrogsModal } from "./shared/FrogsModal";
 import Loader from "./shared/Loader";
 import { RARITY_COLORS } from "./shared/FrogCard";
+import FrogImg from "./shared/FrogImg";
 
 /**
  * The FrogeDex tab allows users to view their progress towards collecting all frogs.
@@ -204,11 +205,9 @@ function DexGrid({
               }
             >
               {frogPODs ? (
-                <img
-                  src={frogPODs.frog.imageUrl}
-                  alt={frogPODs.frog.name}
+                <FrogImg
+                  frog={frogPODs.frog}
                   className="w-full h-auto object-cover rounded-lg aspect-square"
-                  draggable={false}
                 />
               ) : (
                 <img

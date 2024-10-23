@@ -5,6 +5,7 @@ import { useUserState } from "../../hooks/useUserState";
 import { SocialButton } from "../shared/Button";
 import Loader from "../shared/Loader";
 import Modal from "../shared/Modal";
+import FrogImg from "../shared/FrogImg";
 import SocialContainer from "./SocialContainer";
 
 function MyProfile() {
@@ -52,11 +53,7 @@ function MyProfile() {
     <div className="container flex flex-col gap-4">
       <SocialContainer title="Picture">
         <div className="relative w-32 h-32 mx-auto">
-          <img
-            src={myProfilePOD.imageUrl}
-            alt={myProfilePOD.name}
-            className="w-full h-full object-cover"
-          />
+          <FrogImg frog={myProfilePOD} className="w-full h-full object-cover" />
         </div>
       </SocialContainer>
 
