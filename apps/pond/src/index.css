@@ -16,13 +16,21 @@
 
     * {
       background-size: 100%;
-      background-color: #ff9900 !important;
       color: #ff9900;
-      background-image: linear-gradient(45deg, #ff9900, #7fff8e);
+      background: linear-gradient(180deg, #f8991d 13.54%, #44e1ae 117.23%);
       -webkit-background-clip: text;
       -moz-background-clip: text;
       -webkit-text-fill-color: transparent;
       -moz-text-fill-color: transparent;
+    }
+  }
+
+  .bg-frogcrypto-btn {
+    background: linear-gradient(0deg, #ffae00 0%, #4cccb0 100%);
+
+    &:hover,
+    &:active {
+      background: linear-gradient(0deg, #ffc23e 0%, #58e8c9 100%);
     }
   }
 

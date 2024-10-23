@@ -165,4 +165,4 @@ function FrogImg({
   );
 }
 
-export default forwardRef(FrogImg);
+export default FrogImg;

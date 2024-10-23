@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import jotaiDebugLabel from "jotai/babel/plugin-debug-label";
 import jotaiReactRefresh from "jotai/babel/plugin-react-refresh";
@@ -16,4 +17,12 @@ export default defineConfig({
     nodePolyfills(),
     svgLoader(),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        index: fileURLToPath(new URL("./index.html", import.meta.url)),
+        button: fileURLToPath(new URL("./button.html", import.meta.url)),
+      },
+    },
+  },
 });

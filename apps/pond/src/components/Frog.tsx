@@ -1,5 +1,6 @@
 import React from "react";
 import frogSvgUrl from "../assets/frog.svg?url";
+import frog2SvgUrl from "../assets/frog2.svg?url";
 
 export const FROG_LEVELS = [
   { score: 0, colorClass: "text-gray-500", emoji: "⚪️", title: "NOVICE" },
@@ -35,10 +36,21 @@ export const FROG_LEVELS = [
   },
 ];
 
-function FrogEmoji() {
+export function FrogEmoji() {
   return (
     <img
       src={frogSvgUrl}
+      alt="Frog"
+      className="h-full aspect-square"
+      draggable={false}
+    />
+  );
+}
+
+export function Frog2Emoji() {
+  return (
+    <img
+      src={frog2SvgUrl}
       alt="Frog"
       className="h-full aspect-square"
       draggable={false}
