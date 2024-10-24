@@ -3,6 +3,7 @@ import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import { trpc } from "../../trpc";
 import Frog from "../Frog";
+import FrogImg from "../shared/FrogImg";
 
 interface FrogProfileBoxProps {
   frog: ProfileFrogPOD;
@@ -29,11 +30,7 @@ function FrogProfileBox({
         onFocusFrog(frog);
       }}
     >
-      <img
-        src={frog.imageUrl}
-        alt={frog.name}
-        className="w-16 h-16 object-cover mb-1"
-      />
+      <FrogImg frog={frog} className="w-16 h-16 object-cover mb-1" />
 
       <h3 className="text-sm font-semibold text-green-700">
         {`0x${shortCommitment(semaphoreIdBase64)}`}

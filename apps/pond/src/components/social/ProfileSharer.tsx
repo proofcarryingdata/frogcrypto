@@ -1,14 +1,14 @@
 import { shortCommitment } from "@frogcrypto/shared";
 import { ChevronLeft, Link as LinkIcon, Loader, Share } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import QRCode from "react-qr-code";
-import { Link, useLocation } from "wouter";
 import { useZxing } from "react-zxing";
+import { Link, useLocation } from "wouter";
 import { useMyProfilePOD } from "../../hooks/useProfilePOD";
-import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
+import { useUserState } from "../../hooks/useUserState";
 import { Button } from "../shared/Button";
-import FrogNecklaceTeaser from "./FrogNecklaceTeaser";
+import { SEARCH_PARAM_NECKLACE_QR } from "./FrogNecklace";
 
 export function ProfileSharer() {
   const [mode, setMode] = useState<"scan" | "frogme">("frogme");
@@ -16,7 +16,7 @@ export function ProfileSharer() {
   const { data } = useUserState();
   const socialId = data?.myScore.socialId;
   const profileUrl = socialId
-    ? `${window.location.origin}/social/${encodeURIComponent(socialId)}`
+    ? `${window.location.origin}/?${SEARCH_PARAM_NECKLACE_QR}=${encodeURIComponent(socialId)}`
     : undefined;
 
   const [, setLocation] = useLocation();
@@ -48,12 +48,18 @@ export function ProfileSharer() {
     );
   }, [shareData]);
 
+  useEffect(() => {
+    if (myProfilePOD && !profileUrl) {
+      setLocation("/");
+    }
+  }, [myProfilePOD, profileUrl, setLocation]);
+
   if (!myProfilePOD) {
     return <Loader />;
   }
 
   if (!profileUrl) {
-    return <FrogNecklaceTeaser />;
+    return null;
   }
 
   return (

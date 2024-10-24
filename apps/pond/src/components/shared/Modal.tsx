@@ -8,15 +8,22 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  shouldCloseOnOverlayClick?: boolean;
 }
 
-function Modal({ isOpen, onClose, children }: ModalProps) {
+function Modal({
+  isOpen,
+  onClose,
+  children,
+  shouldCloseOnOverlayClick,
+}: ModalProps) {
   return (
     <ReactModal
       isOpen={isOpen}
       onRequestClose={onClose}
-      className="bg-white max-w-[calc(24rem-1.5rem)] w-full m-auto"
-      overlayClassName="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50"
+      shouldCloseOnOverlayClick={shouldCloseOnOverlayClick}
+      className="max-w-[calc(24rem-1.5rem)] w-full m-auto outline-none"
+      overlayClassName="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50"
     >
       {children}
     </ReactModal>

@@ -1,5 +1,6 @@
 import { getUsernameFromHash, shortCommitmentHex } from "@frogcrypto/shared";
 import React, { useState } from "react";
+import { useLocation } from "wouter";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useUserState } from "../../hooks/useUserState";
 import { SocialButton } from "../shared/Button";
@@ -9,6 +10,7 @@ import FrogImg from "../shared/FrogImg";
 import SocialContainer from "./SocialContainer";
 
 function MyProfile() {
+  const [, setLocation] = useLocation();
   const { data: myProfilePOD, isLoading: isLoadingProfilePOD } =
     useMyProfilePOD();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -75,9 +77,18 @@ function MyProfile() {
             <span>{myProfilePOD.farcasterUsername || "<not set>"}</span>
           </div>
 
-          <SocialButton className="self-end" onClick={handleEditProfile}>
-            Edit
-          </SocialButton>
+          <div className="self-end flex gap-2">
+            {userState.myScore.socialId ? (
+              <SocialButton
+                onClick={() => {
+                  setLocation(`/share`);
+                }}
+              >
+                Share
+              </SocialButton>
+            ) : null}
+            <SocialButton onClick={handleEditProfile}>Edit</SocialButton>
+          </div>
         </div>
       </SocialContainer>
 

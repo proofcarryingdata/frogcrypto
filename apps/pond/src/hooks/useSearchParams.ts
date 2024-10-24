@@ -9,25 +9,27 @@ type URLSearchParamsInit =
   | Iterable<[string, string]>
   | readonly [string, string][];
 
-const useSearchParams: () => [
-  URLSearchParams,
-  (
-    nextInit:
-      | URLSearchParamsInit
-      | ((prev: URLSearchParams) => URLSearchParamsInit)
-      | undefined,
-    opts: { replace?: boolean }
-  ) => void,
-] = () => {
+type SetSearchParams = (
+  nextInit:
+    | URLSearchParamsInit
+    | ((prev: URLSearchParams) => URLSearchParamsInit)
+    | undefined,
+  opts: { replace?: boolean }
+) => void;
+
+const useSearchParams: () => [URLSearchParams, SetSearchParams] = () => {
   const [, navigate] = useLocation();
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
 
-  const setSearchParams = useEvent((nextInit, navOpts) => {
+  const setSearchParams = useEvent<SetSearchParams>((nextInit, navOpts) => {
     const newSearchParams = new URLSearchParams(
-      typeof nextInit === "function" ? nextInit(searchParams) : nextInit
+      // @ts-expect-error -- TODO: fix this
+      typeof nextInit === "function"
+        ? nextInit(new URLSearchParams(searchParams))
+        : nextInit
     );
-    navigate(`?${  newSearchParams}`, navOpts);
+    navigate(`?${newSearchParams.toString()}`, navOpts);
   });
 
   return [searchParams, setSearchParams];

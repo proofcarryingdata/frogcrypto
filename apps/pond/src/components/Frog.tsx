@@ -41,7 +41,7 @@ export function FrogEmoji() {
     <img
       src={frogSvgUrl}
       alt="Frog"
-      className="h-full aspect-square"
+      className="h-full aspect-square inline-block"
       draggable={false}
     />
   );
@@ -52,7 +52,7 @@ export function Frog2Emoji() {
     <img
       src={frog2SvgUrl}
       alt="Frog"
-      className="h-full aspect-square"
+      className="h-full aspect-square inline-block"
       draggable={false}
     />
   );

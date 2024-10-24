@@ -13,7 +13,7 @@
     "@frogcrypto/shared": "workspace:*",
     "@frogcrypto/ui": "workspace:*",
     "@parcnet-js/app-connector": "1.0.0",
-    "@parcnet-js/podspec": "1.0.0",
+    "@parcnet-js/podspec": "1.1.2",
     "@pcd/pod": "^0.1.7",
     "@tanstack/react-query": "^5.55.4",
     "@tanstack/react-query-devtools": "^5.56.2",

@@ -6,7 +6,9 @@ import {
 } from "@frogcrypto/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { podToPODData } from "@parcnet-js/podspec";
+import React from "react";
 import { trpc } from "../trpc";
+import { FrogEmoji } from "../components/Frog";
 import { useMyProfilePOD } from "./useProfilePOD";
 import { useParcnetClient } from "./useParcnetClient";
 import { QUERY_KEY_FROGS } from "./useFrogs";
@@ -51,7 +53,13 @@ const useAcceptFrogRequest = () => {
       void utils.users.me.invalidate();
 
       if (data.success) {
-        toast.success("Request accepted! You've made a new connection!");
+        toast.success(() => (
+          <div className="flex">
+            Success! {variables.requestedBy} is now your friend, and you now
+            have +1
+            <FrogEmoji />.
+          </div>
+        ));
       }
 
       if (!variables.requestPOD) {

@@ -1,6 +1,7 @@
 import React from "react";
 import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
+import FrogImg from "../shared/FrogImg";
 
 interface FrogProfileCompactProps {
   frog: ProfileFrogPOD;
@@ -24,11 +25,7 @@ function FrogProfileRow({
         onFocusFrog(frog);
       }}
     >
-      <img
-        src={frog.imageUrl}
-        alt={frog.name}
-        className="w-12 h-12 object-cover mr-4"
-      />
+      <FrogImg frog={frog} className="w-12 h-12 object-cover mr-4" />
       <div className="flex-grow">
         <h3 className="text-sm font-semibold text-gray-800">
           {`0x${shortCommitment(profileId)}'s ${frog.name}`}

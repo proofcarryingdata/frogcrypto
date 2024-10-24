@@ -212,13 +212,17 @@ export const socialRouter = router({
           ]);
         }
 
+        const now = new Date();
         await db
           .update(socialRequestsTable)
           .set({
             [request.party1 === ctx.user.semaphoreIdBase64
               ? "party1POD"
               : "party2POD"]: responsePOD.serialize(),
-            updatedAt: new Date(),
+            [request.party1 === ctx.user.semaphoreIdBase64
+              ? "party1PODTimestamp"
+              : "party2PODTimestamp"]: now,
+            updatedAt: now,
             version: sql`${socialRequestsTable.version} + 1`,
             status: "connected",
           })

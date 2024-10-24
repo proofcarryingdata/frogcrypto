@@ -22,6 +22,7 @@ import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
 import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
 import Frog from "./components/shared/Frog";
 import NewProfile from "./components/social/NewProfile";
+import FrogNecklace from "./components/social/FrogNecklace";
 
 function FrogCrypto() {
   const { data: frogs } = useFrogs();
@@ -42,6 +43,8 @@ function FrogCrypto() {
 
   return (
     <>
+      <FrogNecklace />
+
       <Frog className="self-center" score={myScore ?? "?"} />
 
       {(myScore ?? 0) >= 2 && (

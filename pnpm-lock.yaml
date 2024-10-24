@@ -118,8 +118,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       '@parcnet-js/podspec':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.2
+        version: 1.1.2(typescript@5.5.4)
       '@pcd/gpc':
         specifier: ^0.0.8
         version: 0.0.8
@@ -251,8 +251,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(typescript@5.5.4)
       '@parcnet-js/podspec':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.2
+        version: 1.1.2(typescript@5.5.4)
       '@pcd/pod':
         specifier: ^0.1.7
         version: 0.1.7
@@ -447,8 +447,8 @@ importers:
   packages/shared:
     dependencies:
       '@parcnet-js/podspec':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.2
+        version: 1.1.2(typescript@5.5.4)
       '@parcnet-js/ticket-spec':
         specifier: ^1.0.0
         version: 1.1.4(typescript@5.5.4)
