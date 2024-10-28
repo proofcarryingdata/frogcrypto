@@ -2,7 +2,7 @@ import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import React from "react";
 import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
-import ClaimCyberFrog from "./components/ClaimCyberFrog";
+import { default as CyberFrog } from "./components/CyberFrog";
 import { DexTab } from "./components/DexTab";
 import { FrogEmoji } from "./components/Frog";
 import GetFrogTab from "./components/GetFrogTab";
@@ -40,6 +40,7 @@ function FrogCrypto() {
 
   return (
     <>
+      <CyberFrog />
       <FrogNecklace />
       <PendingRequests />
 
@@ -94,7 +95,6 @@ function FrogCrypto() {
         <Route path="/dex" component={DexTab} />
         <Route path="/social/tadpole" component={NewProfile} />
         <Route path="/social" component={SocialTab} nest />
-        <Route path="/cyber/:signature" component={ClaimCyberFrog} />
         <Route component={NotFound} />
       </Switch>
     </>

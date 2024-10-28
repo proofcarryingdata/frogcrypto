@@ -43,7 +43,7 @@ export const feedsRouter = router({
     )
     .output(
       z.object({
-        pod: z.custom<POD>((x) => x instanceof POD && x.verifySignature()),
+        pod: z.custom<POD>((x) => x instanceof POD),
       })
     )
     .mutation(
@@ -171,9 +171,7 @@ export const feedsRouter = router({
     )
     .output(
       z.object({
-        pod: z
-          .custom<POD>((x) => x instanceof POD && x.verifySignature())
-          .optional(),
+        pod: z.custom<POD>((x) => x instanceof POD),
       })
     )
     .mutation(
@@ -227,7 +225,7 @@ export const feedsRouter = router({
         if (!nullifierConsumeSuccess) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Cyberfrog already claimed",
+            message: "Ribbit! Someone already claimed this cyberfrog.",
           });
         }
 
@@ -260,7 +258,7 @@ export const feedsRouter = router({
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
                 code: "FORBIDDEN",
-                message: `Next fetch available at ${String(nextFetchAt)}`,
+                message: `Ribbit! You can't claim another cyberfrog yet. Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds.`,
               });
             }
 

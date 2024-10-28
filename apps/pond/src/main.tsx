@@ -1,14 +1,13 @@
-import React, { StrictMode, Suspense } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Provider } from "jotai";
-import { Toaster } from "react-hot-toast";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { ParcnetIframeProvider } from "./hooks/useParcnetClient";
+import { Provider } from "jotai";
+import React, { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { Toaster } from "react-hot-toast";
 import App from "./App";
+import { ParcnetIframeProvider } from "./hooks/useParcnetClient";
+import "./index.css";
 import { trpc, trpcClient } from "./trpc";
-import Loader from "./components/shared/Loader";
 
 const queryClient = new QueryClient();
 
