@@ -1,64 +1,115 @@
-import { parseProfileFrogPOD, type ProfileFrogPOD } from "@frogcrypto/shared";
-import { POD } from "@pcd/pod";
-import React from "react";
+import { parseProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
+import { type JSONPOD, POD } from "@pcd/pod";
+import React, { useEffect } from "react";
+import { type RouterOutputs } from "@frogcrypto/api/src/routers";
+import { Siren } from "lucide-react";
 import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
 import { trpc } from "../../trpc";
-import Loader from "../shared/Loader";
-import { useSemaphoreIdBase64 } from "../../hooks/useUserState";
-import { SocialButton } from "../shared/Button";
-import FrogProfileRow from "./FrogProfileRow";
-import SocialContainer from "./SocialContainer";
+import { FrogEmoji } from "../Frog";
+import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
+import FrogImg from "../shared/FrogImg";
+import Modal from "../shared/Modal";
 
-export function PendingRequests({
-  onFocusFrog,
+function PendingRequest({
+  request,
 }: {
-  onFocusFrog: (frog: ProfileFrogPOD) => void;
+  request: RouterOutputs["social"]["getPendingRequests"][number];
 }) {
-  const semaphoreId = useSemaphoreIdBase64();
-  const { data: pendingRequests, isLoading } =
-    trpc.social.getPendingRequests.useQuery(undefined, {
-      select: (data) =>
-        data.filter((request) => request.requestedBy !== semaphoreId),
-    });
-
+  const utils = trpc.useUtils();
   const { mutate: respondToRequest, isPending: isRespondingToRequest } =
     useAcceptFrogRequest();
+  const { mutate: declineRequest, isPending: isDecliningRequest } =
+    trpc.social.declineRequest.useMutation({
+      onSuccess: (_, { requestId }) => {
+        utils.social.getPendingRequests.setData(undefined, (data) =>
+          data?.filter((req) => req.id !== requestId)
+        );
+      },
+    });
 
-  if (isLoading) return <Loader />;
-  if (!pendingRequests || pendingRequests.length === 0) return null;
+  const frog = request.requestPOD
+    ? parseProfileFrogPOD(
+        podToPODData(POD.fromJSON(JSON.parse(request.requestPOD) as JSONPOD))
+      )
+    : undefined;
+
+  useEffect(() => {
+    if (!frog && !isDecliningRequest) {
+      declineRequest({ requestId: request.id });
+    }
+  }, [request, isDecliningRequest, frog, declineRequest]);
+
+  if (!frog) return null;
 
   return (
-    <SocialContainer title="Invitations">
-      {pendingRequests.map((request) => {
-        const frog = parseProfileFrogPOD(
-          podToPODData(POD.deserialize(request.requestPOD ?? ""))
-        );
-        if (!frog) return null;
+    <Modal
+      isOpen
+      onClose={() => {
+        declineRequest({ requestId: request.id });
+      }}
+      shouldCloseOnOverlayClick={false}
+    >
+      <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
+        <h2 className="text-lg font-bold text-center">
+          <Siren className="w-6 h-6 inline pb-1 mr-1 text-green-500" />
+          <span className="italic">NEW</span> FROG REQUEST
+          <Siren className="w-6 h-6 inline pb-1 ml-1 text-green-500" />
+        </h2>
 
-        return (
-          <FrogProfileRow
-            key={request.id}
+        <div className="flex flex-col gap-4 items-center bg-white bg-opacity-80">
+          <FrogImg
             frog={frog}
-            profileId={request.requestedBy}
-            onFocusFrog={onFocusFrog}
-          >
-            <SocialButton
-              type="button"
-              disabled={isRespondingToRequest}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}
+          />
 
-                respondToRequest(request);
-              }}
-            >
-              Accept
-            </SocialButton>
-          </FrogProfileRow>
-        );
-      })}
-    </SocialContainer>
+          <FrogCardHeader
+            rarity={frog.rarity}
+            title={frog.profileName}
+            subtitle={`0x${shortCommitment(frog.profileId)}'s ${frog.name}`}
+          />
+
+          <button
+            type="button"
+            className="w-48 text-sm bg-green-500 text-white px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
+            onClick={() => {
+              respondToRequest(request);
+            }}
+            disabled={isRespondingToRequest || isDecliningRequest}
+          >
+            Accept (+1 <FrogEmoji className="w-5 h-5 inline pb-1" />)
+          </button>
+
+          <span className="text-xs text-center px-8 text-gray-500">
+            For your safety, only accept frog requests from verified and
+            reputable sources.
+          </span>
+
+          <button
+            type="button"
+            className="w-48 text-sm bg-gray-200 text-gray-500 px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
+            onClick={() => {
+              declineRequest({ requestId: request.id });
+            }}
+            disabled={isRespondingToRequest || isDecliningRequest}
+          >
+            Decline
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+export function PendingRequests() {
+  const { data: requests } = trpc.social.getPendingRequests.useQuery();
+
+  return (
+    <>
+      {requests?.map((request) => (
+        <PendingRequest key={request.id} request={request} />
+      ))}
+    </>
   );
 }
 

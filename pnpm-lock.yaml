@@ -24,11 +24,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@parcnet-js/app-connector':
-        specifier: 1.0.0
-        version: 1.0.0(typescript@5.5.4)
+        specifier: 1.1.8
+        version: 1.1.8(typescript@5.5.4)
       '@pcd/pod':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: ^0.4.0
+        version: 0.4.0
       '@tanstack/react-query':
         specifier: ^5.55.4
         version: 5.59.16(react@18.3.1)
@@ -118,8 +118,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       '@parcnet-js/podspec':
-        specifier: 1.1.2
-        version: 1.1.2(typescript@5.5.4)
+        specifier: 1.1.3
+        version: 1.1.3(typescript@5.5.4)
       '@pcd/gpc':
         specifier: ^0.0.8
         version: 0.0.8
@@ -127,8 +127,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@pcd/pod':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: 0.4.0
+        version: 0.4.0
       '@pcd/proto-pod-gpc-artifacts':
         specifier: ^0.11.0
         version: 0.11.0
@@ -248,14 +248,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@parcnet-js/app-connector':
-        specifier: 1.0.0
-        version: 1.0.0(typescript@5.5.4)
+        specifier: 1.1.8
+        version: 1.1.8(typescript@5.5.4)
       '@parcnet-js/podspec':
-        specifier: 1.1.2
-        version: 1.1.2(typescript@5.5.4)
+        specifier: 1.1.3
+        version: 1.1.3(typescript@5.5.4)
       '@pcd/pod':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: 0.4.0
+        version: 0.4.0
       '@tanstack/react-query':
         specifier: ^5.55.4
         version: 5.59.16(react@18.3.1)
@@ -447,14 +447,14 @@ importers:
   packages/shared:
     dependencies:
       '@parcnet-js/podspec':
-        specifier: 1.1.2
-        version: 1.1.2(typescript@5.5.4)
+        specifier: 1.1.3
+        version: 1.1.3(typescript@5.5.4)
       '@parcnet-js/ticket-spec':
         specifier: ^1.0.0
         version: 1.1.4(typescript@5.5.4)
       '@pcd/pod':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: 0.4.0
+        version: 0.4.0
       '@semaphore-protocol/identity':
         specifier: ^4.2.0
         version: 4.4.2
@@ -935,10 +935,6 @@ packages:
 
   /@bcoe/v8-coverage@0.2.3:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
-
-  /@brenoroosevelt/toast@2.0.3:
-    resolution: {integrity: sha512-Tivp/tA5EUkQFP9LVmop8Y9EuxVtuom8x+5gYOFjfib/1oATX7QWAc4cKSELd36HoeDIThXD3vDxTy2FVUsRBA==}
-    dev: false
 
   /@drizzle-team/brocli@0.10.1:
     resolution: {integrity: sha512-AHy0vjc+n/4w/8Mif+w86qpppHuF3AyXbcWW+R/W7GNA3F5/p2nuhlkCJaTXSLZheB4l1rtHzOfr9A7NwoR/Zg==}
@@ -2206,33 +2202,17 @@ packages:
     engines: {node: '>=12.4.0'}
     dev: true
 
-  /@parcnet-js/app-connector@1.0.0(typescript@5.5.4):
-    resolution: {integrity: sha512-3AxQe9QT62UP3c9IJd/q50vwXAM7P8BEOXowBR2x2BPBaRNhdYEqhL3NChPK70yk0WSWxh8/clhRGmg3TIBYDw==}
+  /@parcnet-js/app-connector@1.1.8(typescript@5.5.4):
+    resolution: {integrity: sha512-sKuvYNpPqJOBmtd1EV4gPyBJ+99ZpQTty1SEBEf0bMm4Zxu8CYsYXPSnW+wtOocknoLsXg+u6eLwMDoiX2nzkQ==}
     dependencies:
-      '@brenoroosevelt/toast': 2.0.3
-      '@parcnet-js/client-rpc': 1.0.0(typescript@5.5.4)
-      '@parcnet-js/podspec': 1.0.0
-      '@pcd/gpc': 0.0.8
-      '@pcd/pod': 0.1.7
+      '@parcnet-js/client-rpc': 1.1.6(typescript@5.5.4)
+      '@parcnet-js/podspec': 1.1.3(typescript@5.5.4)
+      '@pcd/gpc': 0.3.0(typescript@5.5.4)
+      '@pcd/pod': 0.4.0
       nanoevents: 9.1.0
       valibot: 0.42.1(typescript@5.5.4)
     transitivePeerDependencies:
-      - bufferutil
       - typescript
-      - utf-8-validate
-    dev: false
-
-  /@parcnet-js/client-rpc@1.0.0(typescript@5.5.4):
-    resolution: {integrity: sha512-eu/6xf6eZSiOgCaNC1pR8th8FJ0SULAba8Ufdm1E42XSUwC1th9gFM/1AY9aViUvz4zWT51BGPRFdkIB310pHw==}
-    dependencies:
-      '@parcnet-js/podspec': 1.0.0
-      '@pcd/gpc': 0.0.8
-      '@pcd/pod': 0.1.7
-      valibot: 0.42.1(typescript@5.5.4)
-    transitivePeerDependencies:
-      - bufferutil
-      - typescript
-      - utf-8-validate
     dev: false
 
   /@parcnet-js/client-rpc@1.1.4(typescript@5.5.4):
@@ -2246,18 +2226,28 @@ packages:
       - typescript
     dev: false
 
-  /@parcnet-js/podspec@1.0.0:
-    resolution: {integrity: sha512-ea4o1dTP4crplo/iGnWYkdXGKAaBsOMkSjNhKw0NttuEVlIqELOLXtjV2byAClFnqnmbxkmRUZr6i0s9X3VILg==}
+  /@parcnet-js/client-rpc@1.1.6(typescript@5.5.4):
+    resolution: {integrity: sha512-uG907LFJoF5A4emsPFDdQy+3Pe9Kkxfe3jm0fEOODqwOfn1t0uSV63lIuaps+Zc+bsGVYS1HgvevHJz3x6TkHg==}
     dependencies:
-      '@pcd/gpc': 0.0.8
-      '@pcd/pod': 0.1.7
+      '@parcnet-js/podspec': 1.1.3(typescript@5.5.4)
+      '@pcd/gpc': 0.3.0(typescript@5.5.4)
+      '@pcd/pod': 0.4.0
+      valibot: 0.42.1(typescript@5.5.4)
     transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+      - typescript
     dev: false
 
   /@parcnet-js/podspec@1.1.2(typescript@5.5.4):
     resolution: {integrity: sha512-XI7WUnAV2EwTWN5SRh52JnNaDqL2m5XQaDRcdyeKdQ0l3BnWWIWIck0LQ/tAvx+pagkl1ksmx7Yu0cB6uVRUZg==}
+    dependencies:
+      '@pcd/gpc': 0.3.0(typescript@5.5.4)
+      '@pcd/pod': 0.4.0
+    transitivePeerDependencies:
+      - typescript
+    dev: false
+
+  /@parcnet-js/podspec@1.1.3(typescript@5.5.4):
+    resolution: {integrity: sha512-eEoy74K9q1Mq2hQ4YPuoL+iXq8rRsS1vnjo4r2g9chzBzIgYUL9tYXV0Z6EmfPXMRQQeArjwpwzAXPn0pwypTQ==}
     dependencies:
       '@pcd/gpc': 0.3.0(typescript@5.5.4)
       '@pcd/pod': 0.4.0

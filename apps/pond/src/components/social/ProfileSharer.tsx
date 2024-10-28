@@ -8,6 +8,7 @@ import { Link, useLocation } from "wouter";
 import { useMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useUserState } from "../../hooks/useUserState";
 import { Button } from "../shared/Button";
+import FrogImg from "../shared/FrogImg";
 import { SEARCH_PARAM_NECKLACE_QR } from "./FrogNecklace";
 
 export function ProfileSharer() {
@@ -111,9 +112,8 @@ export function ProfileSharer() {
 
           <div className="relative">
             <QRCode value={profileUrl} size={250} />
-            <img
-              src={myProfilePOD.imageUrl}
-              alt="Frog"
+            <FrogImg
+              frog={myProfilePOD}
               className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-white"
             />
           </div>

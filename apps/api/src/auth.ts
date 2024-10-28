@@ -3,7 +3,7 @@ import {
   logger,
   verifyPwtAndGetSemaphoreId,
 } from "@frogcrypto/shared";
-import { POD } from "@pcd/pod";
+import { type JSONPOD, POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type express from "express";
@@ -20,7 +20,7 @@ export interface AuthSession {
 }
 
 async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
-  const pod = POD.deserialize(token);
+  const pod = POD.fromJSON(JSON.parse(token) as JSONPOD);
   let semaphoreId: bigint;
   try {
     semaphoreId = verifyPwtAndGetSemaphoreId(pod);

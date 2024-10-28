@@ -49,7 +49,7 @@ export function useSocialTabAvailable() {
   const { data: userState } = useUserState();
 
   return (
-    (userState?.myScore.score ?? 0) >= 5 ||
+    (userState?.myScore.score ?? 0) >= 10 ||
     (userState?.myScore.friendCount ?? 0) > 0
   );
 }

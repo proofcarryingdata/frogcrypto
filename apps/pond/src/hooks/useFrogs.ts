@@ -48,7 +48,7 @@ const useFrogs = () => {
         QUERY_KEY_FROGS,
         JSON.stringify(
           data.map((p) =>
-            POD.load(p.entries, p.signature, p.signerPublicKey).serialize()
+            POD.load(p.entries, p.signature, p.signerPublicKey).toJSON()
           )
         )
       );

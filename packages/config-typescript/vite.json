@@ -12,7 +12,7 @@
     "declaration": false,
     "declarationMap": false,
     "resolveJsonModule": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "target": "ESNext",
     "types": ["vite/client"]
   }

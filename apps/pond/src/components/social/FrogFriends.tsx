@@ -4,8 +4,6 @@ import _ from "lodash";
 import { useProfileFrogs } from "../../hooks/useFrogs";
 import { useSemaphoreIdBase64 } from "../../hooks/useUserState";
 import Modal from "../shared/Modal";
-import FrogProfileRow from "./FrogProfileRow";
-import PendingRequests from "./PendingRequests";
 import FrogFriendProfile from "./FrogFriendProfile";
 import SocialContainer from "./SocialContainer";
 import FrogProfileBox from "./FrogProfileBox";
@@ -25,7 +23,6 @@ function FrogFriends(): React.ReactElement {
 
   return (
     <div>
-      <PendingRequests onFocusFrog={setFocusedFrog} />
       {friends && friends.length > 0 ? (
         <SocialContainer title="Your Friends">
           <div className="grid grid-cols-2 gap-3">
@@ -40,6 +37,7 @@ function FrogFriends(): React.ReactElement {
           </div>
         </SocialContainer>
       ) : null}
+
       <Modal
         isOpen={Boolean(focusedFrog)}
         onClose={() => {

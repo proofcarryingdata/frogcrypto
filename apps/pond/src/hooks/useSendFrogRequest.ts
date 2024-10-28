@@ -10,16 +10,10 @@ const useSendFrogRequest = () => {
   const { data: profilePOD } = useMyProfilePOD();
   const z = useParcnetClient();
 
-  const utils = trpc.useUtils();
   const { mutateAsync: createSocialRequest } =
     trpc.social.createOrUpdateSocialRequest.useMutation({
-      onSuccess: (data) => {
-        void utils.social.getPendingRequests.invalidate();
-        if (data.status === "accepted_existing") {
-          toast.success("Request accepted! You've made a new connection!");
-        } else {
-          toast.success("Social request sent successfully!");
-        }
+      onSuccess: () => {
+        toast.success("Frog Request sent successfully!");
       },
       onError: (error) => {
         toast.error(error.message);
@@ -41,7 +35,6 @@ const useSendFrogRequest = () => {
       );
 
       return createSocialRequest({
-        otherPartyId,
         requestPOD: POD.load(
           requestPODData.entries,
           requestPODData.signature,

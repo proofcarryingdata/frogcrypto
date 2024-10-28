@@ -1,28 +1,26 @@
 import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import React from "react";
+import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
+import ClaimCyberFrog from "./components/ClaimCyberFrog";
 import { DexTab } from "./components/DexTab";
+import { FrogEmoji } from "./components/Frog";
 import GetFrogTab from "./components/GetFrogTab";
 import Intro from "./components/Intro";
+import NotFound from "./components/NotFound";
+import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
+import Frog from "./components/shared/Frog";
 import Loader from "./components/shared/Loader";
+import FrogNecklace from "./components/social/FrogNecklace";
+import NewProfile from "./components/social/NewProfile";
+import PendingRequests from "./components/social/PendingRequests";
 import SocialTab from "./components/SocialTab";
 import useFrogs from "./hooks/useFrogs";
 import useInitializeUser from "./hooks/useInitializeUser";
+import { useParcnetClientConnected } from "./hooks/useParcnetClient";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
-import {
-  useMaybeParcnetClient,
-  useParcnetClientConnected,
-} from "./hooks/useParcnetClient";
-import SpiritFrogMinter from "./components/social/SpiritFrogMinter";
-import NotFound from "./components/NotFound";
-import ClaimCyberFrog from "./components/ClaimCyberFrog";
-import { usePendingFrogRequestsCount } from "./hooks/useFrogRequests";
-import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
-import Frog from "./components/shared/Frog";
-import NewProfile from "./components/social/NewProfile";
-import FrogNecklace from "./components/social/FrogNecklace";
 
 function FrogCrypto() {
   const { data: frogs } = useFrogs();
@@ -30,7 +28,6 @@ function FrogCrypto() {
   const myScore = userState?.myScore.score;
   const { subscriptions } = useSubscriptions();
   const socialTabAvailable = useSocialTabAvailable();
-  const { data: pendingFrogRequestsCount } = usePendingFrogRequestsCount();
   const [location] = useLocation();
 
   if (!frogs || !userState) {
@@ -44,6 +41,7 @@ function FrogCrypto() {
   return (
     <>
       <FrogNecklace />
+      <PendingRequests />
 
       <Frog className="self-center" score={myScore ?? "?"} />
 
@@ -65,22 +63,28 @@ function FrogCrypto() {
           </Link>
           {socialTabAvailable ? (
             <Link
-              href={pendingFrogRequestsCount ? "/social/friends" : "/social"}
-              className={`btn relative ${
+              href="/social"
+              className={`btn ${
                 location.startsWith("/social") ? "bg-green-500" : "bg-teal-500"
               }`}
             >
               frog social
-              {pendingFrogRequestsCount ? (
-                <span className="absolute top-0 right-0 -mt-3 -mr-3 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
-                  {pendingFrogRequestsCount}
-                </span>
-              ) : null}
             </Link>
           ) : (
-            <span className="btn relative opacity-50 cursor-not-allowed bg-gray-400">
-              ??? (<Frog score={5} className="text-sm" colorize={false} />)
-            </span>
+            <button
+              type="button"
+              className="btn relative opacity-50 cursor-not-allowed bg-gray-400"
+              onClick={() => {
+                toast.error(
+                  <span>
+                    You need 10 <FrogEmoji className="w-2 h-2 inline" /> to
+                    unlock unlock this feature!
+                  </span>
+                );
+              }}
+            >
+              ??? (<Frog score={10} className="text-sm" colorize={false} />)
+            </button>
           )}
         </nav>
       )}

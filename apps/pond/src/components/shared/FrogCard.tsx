@@ -8,6 +8,7 @@ import {
   Rarity,
   Temperament,
   Biome,
+  shortCommitmentHex,
 } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import FrogImg from "./FrogImg";
@@ -81,9 +82,37 @@ const biomeValue = (biome: Biome): string => {
   return _.startCase(Biome[biome]);
 };
 
+export function FrogCardHeader({
+  rarity,
+  title,
+  subtitle,
+}: {
+  rarity: Rarity;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center">
+      <span
+        className={`${RARITY_COLORS[rarity].text || ""} text-center uppercase font-bold text-xl`}
+      >
+        {title}
+      </span>
+
+      {subtitle ? (
+        <span
+          className={`${RARITY_COLORS[rarity].text || ""} text-center text-sm`}
+        >
+          {subtitle}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
   const profileFrog = isProfileFrogPOD(frog) ? frog : undefined;
-  const [showMore, setShowMore] = useState(expanded ?? Boolean(profileFrog));
+  const [showMore, setShowMore] = useState(expanded);
   const textColor = RARITY_COLORS[frog.rarity].text || "";
 
   return (
@@ -95,19 +124,15 @@ function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
           loading="lazy"
         />
 
-        <div className="flex flex-col items-center gap-1">
-          <span
-            className={`${RARITY_COLORS[frog.rarity].text || ""} text-center uppercase font-bold text-xl`}
-          >
-            {profileFrog ? profileFrog.profileName : frog.name}
-          </span>
-
-          {profileFrog ? (
-            <span className="text-gray-400 text-center text-sm">
-              {`0x${shortCommitment(profileFrog.profileId)}'s ${frog.name}`}
-            </span>
-          ) : null}
-        </div>
+        <FrogCardHeader
+          rarity={frog.rarity}
+          title={profileFrog ? profileFrog.profileName : frog.name}
+          subtitle={
+            profileFrog
+              ? `0x${shortCommitment(profileFrog.profileId)}'s ${frog.name}`
+              : undefined
+          }
+        />
 
         <FrogAttributes frog={frog} color={textColor} />
 
@@ -125,22 +150,24 @@ function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
           <>
             <p className="text-sm text-gray-700">{frog.description}</p>
 
-            {profileFrog ? <FrogSocialAttributes frog={profileFrog} /> : null}
-
-            <div className="flex justify-between w-full mt-2">
-              <FrogAttribute
-                label="Signed at"
+            <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3">
+              <div className="text-moss-700 px-3">Signed at</div>
+              <div
+                className="text-right px-3 font-medium"
                 title={`Signed at: ${String(frog.timestampSigned)}`}
-                value={new Date(frog.timestampSigned).toLocaleDateString()}
-                color={textColor}
-              />
-              <FrogAttribute
-                label="Source"
-                title="Biome"
-                value={biomeValue(frog.biome)}
-                color={textColor}
-              />
+              >
+                {new Date(frog.timestampSigned).toLocaleDateString()}
+              </div>
+
+              <div className="col-span-2 h-px bg-gray-300" />
+
+              <div className="text-moss-700 px-3">Source</div>
+              <div className="text-right px-3 font-medium">
+                {biomeValue(frog.biome)}
+              </div>
             </div>
+
+            {profileFrog ? <FrogSocialAttributes frog={profileFrog} /> : null}
           </>
         ) : null}
       </div>
@@ -195,38 +222,42 @@ export function FrogAttributes({
 
 export function FrogSocialAttributes({ frog }: { frog: ProfileFrogPOD }) {
   return (
-    <div className="grid grid-cols-2 gap-4 w-full">
-      <FrogAttribute
-        label="TG"
-        title="Telegram"
-        value={
-          frog.telegramUsername ? (
-            <a
-              className="hover:underline"
-              href={`https://t.me/${frog.telegramUsername}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              @{frog.telegramUsername}
-            </a>
-          ) : (
-            <span className="italic">&lt;unk&gt;</span>
-          )
-        }
-      />
-      <FrogAttribute
-        label="FC"
-        title="Farcaster"
-        value={
-          frog.farcasterUsername ? (
-            <a href={`https://farcaster.xyz/${frog.farcasterUsername}`}>
-              {frog.farcasterUsername}
-            </a>
-          ) : (
-            <span className="italic">&lt;unk&gt;</span>
-          )
-        }
-      />
+    <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3">
+      <div className="text-moss-700 px-3">Public Key</div>
+      <div className="text-right px-3 font-medium">
+        {shortCommitmentHex(frog.signerPublicKey)}
+      </div>
+
+      <div className="col-span-2 h-px bg-gray-300" />
+
+      <div className="text-moss-700 px-3">Telegram</div>
+      <div className="text-right px-3 font-medium">
+        {frog.telegramUsername ? (
+          <a
+            className="hover:underline"
+            href={`https://t.me/${frog.telegramUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @{frog.telegramUsername}
+          </a>
+        ) : (
+          <span className="italic">&lt;unk&gt;</span>
+        )}
+      </div>
+
+      <div className="col-span-2 h-px bg-gray-300" />
+
+      <div className="text-moss-700 px-3">Farcaster</div>
+      <div className="text-right px-3 font-medium">
+        {frog.farcasterUsername ? (
+          <a href={`https://farcaster.xyz/${frog.farcasterUsername}`}>
+            {frog.farcasterUsername}
+          </a>
+        ) : (
+          <span className="italic">&lt;unk&gt;</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -244,10 +275,7 @@ export function FrogAttribute({
 }) {
   return (
     <div className="flex flex-col items-center gap-1 font-mono">
-      <span
-        className={`${color ?? ""} font-semibold text-xs uppercase`}
-        title={title}
-      >
+      <span className={`${color ?? ""} text-sm uppercase`} title={title}>
         {label}
       </span>
       <span className="text-sm">{formatAttrValue(value)}</span>

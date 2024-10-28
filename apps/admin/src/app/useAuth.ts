@@ -37,7 +37,9 @@ const useAuth = () => {
         })
       );
       setToken(
-        POD.load(pwt.entries, pwt.signature, pwt.signerPublicKey).serialize()
+        JSON.stringify(
+          POD.load(pwt.entries, pwt.signature, pwt.signerPublicKey).toJSON()
+        )
       );
 
       return true;

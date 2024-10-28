@@ -7,6 +7,7 @@ import React from "react";
 import { trpc } from "../../trpc";
 import Frog from "../Frog";
 import { SocialButton } from "../shared/Button";
+import FrogImg from "../shared/FrogImg";
 import SocialContainer from "./SocialContainer";
 
 function FrogFriendProfile({
@@ -23,12 +24,8 @@ function FrogFriendProfile({
 
   return (
     <SocialContainer title={frog.name}>
-      <div className="relative w-32 h-32 mx-auto">
-        <img
-          src={frog.imageUrl}
-          alt={frog.name}
-          className="w-full h-full object-cover"
-        />
+      <div className="w-32 h-32 mx-auto">
+        <FrogImg frog={frog} className="w-full h-full object-cover" />
       </div>
 
       <div className="flex flex-col w-full items-center">

@@ -36,12 +36,12 @@ export const FROG_LEVELS = [
   },
 ];
 
-export function FrogEmoji() {
+export function FrogEmoji({ className }: { className?: string }) {
   return (
     <img
       src={frogSvgUrl}
       alt="Frog"
-      className="h-full aspect-square inline-block"
+      className={className ?? "h-full aspect-square inline-block"}
       draggable={false}
     />
   );

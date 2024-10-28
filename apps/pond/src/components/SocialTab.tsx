@@ -3,15 +3,11 @@ import { Link, Route, Switch, useLocation } from "wouter";
 import { toast } from "react-hot-toast";
 import { useMyProfilePOD, useOtherProfilePODs } from "../hooks/useProfilePOD";
 import { useSocialTabAvailable } from "../hooks/useUserState";
-import {
-  useAcceptedFrogRequests,
-  usePendingFrogRequests,
-} from "../hooks/useFrogRequests";
+import { useAcceptedFrogRequests } from "../hooks/useFrogRequests";
 import Loader from "./shared/Loader";
 import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
 import ProfileSharer from "./social/ProfileSharer";
-import OtherProfile from "./social/OtherProfile";
 import FrogFriends from "./social/FrogFriends";
 import FrogScore from "./social/FrogScore";
 
@@ -20,10 +16,8 @@ function NavBar() {
 
   const [location] = useLocation();
 
-  const { data: pendingRequests } = usePendingFrogRequests();
   const { data: otherProfilePODs } = useOtherProfilePODs();
-  const showFriendsTab =
-    (pendingRequests?.length ?? 0) > 0 || (otherProfilePODs?.length ?? 0) > 0;
+  const showFriendsTab = (otherProfilePODs?.length ?? 0) > 0;
 
   return (
     <div className="px-2 mb-1 flex justify-between [&>*]:select-none">
@@ -94,7 +88,6 @@ function SocialTab() {
         <Route path="/profile" component={MyProfile} />
         <Route path="/friends" component={FrogFriends} />
         <Route path="/share" component={ProfileSharer} />
-        <Route path="/:id" component={OtherProfile} />
 
         <Route component={NotFound} />
       </Switch>

@@ -1,5 +1,5 @@
 import type { AppRouter } from "@frogcrypto/api/src/routers";
-import { POD } from "@pcd/pod";
+import { type JSONPOD, POD } from "@pcd/pod";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { SuperJSON, registerCustom } from "superjson";
@@ -8,8 +8,8 @@ import { SERVER_URL } from "@frogcrypto/shared";
 registerCustom<POD, string>(
   {
     isApplicable: (v): v is POD => v instanceof POD && v.verifySignature(),
-    serialize: (v) => v.serialize(),
-    deserialize: (v) => POD.deserialize(v),
+    serialize: (v) => JSON.stringify(v.toJSON()),
+    deserialize: (v) => POD.fromJSON(JSON.parse(v) as JSONPOD),
   },
   "pcd-pod"
 );

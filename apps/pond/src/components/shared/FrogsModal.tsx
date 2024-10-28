@@ -13,7 +13,7 @@ export function FrogsModal({
   pods: FrogPOD[];
   color: string;
   onClose: () => void;
-}): JSX.Element {
+}) {
   const [focused, setFocused] = useState<number | null>(0);
   const focusedPOD = pods[focused ?? 0];
 
@@ -42,6 +42,10 @@ export function FrogsModal({
       return `${offset}px ${offset}px 2px -1px white, ${offset}px ${offset}px 2px 0 ${color}`;
     })
     .join(", ");
+
+  if (!focusedPOD) {
+    return null;
+  }
 
   return (
     <ReactModal

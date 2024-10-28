@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { POD } from "@pcd/pod";
+import { type JSONPOD, POD } from "@pcd/pod";
 import {
   FROGCRYPTO_FOLDER_NAME,
   toProfileFrogPODEntries,
@@ -49,8 +49,11 @@ const useAcceptFrogRequest = () => {
       });
     },
     onSuccess: async (data, variables) => {
-      void utils.social.getPendingRequests.invalidate();
       void utils.users.me.invalidate();
+
+      utils.social.getPendingRequests.setData(undefined, (data) =>
+        data?.filter((request) => request.id !== variables.id)
+      );
 
       if (data.success) {
         toast.success(() => (
@@ -68,7 +71,11 @@ const useAcceptFrogRequest = () => {
 
       await z.pod
         .collection(FROGCRYPTO_FOLDER_NAME)
-        .insert(podToPODData(POD.deserialize(variables.requestPOD)));
+        .insert(
+          podToPODData(
+            POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD)
+          )
+        );
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEY_FROGS],
       });

@@ -1,9 +1,14 @@
-import { decompressBigInt } from "@frogcrypto/shared";
+import {
+  decompressBigInt,
+  parseProfileFrogPOD,
+  userPublicKeyToUserId,
+} from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, gt, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { validate as uuidValidate } from "uuid";
+import { podToPODData } from "@parcnet-js/podspec";
 import { db } from "../db";
 import { socialRequestsTable, userScoresTable } from "../db/schema";
 import { recordFriendCount, userScoresView } from "../db/users";
@@ -12,27 +17,44 @@ import { compareIds } from "../utils";
 import { getSpiritFrog } from "../db/frogs";
 
 const MAX_REQUESTS_PER_DAY = 100;
-const REQUEST_VISIBILITY_DAYS = 30; // Requests older than this will not be returned in queries
+const REQUEST_VISIBILITY_DAYS = 7; // Requests older than this will not be returned in queries
 
 export const socialRouter = router({
-  // FIXME: the logic here is incorrect. we need to make sure the insert conflict doesn't allow "accepting" a request because there are various other logic changes that should happen when a request is accepted
   createOrUpdateSocialRequest: authedProcedure
     .input(
       z.object({
-        otherPartyId: z.string(),
         requestPOD: z.custom<POD>(
           (x) => x instanceof POD && x.verifySignature()
         ),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { otherPartyId, requestPOD } = input;
+      const { requestPOD } = input;
       const myId = ctx.user.semaphoreIdBase64;
+
+      const profilePOD = parseProfileFrogPOD(podToPODData(requestPOD));
+      if (!profilePOD) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid Frog Request POD",
+        });
+      }
+      // FIXME: validate this contains a valid spirit frog for the signer
+      const otherPartyId = profilePOD.ownerSemaphoreId;
 
       if (myId === otherPartyId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You cannot send a request to yourself",
+        });
+      }
+      if (
+        userPublicKeyToUserId(requestPOD.signerPublicKey) !==
+        ctx.user.semaphoreIdBase64
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot send a request on behalf of another user",
         });
       }
 
@@ -67,41 +89,51 @@ export const socialRouter = router({
           ? [myId, otherPartyId]
           : [otherPartyId, myId];
 
+      const serializedRequestPOD = JSON.stringify(requestPOD.toJSON());
+
       const now = new Date();
-      const updatedRequest = await db
+      const [request] = await db
         .insert(socialRequestsTable)
         .values({
           party1,
           party2,
-          party1POD: myId === party1 ? requestPOD.serialize() : null,
-          party2POD: myId === party2 ? requestPOD.serialize() : null,
+          party1POD: myId === party1 ? serializedRequestPOD : null,
+          party2POD: myId === party2 ? serializedRequestPOD : null,
           party1PODTimestamp: myId === party1 ? now : null,
           party2PODTimestamp: myId === party2 ? now : null,
           updatedAt: now,
         })
         .onConflictDoUpdate({
           target: [socialRequestsTable.party1, socialRequestsTable.party2],
-          setWhere: eq(socialRequestsTable.status, "pending"),
+          setWhere: and(
+            eq(socialRequestsTable.status, "pending"),
+            myId === party1
+              ? isNull(socialRequestsTable.party2POD)
+              : isNull(socialRequestsTable.party1POD)
+          ),
           set: {
-            [myId === party1 ? "party1POD" : "party2POD"]:
-              requestPOD.serialize(),
+            [myId === party1 ? "party1POD" : "party2POD"]: serializedRequestPOD,
             [myId === party1 ? "party1PODTimestamp" : "party2PODTimestamp"]:
               now,
             updatedAt: now,
             version: sql`${socialRequestsTable.version} + 1`,
           },
         })
-        .returning()
-        .then((result) => result[0]);
+        .returning();
 
-      if (updatedRequest?.party1POD && updatedRequest.party2POD) {
-        return { status: "connected" };
+      if (!request) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Unable to create new Frog Request. There might already be a pending Frog Request between you and this user.",
+        });
       }
-      return { status: "pending" };
+
+      return request;
     }),
 
   /**
-   * Get sent and received requests that are still pending
+   * Get received requests that are still pending if any
    */
   getPendingRequests: authedProcedure.query(async ({ ctx }) => {
     const requests = await db
@@ -110,8 +142,14 @@ export const socialRouter = router({
       .where(
         and(
           or(
-            eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
-            eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64)
+            and(
+              eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
+              isNull(socialRequestsTable.party1POD)
+            ),
+            and(
+              eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
+              isNull(socialRequestsTable.party2POD)
+            )
           ),
           sql`${socialRequestsTable.updatedAt} > ${new Date(Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000)}`,
           eq(socialRequestsTable.status, "pending")
@@ -119,15 +157,9 @@ export const socialRouter = router({
       );
 
     return requests.map((request) => ({
-      ...request,
-      requestedBy:
-        request.party1PODTimestamp?.getTime() === request.updatedAt.getTime()
-          ? request.party1
-          : request.party2,
-      requestPOD:
-        request.party1PODTimestamp?.getTime() === request.updatedAt.getTime()
-          ? request.party1POD
-          : request.party2POD,
+      id: request.id,
+      requestedBy: request.party1POD ? request.party1 : request.party2,
+      requestPOD: request.party1POD ?? request.party2POD,
     }));
   }),
 
@@ -218,7 +250,7 @@ export const socialRouter = router({
           .set({
             [request.party1 === ctx.user.semaphoreIdBase64
               ? "party1POD"
-              : "party2POD"]: responsePOD.serialize(),
+              : "party2POD"]: JSON.stringify(responsePOD.toJSON()),
             [request.party1 === ctx.user.semaphoreIdBase64
               ? "party1PODTimestamp"
               : "party2PODTimestamp"]: now,
@@ -235,6 +267,31 @@ export const socialRouter = router({
 
         return { success: true };
       });
+    }),
+
+  declineRequest: authedProcedure
+    .input(z.object({ requestId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { requestId } = input;
+
+      await db
+        .update(socialRequestsTable)
+        .set({ status: "declined" })
+        .where(
+          and(
+            or(
+              and(
+                eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
+                isNull(socialRequestsTable.party1POD)
+              ),
+              and(
+                eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
+                isNull(socialRequestsTable.party2POD)
+              )
+            ),
+            eq(socialRequestsTable.id, requestId)
+          )
+        );
     }),
 
   scoreboard: publicProcedure

@@ -1,15 +1,15 @@
-import { initTRPC, TRPCError } from "@trpc/server";
-import { SuperJSON, registerCustom } from "superjson";
 import { logger } from "@frogcrypto/shared";
+import { type JSONPOD, POD } from "@pcd/pod";
+import { initTRPC, TRPCError } from "@trpc/server";
+import { registerCustom, SuperJSON } from "superjson";
 import { ZodError } from "zod";
-import { POD } from "@pcd/pod";
 import type { Context } from "./context";
 
 registerCustom<POD, string>(
   {
     isApplicable: (v): v is POD => v instanceof POD && v.verifySignature(),
-    serialize: (v) => v.serialize(),
-    deserialize: (v) => POD.deserialize(v),
+    serialize: (v) => JSON.stringify(v.toJSON()),
+    deserialize: (v) => POD.fromJSON(JSON.parse(v) as JSONPOD),
   },
   "pcd-pod"
 );

@@ -12,8 +12,8 @@
   "dependencies": {
     "@frogcrypto/shared": "workspace:*",
     "@frogcrypto/ui": "workspace:*",
-    "@parcnet-js/app-connector": "1.0.0",
-    "@pcd/pod": "^0.1.7",
+    "@parcnet-js/app-connector": "1.1.8",
+    "@pcd/pod": "^0.4.0",
     "@tanstack/react-query": "^5.55.4",
     "@tanstack/react-table": "^8.20.5",
     "@trpc/client": "11.0.0-rc.502",

@@ -1,6 +1,7 @@
 import {
   compressBigInt,
   decompressBigInt,
+  getUsernameFromHash,
   logger,
   PlayerIDSpec,
   userPublicKeyToUserId,
@@ -170,6 +171,7 @@ export const usersRouter = router({
         frogCount: z.number(),
         semaphoreIdBase64: z.string(),
         socialId: z.string().nullable(),
+        profileName: z.string(),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>(),
       })
@@ -211,6 +213,7 @@ export const usersRouter = router({
         frogCount: user.score,
         semaphoreIdBase64: compressBigInt(BigInt(user.semaphoreId)),
         socialId: user.socialId,
+        profileName: getUsernameFromHash(user.semaphoreIdHash),
         spiritFrog,
       };
     }),
