@@ -1,4 +1,8 @@
-import { DEFAULT_ZUPASS_URL, FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
+import {
+  DEFAULT_ZUPASS_URL,
+  FROGCRYPTO_FOLDER_NAME,
+  DEVCON_7_TICKET_COLLECTION_ID,
+} from "@frogcrypto/shared";
 import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
 import { connect, connectToHost } from "@parcnet-js/app-connector";
 import { atom, useAtom, useAtomValue } from "jotai";
@@ -45,7 +49,7 @@ const ZAPP: Zapp = {
     },
     SIGN_POD: {},
     READ_POD: {
-      collections: [FROGCRYPTO_FOLDER_NAME],
+      collections: [FROGCRYPTO_FOLDER_NAME, DEVCON_7_TICKET_COLLECTION_ID],
     },
     INSERT_POD: {
       collections: [FROGCRYPTO_FOLDER_NAME],

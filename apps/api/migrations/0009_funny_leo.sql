@@ -1,0 +1,1 @@
+ALTER TABLE "user_scores" ADD COLUMN "devcon7_ticket_id" text;

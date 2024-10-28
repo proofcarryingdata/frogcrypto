@@ -1,30 +1,22 @@
-import { useLocation } from "wouter";
-import React, { useCallback, useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  CircleCheck,
-  CircleCheckBig,
-  X,
-} from "lucide-react";
 import {
   type IFrogData,
   shortCommitment,
   shortCommitmentHex,
 } from "@frogcrypto/shared";
+import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import toast from "react-hot-toast";
 import { useSwipeable } from "react-swipeable";
-import useSearchParams from "../../hooks/useSearchParams";
-import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
-import { trpc } from "../../trpc";
-import Modal from "../shared/Modal";
 import frogNecklaceSvg from "../../assets/frog_necklace.svg?url";
 import frogNecklaceDisabledSvg from "../../assets/frog_necklace_disabled.svg?url";
-import { FrogEmoji } from "../Frog";
-import FrogImg from "../shared/FrogImg";
+import useSearchParams from "../../hooks/useSearchParams";
 import useSendFrogRequest from "../../hooks/useSendFrogRequest";
+import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
+import { trpc } from "../../trpc";
+import { FrogEmoji } from "../Frog";
 import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
+import FrogImg from "../shared/FrogImg";
+import Modal from "../shared/Modal";
 
 export const SEARCH_PARAM_NECKLACE_QR = "necklace_qr";
 

@@ -29,6 +29,13 @@ export const socialRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // if (!ctx.user.devcon7TicketId) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "FrogSocial is only available to Devcon 7 attendees",
+      //   });
+      // }
+
       const { requestPOD } = input;
       const myId = ctx.user.semaphoreIdBase64;
 
@@ -205,6 +212,13 @@ export const socialRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // if (!ctx.user.devcon7TicketId) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "FrogSocial is only available to Devcon 7 attendees",
+      //   });
+      // }
+
       const { requestId, responsePOD } = input;
 
       return db.transaction(async (tx) => {
@@ -272,6 +286,13 @@ export const socialRouter = router({
   declineRequest: authedProcedure
     .input(z.object({ requestId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      // if (!ctx.user.devcon7TicketId) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "FrogSocial is only available to Devcon 7 attendees",
+      //   });
+      // }
+
       const { requestId } = input;
 
       await db

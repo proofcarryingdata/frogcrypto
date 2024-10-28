@@ -4,7 +4,7 @@ import {
   FROGCRYPTO_FOLDER_NAME,
   toProfileFrogPODEntries,
 } from "@frogcrypto/shared";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { podToPODData } from "@parcnet-js/podspec";
 import React from "react";
 import { trpc } from "../trpc";

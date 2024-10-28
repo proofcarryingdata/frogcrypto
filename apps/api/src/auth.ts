@@ -16,6 +16,7 @@ export interface AuthSession {
     semaphoreIdBase64: string;
     isLoggedIn: boolean;
     isAdmin: boolean;
+    devcon7TicketId: string | null;
   };
 }
 
@@ -35,6 +36,7 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
   const [user] = await db
     .select({
       isAdmin: userScoresTable.isAdmin,
+      devcon7TicketId: userScoresTable.devcon7TicketId,
     })
     .from(userScoresTable)
     .where(eq(userScoresTable.semaphoreId, String(semaphoreId)));
@@ -45,6 +47,7 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
       semaphoreIdBase64: compressBigInt(semaphoreId),
       isAdmin: Boolean(user?.isAdmin),
       isLoggedIn: Boolean(user),
+      devcon7TicketId: user?.devcon7TicketId ?? null,
     },
   };
 }

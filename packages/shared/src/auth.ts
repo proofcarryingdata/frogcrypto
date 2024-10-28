@@ -3,6 +3,8 @@ import { ticketProofRequest } from '@parcnet-js/ticket-spec';
 
 import { shortCommitment, userPublicKeyToUserId } from './semaphore';
 
+export { TicketSpec } from '@parcnet-js/ticket-spec';
+
 export const POD_TYPE_FROGCRYPTO_PLAYER_ID = "frogcrypto.playerId";
 
 export const PlayerIDSpec = p.entries({
@@ -19,7 +21,6 @@ export const PlayerIDSpec = p.entries({
   device: { type: "string" },
   timestamp: { type: "int" },
   location: { type: "string" },
-  proof: { type: "string" },
   zupass_title: {
     type: "string",
   },
@@ -36,12 +37,10 @@ export const getPlayerIDEntries = ({
   playerPk,
   device,
   location,
-  proof,
 }: {
   playerPk: string;
   device: string;
   location: string;
-  proof: string;
 }) => {
   const playerId = shortCommitment(userPublicKeyToUserId(playerPk));
 
@@ -51,7 +50,6 @@ export const getPlayerIDEntries = ({
     device: { type: "string", value: device },
     timestamp: { type: "int", value: BigInt(Date.now()) },
     location: { type: "string", value: location },
-    proof: { type: "string", value: proof },
     zupass_title: {
       type: "string",
       value: `Frog ID (${playerId})`,
@@ -64,15 +62,21 @@ export const getPlayerIDEntries = ({
   });
 };
 
+export const DEVCON_7_TICKET_COLLECTION_ID = "Devcon 7";
+export const DEVCON_7_SIGNER_PUBLIC_KEY =
+  "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs";
+export const DEVCON_7_EVENT_ID = "5074edf5-f079-4099-b036-22223c0c6995";
+
 export const TicketProofRequest = ticketProofRequest({
   classificationTuples: [
     {
-      signerPublicKey: "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs",
-      eventId: "5074edf5-f079-4099-b036-22223c0c6995",
+      signerPublicKey: DEVCON_7_SIGNER_PUBLIC_KEY,
+      eventId: DEVCON_7_EVENT_ID,
     },
   ],
   fieldsToReveal: {
-    attendeeEmail: true,
+    attendeeSemaphoreId: true,
+    ticketId: true,
   },
   externalNullifier: {
     type: "string",

@@ -64,6 +64,7 @@ export function FrogsModal({
     >
       <div className="flex items-stretch justify-around" {...handlers}>
         <button
+          type="button"
           onClick={onSwipeRight}
           disabled={focused === 0}
           className={`flex justify-center items-center flex-1 p-2 text-2xl ${
@@ -84,6 +85,7 @@ export function FrogsModal({
           <FrogCard frog={focusedPOD} expanded />
         </div>
         <button
+          type="button"
           onClick={onSwipeLeft}
           disabled={focused === pods.length - 1}
           className={`flex justify-center items-center flex-1 p-2 text-2xl ${

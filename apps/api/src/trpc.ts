@@ -60,7 +60,26 @@ export const publicProcedure = t.procedure;
 export const mergeRouters = t.mergeRouters;
 
 /**
- * Protected base procedure
+ * Protected procedure where user must have a valid signature but not necessarily be logged in
+ */
+export const protectedProcedure = t.procedure.use(function isAuthed(opts) {
+  const user = opts.ctx.session?.user;
+
+  if (!user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+    });
+  }
+
+  return opts.next({
+    ctx: {
+      user,
+    },
+  });
+});
+
+/**
+ * Authenticated base procedure where user must have been enrolled in the app
  */
 export const authedProcedure = t.procedure.use(function isAuthed(opts) {
   const user = opts.ctx.session?.user;
@@ -74,9 +93,7 @@ export const authedProcedure = t.procedure.use(function isAuthed(opts) {
 
   return opts.next({
     ctx: {
-      user: {
-        ...user,
-      },
+      user,
     },
   });
 });
@@ -96,9 +113,7 @@ export const adminProcedure = t.procedure.use(function isAuthed(opts) {
 
   return opts.next({
     ctx: {
-      user: {
-        ...user,
-      },
+      user,
     },
   });
 });

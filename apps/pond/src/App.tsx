@@ -22,11 +22,41 @@ import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 
+function SocialTabButton() {
+  const socialTabAvailable = useSocialTabAvailable();
+  const [location] = useLocation();
+
+  return socialTabAvailable ? (
+    <Link
+      href="/social"
+      className={`btn ${
+        location.startsWith("/social") ? "bg-green-500" : "bg-teal-500"
+      }`}
+    >
+      frog social
+    </Link>
+  ) : (
+    <button
+      type="button"
+      className="btn relative opacity-50 cursor-not-allowed bg-gray-400"
+      onClick={() => {
+        toast.error(
+          <span>
+            You need 10 <FrogEmoji className="w-2 h-2 inline" /> to unlock
+            unlock this feature!
+          </span>
+        );
+      }}
+    >
+      ??? (<Frog score={10} className="text-sm" colorize={false} />)
+    </button>
+  );
+}
+
 function FrogCrypto() {
   const { data: userState } = useUserState();
   const myScore = userState?.myScore.score;
   const { subscriptions } = useSubscriptions();
-  const socialTabAvailable = useSocialTabAvailable();
   const [location] = useLocation();
 
   if (!userState) {
@@ -61,31 +91,8 @@ function FrogCrypto() {
           >
             frogedex
           </Link>
-          {socialTabAvailable ? (
-            <Link
-              href="/social"
-              className={`btn ${
-                location.startsWith("/social") ? "bg-green-500" : "bg-teal-500"
-              }`}
-            >
-              frog social
-            </Link>
-          ) : (
-            <button
-              type="button"
-              className="btn relative opacity-50 cursor-not-allowed bg-gray-400"
-              onClick={() => {
-                toast.error(
-                  <span>
-                    You need 10 <FrogEmoji className="w-2 h-2 inline" /> to
-                    unlock unlock this feature!
-                  </span>
-                );
-              }}
-            >
-              ??? (<Frog score={10} className="text-sm" colorize={false} />)
-            </button>
-          )}
+          {/* {userState.myScore.devcon7TicketId ? <SocialTabButton /> : null} */}
+          <SocialTabButton />
         </nav>
       )}
 
@@ -93,8 +100,12 @@ function FrogCrypto() {
         <Switch>
           <Route path="/" component={GetFrogTab} />
           <Route path="/dex" component={DexTab} />
-          <Route path="/social/tadpole" component={NewProfile} />
-          <Route path="/social" component={SocialTab} nest />
+          {/* {userState.myScore.devcon7TicketId ? ( */}
+          <>
+            <Route path="/social/tadpole" component={NewProfile} />
+            <Route path="/social" component={SocialTab} nest />
+          </>
+          {/* ) : null} */}
           <Route component={NotFound} />
         </Switch>
       </Suspense>

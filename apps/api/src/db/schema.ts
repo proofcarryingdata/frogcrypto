@@ -70,6 +70,7 @@ export const userScoresTable = pgTable(
     friendCount: integer("friend_count").notNull().default(0),
     isAdmin: boolean("is_admin").notNull().default(false),
     socialId: uuid("social_id"),
+    devcon7TicketId: text("devcon7_ticket_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
@@ -138,5 +139,5 @@ export const cyberfrogNullifiersTable = pgTable(
   },
   (table) => ({
     uniqueNullifier: unique().on(table.nullifier),
-  }),
+  })
 );

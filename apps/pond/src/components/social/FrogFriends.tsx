@@ -13,7 +13,7 @@ function FrogFriends(): React.ReactElement {
   const semaphoreId = useSemaphoreIdBase64();
 
   const friends = useMemo(
-    () => frogs?.filter((frog) => frog.profileId !== semaphoreId),
+    () => frogs.filter((frog) => frog.profileId !== semaphoreId),
     [frogs, semaphoreId]
   );
 
@@ -23,7 +23,7 @@ function FrogFriends(): React.ReactElement {
 
   return (
     <div>
-      {friends && friends.length > 0 ? (
+      {friends.length > 0 ? (
         <SocialContainer title="Your Friends">
           <div className="grid grid-cols-2 gap-3">
             {friends.map((friend) => (

@@ -1,10 +1,11 @@
 import {
   compressBigInt,
   decompressBigInt,
+  DEVCON_7_EVENT_ID,
+  DEVCON_7_SIGNER_PUBLIC_KEY,
   getUsernameFromHash,
-  logger,
-  PlayerIDSpec,
-  userPublicKeyToUserId,
+  TicketProofRequest,
+  TicketSpec,
   type IFrogData,
 } from "@frogcrypto/shared";
 import { POD } from "@pcd/pod";
@@ -13,13 +14,20 @@ import { eq } from "drizzle-orm";
 import _ from "lodash";
 import { validate as uuidValidate } from "uuid";
 import { z } from "zod";
+import {
+  type GPCRevealedClaims,
+  type GPCBoundConfig,
+  type GPCProof,
+} from "@pcd/gpc";
+import { createNextApiHandler } from "@trpc/server/adapters/next";
+import { parse } from "superjson";
 import { db } from "../db";
 import { getFeeds } from "../db/feeds";
 import { getAllFrogs } from "../db/frog-cache";
 import { getSpiritFrog } from "../db/frogs";
 import { userFeedsTable, userScoresTable } from "../db/schema";
 import { getUserScore, userScoresView } from "../db/users";
-import { authedProcedure, publicProcedure, router } from "../trpc";
+import { authedProcedure, protectedProcedure, router } from "../trpc";
 import { computeUserFeedState } from "../utils";
 
 // const GPC_ARTIFACTS_PATH = path.join(
@@ -29,67 +37,105 @@ import { computeUserFeedState } from "../utils";
 //     : "."
 // );
 
-export const usersRouter = router({
-  auth: publicProcedure
-    .input(z.custom<POD>((x) => x instanceof POD && x.verifySignature()))
-    .mutation(async ({ input: pod }) => {
-      const playerIDPOD = PlayerIDSpec.safeParse(pod.content.asEntries());
-      if (!playerIDPOD.isValid) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid player ID POD",
-        });
-      }
-      const signer = pod.signerPublicKey;
-      if (!signer) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No signer found in GPC",
-        });
-      }
-      const owner = userPublicKeyToUserId(signer);
-      const signerPk = playerIDPOD.value.playerPk.value.toString();
-      if (!signerPk) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "No playerPk found in POD",
-        });
-      }
-      logger.info(`Got auth POD for user ${owner} with signer ${signerPk}`);
+function authenticateTicket(ticket: POD, semaphoreId: bigint) {
+  const parsed = TicketSpec.safeParse(ticket);
+  if (!parsed.isValid) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid ticket",
+    });
+  }
+  const parsedTicket = parsed.value;
+  if (parsedTicket.signerPublicKey !== DEVCON_7_SIGNER_PUBLIC_KEY) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid ticket signer",
+    });
+  }
+  const entries = parsedTicket.content.asEntries();
+  if (entries.attendeeSemaphoreId?.value !== semaphoreId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid ticket attendee",
+    });
+  }
+  if (entries.eventId.value !== DEVCON_7_EVENT_ID) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid ticket event",
+    });
+  }
 
-      // TODO: verify ticket proof
-      // const { proof, boundConfig, revealedClaims } = parse<{
-      //   proof: GPCProof;
-      //   boundConfig: GPCBoundConfig;
-      //   revealedClaims: GPCRevealedClaims;
-      // }>(playerIDPOD.value.proof.value);
-      // const { proofConfig, membershipLists, externalNullifier, watermark } =
-      //   TicketProofRequest.getProofRequest();
-      // revealedClaims.membershipLists = membershipLists;
-      // revealedClaims.watermark = watermark;
-      // if (typeof revealedClaims.owner !== "undefined") {
-      //   Object.assign(revealedClaims.owner, { externalNullifier });
-      // }
-      // // const isVerified = await gpcVerify(
-      // //   proof,
-      // //   {
-      // //     ...proofConfig,
-      // //     circuitIdentifier: boundConfig.circuitIdentifier,
-      // //   },
-      // //   revealedClaims,
-      // //   GPC_ARTIFACTS_PATH
-      // // );
-      // // if (!isVerified) {
-      // //   throw new TRPCError({
-      // //     code: "UNAUTHORIZED",
-      // //     message: "Ticket proof failed to verify",
-      // //   });
-      // // }
+  return entries.ticketId.value;
+}
+
+function authenticateProof(
+  rawProof: string,
+  semaphoreId: bigint
+): string | null {
+  const { proof, boundConfig, revealedClaims } = parse<{
+    proof: GPCProof;
+    boundConfig: GPCBoundConfig;
+    revealedClaims: GPCRevealedClaims;
+  }>(rawProof);
+  const { proofConfig, membershipLists, externalNullifier, watermark } =
+    TicketProofRequest.getProofRequest();
+  revealedClaims.membershipLists = membershipLists;
+  revealedClaims.watermark = watermark;
+  if (typeof revealedClaims.owner !== "undefined") {
+    Object.assign(revealedClaims.owner, { externalNullifier });
+  }
+  // const isVerified = await gpcVerify(
+  //   proof,
+  //   {
+  //     ...proofConfig,
+  //     circuitIdentifier: boundConfig.circuitIdentifier,
+  //   },
+  //   revealedClaims,
+  //   GPC_ARTIFACTS_PATH
+  // );
+  // if (!isVerified) {
+  //   throw new TRPCError({
+  //     code: "UNAUTHORIZED",
+  //     message: "Ticket proof failed to verify",
+  //   });
+  // }
+
+  const ticketId = revealedClaims.pods.ticket?.entries?.ticketId?.value;
+  if (typeof ticketId !== "string") {
+    return null;
+  }
+  return ticketId;
+}
+
+export const usersRouter = router({
+  auth: protectedProcedure
+    .input(
+      z.object({
+        ticket: z
+          .custom<POD>((x) => x instanceof POD && x.verifySignature())
+          .nullable(),
+        proof: z.string().nullable(),
+      })
+    )
+    .mutation(async ({ input: { ticket, proof }, ctx }) => {
+      // const devcon7TicketId = ticket
+      //   ? authenticateTicket(ticket, ctx.user.semaphoreId)
+      //   : null;
+      const devcon7TicketId = proof
+        ? authenticateProof(proof, ctx.user.semaphoreId)
+        : null;
 
       await db
         .insert(userScoresTable)
-        .values({ semaphoreId: String(decompressBigInt(owner)) })
-        .onConflictDoNothing();
+        .values({
+          semaphoreId: String(ctx.user.semaphoreId),
+          devcon7TicketId,
+        })
+        .onConflictDoUpdate({
+          target: userScoresTable.semaphoreId,
+          set: { devcon7TicketId },
+        });
     }),
   me: authedProcedure
     .input(z.object({ feedIds: z.array(z.string()) }))
@@ -116,6 +162,7 @@ export const usersRouter = router({
           friendCount: z.number(),
           socialId: z.string().nullable(),
           imgUrl: z.string(),
+          devcon7TicketId: z.string().nullable(),
         }),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>().optional(),

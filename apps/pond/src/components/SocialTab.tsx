@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast";
 import { useMyProfilePOD, useOtherProfilePODs } from "../hooks/useProfilePOD";
 import { useSocialTabAvailable } from "../hooks/useUserState";
 import { useAcceptedFrogRequests } from "../hooks/useFrogRequests";
-import useFrogs from "../hooks/useFrogs";
 import Loader from "./shared/Loader";
 import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
@@ -18,7 +17,7 @@ function NavBar() {
   const [location] = useLocation();
 
   const otherProfilePODs = useOtherProfilePODs();
-  const showFriendsTab = otherProfilePODs && otherProfilePODs.length > 0;
+  const showFriendsTab = otherProfilePODs.length > 0;
 
   return (
     <div className="px-2 mb-1 flex justify-between [&>*]:select-none">
@@ -58,7 +57,6 @@ function SocialTab() {
   const [location, setLocation] = useLocation();
   const socialTabAvailable = useSocialTabAvailable();
   const myProfilePOD = useMyProfilePOD();
-  const frogs = useFrogs();
 
   useEffect(() => {
     if (!socialTabAvailable) {

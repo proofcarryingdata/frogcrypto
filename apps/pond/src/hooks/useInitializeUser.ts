@@ -1,12 +1,13 @@
 import {
   compressBigInt,
-  FROGCRYPTO_FOLDER_NAME,
-  getPlayerIDEntries,
+  DEVCON_7_EVENT_ID,
+  DEVCON_7_SIGNER_PUBLIC_KEY,
+  DEVCON_7_TICKET_COLLECTION_ID,
   logger,
-  PlayerIDSpec,
   POD_TYPE_FROGCRYPTO_PWT,
   PwtSpec,
   TicketProofRequest,
+  TicketSpec,
 } from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
@@ -41,76 +42,6 @@ function useInitializeUser() {
       setSemaphoreIdBase64(null);
     }
   }, [semaphoreIdBase64, semaphoreId, setSemaphoreIdBase64]);
-
-  const utils = trpc.useUtils();
-  const { mutate: initializeUser, error } = useMutation({
-    mutationFn: async () => {
-      if (!z || !semaphoreId) {
-        throw new Error("Missing zupassAPI, or semaphoreId");
-      }
-
-      const publicKey = await z.identity.getPublicKey();
-
-      const myPlayerIDSpec = p.pod({
-        entries: PlayerIDSpec.schema,
-        tuples: [
-          {
-            entries: ["playerPk"],
-            isMemberOf: [
-              [
-                {
-                  type: "eddsa_pubkey",
-                  value: publicKey,
-                },
-              ],
-            ],
-          },
-        ],
-        signerPublicKey: {
-          isMemberOf: [publicKey],
-        },
-      });
-      const pods = await z.pod
-        .collection(FROGCRYPTO_FOLDER_NAME)
-        .query(myPlayerIDSpec);
-
-      const proof = await z.gpc.prove({
-        request: TicketProofRequest.schema,
-      });
-      if (!proof.success) {
-        logger.error("Failed to prove ticket", proof);
-        throw new Error("Failed to prove ticket");
-      }
-
-      const playerIDPOD =
-        pods[0] ??
-        (await z.pod.sign(
-          getPlayerIDEntries({
-            playerPk: publicKey,
-            device: window.navigator.userAgent,
-            location: window.location.href,
-            proof: stringify(proof),
-          })
-        ));
-      if (pods.length === 0) {
-        await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(playerIDPOD);
-      }
-
-      await auth(
-        POD.load(
-          playerIDPOD.entries,
-          playerIDPOD.signature,
-          playerIDPOD.signerPublicKey
-        )
-      );
-
-      setSemaphoreIdBase64(compressBigInt(semaphoreId));
-      await utils.users.me.invalidate();
-
-      return true;
-    },
-    retry: false,
-  });
 
   const { data: isPwtSet = false } = useQuery({
     queryKey: ["refreshToken", Boolean(z), String(semaphoreId)],
@@ -148,21 +79,106 @@ function useInitializeUser() {
     refetchOnWindowFocus: false,
   });
 
-  const { data: hasIdentity, error: meError } = trpc.users.me.useQuery(
+  const { data: devcon7Ticket } = useQuery({
+    queryKey: ["devcon7Ticket", Boolean(z), String(semaphoreId)],
+    enabled: Boolean(z) && Boolean(semaphoreId),
+    queryFn: async () => {
+      if (!z || !semaphoreId) {
+        throw new Error("Missing zupassAPI, or semaphoreId");
+      }
+
+      const [ticket] = await z.pod
+        .collection(DEVCON_7_TICKET_COLLECTION_ID)
+        .query(
+          p.pod({
+            ...TicketSpec.schema,
+            // signerPublicKey: {
+            //   isMemberOf: [DEVCON_7_SIGNER_PUBLIC_KEY],
+            // },
+            // tuples: [
+            //   {
+            //     entries: ["eventId"],
+            //     isMemberOf: [[{ type: "string", value: DEVCON_7_EVENT_ID }]],
+            //   },
+            //   {
+            //     entries: ["attendeeSemaphoreId"],
+            //     isMemberOf: [[{ type: "cryptographic", value: semaphoreId }]],
+            //   },
+            // ],
+          })
+        );
+
+      if (!ticket) {
+        throw new Error("No devcon7 ticket found");
+      }
+
+      return ticket;
+    },
+    retry: false,
+  });
+
+  const utils = trpc.useUtils();
+  const { mutate: initializeUser, error } = useMutation({
+    mutationFn: async (force: boolean) => {
+      if (!z) {
+        throw new Error("Missing zupassAPI");
+      }
+
+      // try {
+      //   const proof = await z.gpc.prove({
+      //     request: TicketProofRequest.schema,
+      //   });
+      //   if (!proof.success) {
+      //     logger.error("Failed to prove ticket", proof);
+      //     throw new Error("Failed to prove ticket");
+      //   }
+
+      //   await auth({ ticket: null, proof: stringify(proof) });
+      // } catch (e) {
+      //   if (force) {
+      //     await auth({ ticket: null, proof: null });
+      //   }
+      // }
+      await auth({ ticket: null, proof: null });
+
+      // await auth({
+      //   ticket: ticket
+      //     ? POD.load(ticket.entries, ticket.signature, ticket.signerPublicKey)
+      //     : null,
+      // });
+
+      if (semaphoreId) {
+        setSemaphoreIdBase64(compressBigInt(semaphoreId));
+      }
+      await utils.users.me.invalidate();
+
+      return true;
+    },
+    retry: false,
+  });
+
+  const { data: userState, error: meError } = trpc.users.me.useQuery(
     {
       feedIds: [],
     },
     {
       enabled: isPwtSet,
       retry: false,
-      select: (data) => Boolean(data),
     }
   );
+  const hasIdentity = Boolean(userState);
   useEffect(() => {
     if (meError) {
-      initializeUser();
+      initializeUser(true);
     }
   }, [meError, initializeUser]);
+  const hasRemoteTicket = Boolean(userState?.myScore.devcon7TicketId);
+  useEffect(() => {
+    if (hasIdentity && !hasRemoteTicket) {
+      initializeUser(false);
+    }
+  }, [hasIdentity, hasRemoteTicket, initializeUser]);
+
   useEffect(() => {
     if (semaphoreId && !semaphoreIdBase64 && hasIdentity) {
       setSemaphoreIdBase64(compressBigInt(semaphoreId));

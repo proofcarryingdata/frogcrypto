@@ -1,8 +1,4 @@
-import {
-  getUsernameFromHash,
-  shortCommitmentHex,
-  type ProfileFrogPOD,
-} from "@frogcrypto/shared";
+import { shortCommitmentHex, type ProfileFrogPOD } from "@frogcrypto/shared";
 import React from "react";
 import { trpc } from "../../trpc";
 import Frog from "../Frog";
