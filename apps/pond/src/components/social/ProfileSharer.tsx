@@ -13,7 +13,7 @@ import { SEARCH_PARAM_NECKLACE_QR } from "./FrogNecklace";
 
 export function ProfileSharer() {
   const [mode, setMode] = useState<"scan" | "frogme">("frogme");
-  const { data: myProfilePOD } = useMyProfilePOD();
+  const myProfilePOD = useMyProfilePOD();
   const { data } = useUserState();
   const socialId = data?.myScore.socialId;
   const profileUrl = socialId

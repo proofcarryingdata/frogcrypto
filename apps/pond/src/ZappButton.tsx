@@ -11,7 +11,7 @@ import {
 } from "./hooks/useParcnetClient";
 import { useUserState } from "./hooks/useUserState";
 import "./index.css";
-import { trpc, trpcClient } from "./trpc";
+import { hasToken, trpc, trpcClient } from "./trpc";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +43,7 @@ function StaticButton() {
 
 function DynamicButton() {
   const { data: userState } = useUserState();
-  if (!userState) return null;
+  if (!userState) return <StaticButton />;
 
   return (
     <FrogButton>
@@ -59,6 +59,10 @@ function App() {
   const isConnected = useParcnetClientConnected();
   const { hasIdentity, error } = useInitializeUser();
   const isReady = isConnected && hasIdentity;
+
+  if (hasToken()) {
+    return <DynamicButton />;
+  }
 
   if (!isReady) {
     return null;

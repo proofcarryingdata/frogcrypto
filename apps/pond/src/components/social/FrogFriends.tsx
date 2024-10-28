@@ -9,7 +9,7 @@ import SocialContainer from "./SocialContainer";
 import FrogProfileBox from "./FrogProfileBox";
 
 function FrogFriends(): React.ReactElement {
-  const { data: frogs } = useProfileFrogs();
+  const frogs = useProfileFrogs();
   const semaphoreId = useSemaphoreIdBase64();
 
   const friends = useMemo(

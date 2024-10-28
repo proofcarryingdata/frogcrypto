@@ -7,7 +7,7 @@ import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
 
 function NewProfile() {
   const [, setLocation] = useLocation();
-  const { data: myProfile, isLoading: isLoadingMyProfile } = useMyProfilePOD();
+  const myProfile = useMyProfilePOD();
   const { mutate: setMyProfile, isPending: isSettingMyProfile } =
     useSetMyProfilePOD();
   const { data: userState } = useUserState();
@@ -38,19 +38,12 @@ function NewProfile() {
   }, [myProfile, setLocation]);
 
   useEffect(() => {
-    if (isLoadingMyProfile) return;
     if (isSettingMyProfile) return;
     if (!templateFrog) return;
     if (!myProfile) {
       setMyProfile(templateFrog);
     }
-  }, [
-    isLoadingMyProfile,
-    isSettingMyProfile,
-    myProfile,
-    setMyProfile,
-    templateFrog,
-  ]);
+  }, [isSettingMyProfile, myProfile, setMyProfile, templateFrog]);
 
   return <Loader />;
 }

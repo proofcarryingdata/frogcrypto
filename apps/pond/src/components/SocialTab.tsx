@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Link, Route, Switch, useLocation } from "wouter";
 import { toast } from "react-hot-toast";
 import { useMyProfilePOD, useOtherProfilePODs } from "../hooks/useProfilePOD";
 import { useSocialTabAvailable } from "../hooks/useUserState";
 import { useAcceptedFrogRequests } from "../hooks/useFrogRequests";
+import useFrogs from "../hooks/useFrogs";
 import Loader from "./shared/Loader";
 import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
@@ -16,8 +17,8 @@ function NavBar() {
 
   const [location] = useLocation();
 
-  const { data: otherProfilePODs } = useOtherProfilePODs();
-  const showFriendsTab = (otherProfilePODs?.length ?? 0) > 0;
+  const otherProfilePODs = useOtherProfilePODs();
+  const showFriendsTab = otherProfilePODs && otherProfilePODs.length > 0;
 
   return (
     <div className="px-2 mb-1 flex justify-between [&>*]:select-none">
@@ -56,19 +57,19 @@ function NavBar() {
 function SocialTab() {
   const [location, setLocation] = useLocation();
   const socialTabAvailable = useSocialTabAvailable();
-  const { data: myProfilePOD, isLoading: isLoadingMyProfilePOD } =
-    useMyProfilePOD();
+  const myProfilePOD = useMyProfilePOD();
+  const frogs = useFrogs();
 
   useEffect(() => {
     if (!socialTabAvailable) {
       toast.error("Ribbit! This pond area is off-limits for now.");
       setLocation("~/", { replace: true });
-    } else if (!isLoadingMyProfilePOD && !myProfilePOD) {
+    } else if (!myProfilePOD) {
       setLocation("/tadpole");
     }
-  }, [socialTabAvailable, isLoadingMyProfilePOD, myProfilePOD, setLocation]);
+  }, [socialTabAvailable, myProfilePOD, setLocation]);
 
-  if (!socialTabAvailable || isLoadingMyProfilePOD || !myProfilePOD) {
+  if (!socialTabAvailable || !myProfilePOD) {
     return <Loader />;
   }
 
@@ -83,14 +84,18 @@ function SocialTab() {
 
       {location === "/share" ? null : <NavBar />}
 
-      <Switch>
-        <Route path="/" component={FrogScore} />
-        <Route path="/profile" component={MyProfile} />
-        <Route path="/friends" component={FrogFriends} />
-        <Route path="/share" component={ProfileSharer} />
+      <div className="flex-1 overflow-auto flex flex-col gap-2">
+        <Suspense fallback={<Loader />}>
+          <Switch>
+            <Route path="/" component={FrogScore} />
+            <Route path="/profile" component={MyProfile} />
+            <Route path="/friends" component={FrogFriends} />
+            <Route path="/share" component={ProfileSharer} />
 
-        <Route component={NotFound} />
-      </Switch>
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </div>
     </div>
   );
 }

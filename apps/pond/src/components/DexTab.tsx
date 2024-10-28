@@ -4,12 +4,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import {
-  type FrogPOD,
-  type DexFrog,
-  type IFrogData,
-  Rarity,
-} from "@frogcrypto/shared";
+import { type FrogPOD, type DexFrog, type IFrogData } from "@frogcrypto/shared";
 import { List, LayoutGrid } from "lucide-react";
 import { usePossibleFrogs } from "../hooks/useUserState";
 import useFrogs from "../hooks/useFrogs";
@@ -23,13 +18,13 @@ import FrogImg from "./shared/FrogImg";
  */
 export function DexTab() {
   const [mode, setMode] = useState<"grid" | "list">("list");
-  const { data: frogs } = useFrogs();
+  const frogs = useFrogs();
   const possibleFrogs = usePossibleFrogs();
   const groupedPODs = useGroupedPODs(frogs ?? []);
 
   const [focusedFrogs, setFocusedFrogs] = useState<FrogPOD[]>([]);
 
-  if (!possibleFrogs) {
+  if (!possibleFrogs || !frogs) {
     return <Loader />;
   }
 

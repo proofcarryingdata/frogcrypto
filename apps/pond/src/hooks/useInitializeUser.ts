@@ -119,13 +119,14 @@ function useInitializeUser() {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
+      const exp = Date.now() + 1000 * 60 * 60 * 24;
       const pwt = await z.pod.sign(
         PwtSpec.parse({
           pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PWT },
           aud: { type: "string", value: "frogcrypto" },
           exp: {
             type: "int",
-            value: BigInt(Date.now() + 1000 * 60 * 60 * 24),
+            value: BigInt(exp),
           },
           iss: {
             type: "cryptographic",
@@ -136,7 +137,8 @@ function useInitializeUser() {
       setToken(
         JSON.stringify(
           POD.load(pwt.entries, pwt.signature, pwt.signerPublicKey).toJSON()
-        )
+        ),
+        exp
       );
 
       return true;

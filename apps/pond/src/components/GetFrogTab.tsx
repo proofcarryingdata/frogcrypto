@@ -16,7 +16,6 @@ import useGetFrog from "../hooks/useGetFrog";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
 import { ActionButton, FrogSearchButton } from "./shared/Button";
-import Divider from "./shared/Divider";
 import FrogCard from "./shared/FrogCard";
 import LoadingMessages from "./shared/LoadingMessages";
 
@@ -27,7 +26,7 @@ function GetFrogTab() {
   const { subscriptions } = useSubscriptions();
   const { data: userState } = useUserState();
   const userStateByFeedId = useUserStateByFeedId();
-  const { data: frogs } = useFrogs();
+  const frogs = useFrogs();
 
   return (
     <>
@@ -50,9 +49,11 @@ function GetFrogTab() {
         })}
       </div>
 
-      {Boolean(frogs?.length) && (
+      {Boolean(frogs.length) && (
         <div className="flex flex-col gap-4 mt-2">
-          {frogs?.map((frog) => <FrogCard key={frog.signature} frog={frog} />)}
+          {frogs.map((frog) => (
+            <FrogCard key={frog.signature} frog={frog} />
+          ))}
         </div>
       )}
     </>

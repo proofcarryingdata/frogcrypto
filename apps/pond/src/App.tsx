@@ -1,5 +1,5 @@
 import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
-import React from "react";
+import React, { Suspense } from "react";
 import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
 import { default as CyberFrog } from "./components/CyberFrog";
@@ -15,7 +15,7 @@ import FrogNecklace from "./components/social/FrogNecklace";
 import NewProfile from "./components/social/NewProfile";
 import PendingRequests from "./components/social/PendingRequests";
 import SocialTab from "./components/SocialTab";
-import useFrogs from "./hooks/useFrogs";
+import { useConnectFrogStore } from "./hooks/useFrogs";
 import useInitializeUser from "./hooks/useInitializeUser";
 import { useParcnetClientConnected } from "./hooks/useParcnetClient";
 import { useSubscriptions } from "./hooks/useSubscriptions";
@@ -23,14 +23,13 @@ import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 
 function FrogCrypto() {
-  const { data: frogs } = useFrogs();
   const { data: userState } = useUserState();
   const myScore = userState?.myScore.score;
   const { subscriptions } = useSubscriptions();
   const socialTabAvailable = useSocialTabAvailable();
   const [location] = useLocation();
 
-  if (!frogs || !userState) {
+  if (!userState) {
     return <Loader />;
   }
 
@@ -90,19 +89,22 @@ function FrogCrypto() {
         </nav>
       )}
 
-      <Switch>
-        <Route path="/" component={GetFrogTab} />
-        <Route path="/dex" component={DexTab} />
-        <Route path="/social/tadpole" component={NewProfile} />
-        <Route path="/social" component={SocialTab} nest />
-        <Route component={NotFound} />
-      </Switch>
+      <Suspense fallback={<Loader />}>
+        <Switch>
+          <Route path="/" component={GetFrogTab} />
+          <Route path="/dex" component={DexTab} />
+          <Route path="/social/tadpole" component={NewProfile} />
+          <Route path="/social" component={SocialTab} nest />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
     </>
   );
 }
 
 function App() {
   useTsParticles();
+  useConnectFrogStore();
 
   const isConnected = useParcnetClientConnected();
   const { hasIdentity, error } = useInitializeUser();
@@ -118,7 +120,15 @@ function App() {
         {error ? (
           <Unauthorized />
         ) : (
-          <ErrorBoundary>{isReady ? <FrogCrypto /> : <Loader />}</ErrorBoundary>
+          <ErrorBoundary>
+            {isReady ? (
+              <Suspense fallback={<Loader />}>
+                <FrogCrypto />
+              </Suspense>
+            ) : (
+              <Loader />
+            )}
+          </ErrorBoundary>
         )}
       </div>
     </main>

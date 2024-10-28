@@ -3,85 +3,53 @@ import {
   type ProfileFrogPOD,
   toProfileFrogPODEntries,
 } from "@frogcrypto/shared";
-import { type PODData } from "@parcnet-js/podspec";
-import {
-  useMutation,
-  type UseMutationOptions,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { useCallback } from "react";
-import { QUERY_KEY_FROGS, useProfileFrogs } from "./useFrogs";
+import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
+import { atom, useAtomValue } from "jotai";
+import { profileFrogsAtom } from "./useFrogs";
 import { useParcnetClient } from "./useParcnetClient";
-import { useSemaphoreIdBase64 } from "./useUserState";
+import { semaphoreIdBase64Atom } from "./useUserState";
 
-function useSelectMyProfilePOD() {
-  const semaphoreIdBase64 = useSemaphoreIdBase64();
-
-  return useCallback(
-    (pods: ProfileFrogPOD[]) => {
-      return pods.find(
-        (pod) =>
-          pod.ownerSemaphoreId === semaphoreIdBase64 &&
-          pod.profileId === semaphoreIdBase64
-      );
-    },
-    [semaphoreIdBase64]
-  );
-}
+const myProfilePODAtom = atom<Promise<ProfileFrogPOD | undefined>>(
+  async (get) => {
+    const semaphoreIdBase64 = get(semaphoreIdBase64Atom);
+    const frogs = await get(profileFrogsAtom);
+    return frogs.find(
+      (pod) =>
+        pod.ownerSemaphoreId === semaphoreIdBase64 &&
+        pod.profileId === semaphoreIdBase64
+    );
+  }
+);
 
 export function useMyProfilePOD() {
-  const select = useSelectMyProfilePOD();
-
-  return useProfileFrogs<ProfileFrogPOD | undefined>({
-    select,
-  });
+  return useAtomValue(myProfilePODAtom);
 }
 
+const otherProfilePODsAtom = atom<Promise<ProfileFrogPOD[]>>(async (get) => {
+  const semaphoreIdBase64 = get(semaphoreIdBase64Atom);
+  const frogs = await get(profileFrogsAtom);
+  return frogs.filter((pod) => pod.profileId !== semaphoreIdBase64);
+});
 export function useOtherProfilePODs() {
-  const semaphoreIdBase64 = useSemaphoreIdBase64();
-  const select = useCallback(
-    (pods: ProfileFrogPOD[]) => {
-      return pods.filter((pod) => pod.profileId !== semaphoreIdBase64);
-    },
-    [semaphoreIdBase64]
-  );
-
-  return useProfileFrogs({
-    select,
-  });
+  return useAtomValue(otherProfilePODsAtom);
 }
 
 export function useSetMyProfilePOD(
   opts?: Omit<UseMutationOptions<void, Error, ProfileFrogPOD>, "mutationFn">
 ) {
   const z = useParcnetClient();
-  const queryClient = useQueryClient();
+  const myProfilePOD = useMyProfilePOD();
 
   return useMutation({
     mutationFn: async (unsignedPOD: ProfileFrogPOD) => {
+      const oldSignature = myProfilePOD?.signature;
+
       const signedPOD = await z.pod.sign(toProfileFrogPODEntries(unsignedPOD));
       await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(signedPOD);
 
-      const frogs = queryClient.getQueryData<PODData[]>([QUERY_KEY_FROGS]);
-      if (!frogs) {
-        return;
+      if (oldSignature) {
+        await z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldSignature);
       }
-
-      const oldPOD = frogs.find(
-        (pod) =>
-          pod.entries.profileId?.value === signedPOD.entries.profileId?.value &&
-          pod.entries.ownerSemaphoreId?.value ===
-            signedPOD.entries.ownerSemaphoreId?.value
-      );
-      if (oldPOD) {
-        await z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldPOD.signature);
-      }
-
-      const newFrogs = [
-        signedPOD,
-        ...frogs.filter((pod) => pod.signature !== oldPOD?.signature),
-      ];
-      queryClient.setQueryData([QUERY_KEY_FROGS], newFrogs);
     },
     ...opts,
   });

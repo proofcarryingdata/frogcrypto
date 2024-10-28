@@ -1,7 +1,7 @@
 import { DEFAULT_ZUPASS_URL, FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
 import { connect, connectToHost } from "@parcnet-js/app-connector";
-import { useAtomValue } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import type { ReactNode } from "react";
 import React, {
@@ -57,6 +57,8 @@ const ZAPP: Zapp = {
   },
 };
 
+export const parcnetAPIAtom = atom<ParcnetAPI | null>(null);
+
 export function ParcnetIframeProvider({
   children,
 }: {
@@ -70,6 +72,7 @@ export function ParcnetIframeProvider({
     state: ClientConnectionState.CONNECTING,
     ref,
   });
+  const [_, setParcnetAPI] = useAtom(parcnetAPIAtom);
 
   useEffect(() => {
     if (!isMounted.current) {
@@ -86,6 +89,7 @@ export function ParcnetIframeProvider({
             z: zupass,
             ref,
           });
+          setParcnetAPI(zupass);
         });
       }
     } else {
@@ -95,13 +99,14 @@ export function ParcnetIframeProvider({
           z: zupass,
           ref,
         });
+        setParcnetAPI(zupass);
       });
     }
 
     return () => {
       isMounted.current = false;
     };
-  }, [url]);
+  }, [setParcnetAPI, url]);
 
   return (
     <ParcnetClientContext.Provider value={value}>

@@ -11,12 +11,10 @@ import { trpc } from "../trpc";
 import { FrogEmoji } from "../components/Frog";
 import { useMyProfilePOD } from "./useProfilePOD";
 import { useParcnetClient } from "./useParcnetClient";
-import { QUERY_KEY_FROGS } from "./useFrogs";
 
 const useAcceptFrogRequest = () => {
-  const { data: profilePOD } = useMyProfilePOD();
+  const profilePOD = useMyProfilePOD();
   const z = useParcnetClient();
-  const queryClient = useQueryClient();
 
   const utils = trpc.useUtils();
   const createSocialRequest = trpc.social.acceptRequest.useMutation();
@@ -76,9 +74,6 @@ const useAcceptFrogRequest = () => {
             POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD)
           )
         );
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEY_FROGS],
-      });
     },
     onError: (error) => {
       toast.error(error.message);

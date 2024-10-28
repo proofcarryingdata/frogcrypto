@@ -7,7 +7,7 @@ import { useParcnetClient } from "./useParcnetClient";
 import { useMyProfilePOD } from "./useProfilePOD";
 
 const useSendFrogRequest = () => {
-  const { data: profilePOD } = useMyProfilePOD();
+  const profilePOD = useMyProfilePOD();
   const z = useParcnetClient();
 
   const { mutateAsync: createSocialRequest } =

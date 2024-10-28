@@ -11,25 +11,23 @@ import { trpc } from "../trpc";
 import { useOtherProfilePODs } from "./useProfilePOD";
 import { useSemaphoreIdBase64 } from "./useUserState";
 import { useParcnetClient } from "./useParcnetClient";
-import { QUERY_KEY_FROGS } from "./useFrogs";
 
 export function useAcceptedFrogRequests() {
   const semaphoreId = useSemaphoreIdBase64();
   const z = useParcnetClient();
   const queryClient = useQueryClient();
 
-  const { data: otherProfilePODs } = useOtherProfilePODs();
+  const otherProfilePODs = useOtherProfilePODs();
 
   const acceptedRequestsQuery = trpc.social.getAcceptedRequests.useQuery();
   const { data: acceptedRequests } = acceptedRequestsQuery;
 
-  const knownProfilePODs = useMemo(() => {
-    return otherProfilePODs
-      ? _.keyBy(otherProfilePODs, "profileId")
-      : undefined;
-  }, [otherProfilePODs]);
+  const knownProfilePODs = useMemo(
+    () => _.keyBy(otherProfilePODs, "profileId"),
+    [otherProfilePODs]
+  );
   useEffect(() => {
-    if (!knownProfilePODs || !acceptedRequests) {
+    if (!acceptedRequests) {
       return;
     }
 
@@ -60,9 +58,7 @@ export function useAcceptedFrogRequests() {
       ...toAdd.map((pod) =>
         z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podToPODData(pod))
       ),
-    ]).then(() =>
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY_FROGS] })
-    );
+    ]);
   }, [acceptedRequests, knownProfilePODs, queryClient, semaphoreId, z]);
 
   return acceptedRequestsQuery;

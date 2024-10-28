@@ -11,8 +11,7 @@ import SocialContainer from "./SocialContainer";
 
 function MyProfile() {
   const [, setLocation] = useLocation();
-  const { data: myProfilePOD, isLoading: isLoadingProfilePOD } =
-    useMyProfilePOD();
+  const myProfilePOD = useMyProfilePOD();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState(
     myProfilePOD?.telegramUsername ?? ""
@@ -44,8 +43,7 @@ function MyProfile() {
     setIsEditModalOpen(false);
   };
 
-  const isLoading = isLoadingProfilePOD || isLoadingUserState;
-  if (isLoading) return <Loader />;
+  if (isLoadingUserState) return <Loader />;
   if (!myProfilePOD || !userState) {
     // FIXME: user needs to create a profile POD
     throw new Error("No profile POD found");
