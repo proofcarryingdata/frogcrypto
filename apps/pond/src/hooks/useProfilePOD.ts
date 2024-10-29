@@ -45,10 +45,11 @@ export function useSetMyProfilePOD(
       const oldSignature = myProfilePOD?.signature;
 
       const signedPOD = await z.pod.sign(toProfileFrogPODEntries(unsignedPOD));
-      await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(signedPOD);
+      // FIXME: upstream bug where insert doesn't resolve
+      void z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(signedPOD);
 
       if (oldSignature) {
-        await z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldSignature);
+        void z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldSignature);
       }
     },
     ...opts,

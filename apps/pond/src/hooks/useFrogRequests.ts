@@ -49,6 +49,7 @@ export function useAcceptedFrogRequests() {
       }
     });
 
+    // FIXME: upstream bug where insert doesn't resolve
     void Promise.all([
       ...toDelete.map((pod) =>
         z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(pod.signature)

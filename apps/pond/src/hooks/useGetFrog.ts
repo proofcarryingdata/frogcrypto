@@ -10,7 +10,8 @@ const useGetFrog = () => {
   return trpc.feeds.search.useMutation({
     onSuccess: async ({ pod }) => {
       const podData = podToPODData(pod);
-      await z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podData);
+      // FIXME: upstream bug where insert doesn't resolve
+      void z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podData);
 
       await utils.users.me.invalidate();
     },

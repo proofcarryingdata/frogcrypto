@@ -29,7 +29,7 @@ function CyberFrog() {
   const z = useParcnetClient();
   const { mutateAsync: getCyberFrog } = trpc.feeds.getCyberFrog.useMutation({
     onSuccess: (data) => {
-      // FIXME: this hangs right now
+      // FIXME: upstream bug where insert doesn't resolve
       void z.pod
         .collection(FROGCRYPTO_FOLDER_NAME)
         .insert(podToPODData(data.pod));

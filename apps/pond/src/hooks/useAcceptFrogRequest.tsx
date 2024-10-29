@@ -67,7 +67,8 @@ const useAcceptFrogRequest = () => {
         throw new Error("Request POD not found");
       }
 
-      await z.pod
+      // FIXME: upstream bug where insert doesn't resolve
+      void z.pod
         .collection(FROGCRYPTO_FOLDER_NAME)
         .insert(
           podToPODData(

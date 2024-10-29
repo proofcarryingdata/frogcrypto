@@ -139,11 +139,14 @@ export const socialRouter = router({
         })
         .onConflictDoUpdate({
           target: [socialRequestsTable.party1, socialRequestsTable.party2],
-          setWhere: and(
-            eq(socialRequestsTable.status, "pending"),
-            myId === party1
-              ? isNull(socialRequestsTable.party2POD)
-              : isNull(socialRequestsTable.party1POD)
+          setWhere: or(
+            eq(socialRequestsTable.status, "connected"),
+            and(
+              eq(socialRequestsTable.status, "pending"),
+              myId === party1
+                ? isNull(socialRequestsTable.party2POD)
+                : isNull(socialRequestsTable.party1POD)
+            )
           ),
           set: {
             [myId === party1 ? "party1POD" : "party2POD"]: serializedRequestPOD,
@@ -159,7 +162,7 @@ export const socialRouter = router({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
-            "Unable to create new Frog Request. There might already be a pending Frog Request between you and this user.",
+            "Unable to create new Frog Request. There might already be a pending Frog Request between you and this user. If your request was declined, please ask your friend to send you a new request.",
         });
       }
 
@@ -338,6 +341,27 @@ export const socialRouter = router({
             eq(socialRequestsTable.id, requestId)
           )
         );
+    }),
+
+  getFrogRequest: authedProcedure
+    .input(z.object({ otherPartyId: z.string() }))
+    .query(async ({ ctx, input: { otherPartyId } }) => {
+      const myId = ctx.user.semaphoreIdBase64;
+      const [party1, party2] =
+        compareIds(myId, otherPartyId) < 0
+          ? [myId, otherPartyId]
+          : [otherPartyId, myId];
+
+      return db
+        .select()
+        .from(socialRequestsTable)
+        .where(
+          and(
+            eq(socialRequestsTable.party1, party1),
+            eq(socialRequestsTable.party2, party2)
+          )
+        )
+        .then((result) => result[0]);
     }),
 
   scoreboard: publicProcedure

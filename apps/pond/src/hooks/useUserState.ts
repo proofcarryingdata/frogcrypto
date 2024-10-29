@@ -50,6 +50,7 @@ export function useSocialTabAvailable() {
 
   return (
     (userState?.myScore.score ?? 0) >= 10 ||
-    (userState?.myScore.friendCount ?? 0) > 0
+    (userState?.myScore.friendCount ?? 0) > 0 ||
+    userState?.myScore.socialId
   );
 }

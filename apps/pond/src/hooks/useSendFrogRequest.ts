@@ -12,8 +12,16 @@ const useSendFrogRequest = () => {
 
   const { mutateAsync: createSocialRequest } =
     trpc.social.createOrUpdateSocialRequest.useMutation({
-      onSuccess: () => {
-        toast.success("Frog Request sent successfully!");
+      onSuccess: (data) => {
+        if (data.status === "pending") {
+          toast.success("Frog Request sent successfully!");
+        }
+        if (data.status === "connected") {
+          toast.success(
+            "You are already froggy friends! Your updated Froggy Profile has been sent to your friend.",
+            { duration: 5000 }
+          );
+        }
       },
       onError: (error) => {
         toast.error(error.message);

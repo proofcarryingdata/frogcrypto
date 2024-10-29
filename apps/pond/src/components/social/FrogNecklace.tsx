@@ -17,6 +17,8 @@ import { FrogEmoji } from "../Frog";
 import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
 import FrogImg from "../shared/FrogImg";
 import Modal from "../shared/Modal";
+import { useOtherProfilePODs } from "../../hooks/useProfilePOD";
+import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
 import EnsureProfilePOD from "./EnsureProfilePOD";
 
 export const SEARCH_PARAM_NECKLACE_QR = "necklace_qr";
@@ -238,6 +240,40 @@ function FrogRequestModal({
 }) {
   const { mutateAsync: onSendFrogRequest, isPending: isSendingFrogRequest } =
     useSendFrogRequest();
+  const {
+    mutateAsync: onAcceptFrogRequest,
+    isPending: isAcceptingFrogRequest,
+  } = useAcceptFrogRequest();
+  const otherProfilePODs = useOtherProfilePODs();
+  const isFriend = otherProfilePODs.some(
+    (otherProfilePOD) => otherProfilePOD.profileId === semaphoreIdBase64
+  );
+
+  const { data: frogRequest, isPending: isLoadingFrogRequest } =
+    trpc.social.getFrogRequest.useQuery({
+      otherPartyId: semaphoreIdBase64,
+    });
+  const hasPendingRequest =
+    frogRequest &&
+    frogRequest.status !== "connected" &&
+    (Boolean(
+      frogRequest.party1POD && frogRequest.party1 === semaphoreIdBase64
+    ) ||
+      Boolean(
+        frogRequest.party2POD && frogRequest.party2 === semaphoreIdBase64
+      ));
+  const hasDeclinedRequest =
+    frogRequest?.status === "declined" &&
+    (Boolean(
+      frogRequest.party1POD && frogRequest.party2 === semaphoreIdBase64
+    ) ||
+      Boolean(
+        frogRequest.party2POD && frogRequest.party1 === semaphoreIdBase64
+      ));
+
+  if (isLoadingFrogRequest) {
+    return null;
+  }
 
   return (
     <>
@@ -257,10 +293,14 @@ function FrogRequestModal({
             <FrogCardHeader
               rarity={frog.rarity}
               title={
-                <span>
-                  {profileName} (+1{" "}
-                  <FrogEmoji className="w-5 h-5 inline pb-1" />)
-                </span>
+                isFriend ? (
+                  profileName
+                ) : (
+                  <span>
+                    {profileName} (+1{" "}
+                    <FrogEmoji className="w-5 h-5 inline pb-1" />)
+                  </span>
+                )
               }
               subtitle={`0x${shortCommitment(semaphoreIdBase64)}'s ${frog.name}`}
             />
@@ -269,16 +309,35 @@ function FrogRequestModal({
               type="button"
               className="w-48 text-sm bg-green-500 text-white px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
               onClick={() => {
-                void onSendFrogRequest(semaphoreIdBase64).then(onClose);
+                if (hasPendingRequest) {
+                  void onAcceptFrogRequest({
+                    id: frogRequest.id,
+                    requestedBy: semaphoreIdBase64,
+                    requestPOD: frogRequest.party1POD ?? frogRequest.party2POD,
+                  }).then(onClose);
+                } else {
+                  void onSendFrogRequest(semaphoreIdBase64).then(onClose);
+                }
               }}
-              disabled={isSendingFrogRequest}
+              disabled={
+                isSendingFrogRequest ||
+                isAcceptingFrogRequest ||
+                hasDeclinedRequest
+              }
             >
-              send frog request
+              {hasPendingRequest ? "accept" : "send"} frog request
             </button>
 
             <span className="text-xs text-center px-8 text-gray-500">
-              For your safety, only send frog requests to verified and reputable
-              sources.
+              {isFriend
+                ? "You are already froggy friends! Your updated Froggy Profile will be shared with your friend."
+                : null}
+              {!isFriend && hasDeclinedRequest
+                ? "Your Frog Request was declined. Please ask your friend to send you a Frog Request instead."
+                : null}
+              {!isFriend &&
+                !hasDeclinedRequest &&
+                "For your safety, only send frog requests to verified and reputable sources."}
             </span>
 
             <button
