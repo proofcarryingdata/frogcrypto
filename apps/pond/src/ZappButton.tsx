@@ -60,6 +60,11 @@ function App() {
   const { hasIdentity, error } = useInitializeUser();
   const isReady = isConnected && hasIdentity;
 
+  console.log("isConnected", isConnected);
+  console.log("hasIdentity", hasIdentity);
+  console.log("isReady", isReady);
+  console.log("error", error);
+
   if (hasToken()) {
     return <DynamicButton />;
   }

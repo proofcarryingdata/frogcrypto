@@ -141,11 +141,19 @@ export const socialRouter = router({
           target: [socialRequestsTable.party1, socialRequestsTable.party2],
           setWhere: or(
             eq(socialRequestsTable.status, "connected"),
+            // If the request is still pending, we need to check that we were the ones who sent the request (i.e. we have not received any POD)
             and(
               eq(socialRequestsTable.status, "pending"),
               myId === party1
                 ? isNull(socialRequestsTable.party2POD)
                 : isNull(socialRequestsTable.party1POD)
+            ),
+            // If the request was declined, we need to check that we were the ones who declined it (i.e. we received the request and have not sent any POD)
+            and(
+              eq(socialRequestsTable.status, "declined"),
+              myId === party1
+                ? isNull(socialRequestsTable.party1POD)
+                : isNull(socialRequestsTable.party2POD)
             )
           ),
           set: {
@@ -181,11 +189,11 @@ export const socialRouter = router({
           or(
             and(
               eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
-              isNull(socialRequestsTable.party1POD)
+              isNotNull(socialRequestsTable.party2POD)
             ),
             and(
               eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
-              isNull(socialRequestsTable.party2POD)
+              isNotNull(socialRequestsTable.party1POD)
             )
           ),
           sql`${socialRequestsTable.updatedAt} > ${new Date(Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000)}`,
@@ -195,8 +203,14 @@ export const socialRouter = router({
 
     return requests.map((request) => ({
       id: request.id,
-      requestedBy: request.party1POD ? request.party1 : request.party2,
-      requestPOD: request.party1POD ?? request.party2POD,
+      requestedBy:
+        request.party1 === ctx.user.semaphoreIdBase64
+          ? request.party2
+          : request.party1,
+      requestPOD:
+        request.party1 === ctx.user.semaphoreIdBase64
+          ? request.party2POD
+          : request.party1POD,
     }));
   }),
 
@@ -287,7 +301,7 @@ export const socialRouter = router({
         }
 
         const now = new Date();
-        await db
+        return db
           .update(socialRequestsTable)
           .set({
             [request.party1 === ctx.user.semaphoreIdBase64
@@ -305,9 +319,8 @@ export const socialRouter = router({
               eq(socialRequestsTable.id, requestId),
               eq(socialRequestsTable.version, request.version)
             )
-          );
-
-        return { success: true };
+          )
+          .returning();
       });
     }),
 
@@ -338,7 +351,8 @@ export const socialRouter = router({
                 isNull(socialRequestsTable.party2POD)
               )
             ),
-            eq(socialRequestsTable.id, requestId)
+            eq(socialRequestsTable.id, requestId),
+            eq(socialRequestsTable.status, "pending")
           )
         );
     }),
