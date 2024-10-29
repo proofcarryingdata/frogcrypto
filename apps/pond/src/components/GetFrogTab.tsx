@@ -1,14 +1,15 @@
 import {
-  type Feed,
-  parseFrogPOD,
-  FROG_FREEROLLS,
   Biome,
+  type Feed,
+  FROG_FREEROLLS,
+  parseFrogPOD,
 } from "@frogcrypto/shared";
-import _ from "lodash";
-import React, { useCallback, useMemo } from "react";
-import toast from "react-hot-toast";
 import { podToPODData } from "@parcnet-js/podspec";
 import { TRPCClientError } from "@trpc/client";
+import _ from "lodash";
+import React, { useCallback, useMemo, useRef } from "react";
+import toast from "react-hot-toast";
+import { ViewportList } from "react-viewport-list";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
 import useFrogs from "../hooks/useFrogs";
@@ -27,6 +28,8 @@ function GetFrogTab() {
   const { data: userState } = useUserState();
   const userStateByFeedId = useUserStateByFeedId();
   const frogs = useFrogs();
+
+  const ref = useRef<HTMLDivElement | null>(null);
 
   return (
     <>
@@ -50,10 +53,10 @@ function GetFrogTab() {
       </div>
 
       {Boolean(frogs.length) && (
-        <div className="flex flex-col gap-4 mt-2">
-          {frogs.map((frog) => (
-            <FrogCard key={frog.signature} frog={frog} />
-          ))}
+        <div className="flex flex-col gap-4" ref={ref}>
+          <ViewportList viewportRef={ref} items={frogs}>
+            {(frog) => <FrogCard key={frog.signature} frog={frog} />}
+          </ViewportList>
         </div>
       )}
     </>

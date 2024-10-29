@@ -110,18 +110,25 @@ export function FrogCardHeader({
   );
 }
 
-function FrogCard({ frog, expanded }: { frog: FrogPOD; expanded?: boolean }) {
+function FrogCard({
+  frog,
+  expanded,
+  style,
+}: {
+  frog: FrogPOD;
+  expanded?: boolean;
+  style?: React.CSSProperties;
+}) {
   const profileFrog = isProfileFrogPOD(frog) ? frog : undefined;
   const [showMore, setShowMore] = useState(expanded);
   const textColor = RARITY_COLORS[frog.rarity].text || "";
 
   return (
-    <div className="w-full flex flex-col bg-white rounded-lg">
+    <div className="w-full flex flex-col bg-white rounded-lg" style={style}>
       <div className="w-full flex flex-col gap-4 items-center p-4">
         <FrogImg
           frog={frog}
           className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}
-          loading="lazy"
         />
 
         <FrogCardHeader
