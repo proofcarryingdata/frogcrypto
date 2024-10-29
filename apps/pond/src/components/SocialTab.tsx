@@ -1,15 +1,15 @@
-import React, { Suspense, useEffect } from "react";
-import { Link, Route, Switch, useLocation } from "wouter";
-import { toast } from "react-hot-toast";
+import React, { Suspense } from "react";
+import { Link, Redirect, Route, Switch, useLocation } from "wouter";
+import { useAcceptedFrogRequests } from "../hooks/useFrogRequests";
 import { useMyProfilePOD, useOtherProfilePODs } from "../hooks/useProfilePOD";
 import { useSocialTabAvailable } from "../hooks/useUserState";
-import { useAcceptedFrogRequests } from "../hooks/useFrogRequests";
-import Loader from "./shared/Loader";
-import MyProfile from "./social/MyProfile";
 import NotFound from "./NotFound";
-import ProfileSharer from "./social/ProfileSharer";
+import Loader from "./shared/Loader";
+import EnsureProfilePOD from "./social/EnsureProfilePOD";
 import FrogFriends from "./social/FrogFriends";
 import FrogScore from "./social/FrogScore";
+import MyProfile from "./social/MyProfile";
+import ProfileSharer from "./social/ProfileSharer";
 
 function NavBar() {
   useAcceptedFrogRequests();
@@ -54,21 +54,20 @@ function NavBar() {
 }
 
 function SocialTab() {
-  const [location, setLocation] = useLocation();
   const socialTabAvailable = useSocialTabAvailable();
   const myProfilePOD = useMyProfilePOD();
 
-  useEffect(() => {
-    if (!socialTabAvailable) {
-      toast.error("Ribbit! This pond area is off-limits for now.");
-      setLocation("~/", { replace: true });
-    } else if (!myProfilePOD) {
-      setLocation("/tadpole");
-    }
-  }, [socialTabAvailable, myProfilePOD, setLocation]);
+  if (!socialTabAvailable) {
+    return <Redirect to="~/" replace />;
+  }
 
-  if (!socialTabAvailable || !myProfilePOD) {
-    return <Loader />;
+  if (!myProfilePOD) {
+    return (
+      <>
+        <EnsureProfilePOD />
+        <Loader />
+      </>
+    );
   }
 
   return (
@@ -80,7 +79,7 @@ function SocialTab() {
         className="select-none w-screen"
       />
 
-      {location === "/share" ? null : <NavBar />}
+      <NavBar />
 
       <div className="flex-1 overflow-auto flex flex-col gap-2">
         <Suspense fallback={<Loader />}>

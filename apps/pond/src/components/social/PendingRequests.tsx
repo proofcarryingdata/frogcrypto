@@ -10,6 +10,7 @@ import { FrogEmoji } from "../Frog";
 import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
 import FrogImg from "../shared/FrogImg";
 import Modal from "../shared/Modal";
+import EnsureProfilePOD from "./EnsureProfilePOD";
 
 function PendingRequest({
   request,
@@ -106,6 +107,7 @@ export function PendingRequests() {
 
   return (
     <>
+      {Boolean(requests?.length) && <EnsureProfilePOD />}
       {requests?.map((request) => (
         <PendingRequest key={request.id} request={request} />
       ))}

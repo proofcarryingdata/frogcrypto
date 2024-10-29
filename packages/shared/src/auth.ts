@@ -1,9 +1,9 @@
-import * as p from '@parcnet-js/podspec';
-import { ticketProofRequest } from '@parcnet-js/ticket-spec';
+import * as p from "@parcnet-js/podspec";
+import { ticketProofRequest } from "@parcnet-js/ticket-spec";
 
-import { shortCommitment, userPublicKeyToUserId } from './semaphore';
+import { shortCommitment, userPublicKeyToUserId } from "./semaphore";
 
-export { TicketSpec } from '@parcnet-js/ticket-spec';
+export { TicketSpec } from "@parcnet-js/ticket-spec";
 
 export const POD_TYPE_FROGCRYPTO_PLAYER_ID = "frogcrypto.playerId";
 
@@ -62,7 +62,7 @@ export const getPlayerIDEntries = ({
   });
 };
 
-export const DEVCON_7_TICKET_COLLECTION_ID = "Devcon 7";
+export const DEVCON_7_TICKET_COLLECTION_ID = "Devcon SEA";
 export const DEVCON_7_SIGNER_PUBLIC_KEY =
   "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs";
 export const DEVCON_7_EVENT_ID = "5074edf5-f079-4099-b036-22223c0c6995";

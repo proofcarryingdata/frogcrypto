@@ -112,9 +112,7 @@ export const usersRouter = router({
   auth: protectedProcedure
     .input(
       z.object({
-        ticket: z
-          .custom<POD>((x) => x instanceof POD && x.verifySignature())
-          .nullable(),
+        ticket: z.custom<POD>((x) => x instanceof POD).nullable(),
         proof: z.string().nullable(),
       })
     )
@@ -187,7 +185,7 @@ export const usersRouter = router({
       }
 
       const allFeeds = getFeeds().filter((feed) => feedIds.includes(feed.id));
-      const spiritFrog = await getSpiritFrog(myScore.semaphoreIdHash);
+      const spiritFrog = await getSpiritFrog(ctx.user.semaphoreId);
 
       return {
         feeds: allFeeds.map((feed) =>
@@ -247,7 +245,7 @@ export const usersRouter = router({
         });
       }
 
-      const spiritFrog = await getSpiritFrog(user.semaphoreIdHash);
+      const spiritFrog = await getSpiritFrog(BigInt(user.semaphoreId));
       if (!spiritFrog) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

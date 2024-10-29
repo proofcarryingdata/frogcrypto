@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo } from "react";
-import { useLocation } from "wouter";
-import { getUsernameFromHash, type ProfileFrogPOD } from "@frogcrypto/shared";
-import Loader from "../shared/Loader";
+import {
+  getUsernameFromHash,
+  isSpiritFrogDataEqualish,
+  type ProfileFrogPOD,
+} from "@frogcrypto/shared";
+import { useEffect, useMemo } from "react";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
 
-function NewProfile() {
-  const [, setLocation] = useLocation();
+function EnsureProfilePOD() {
   const myProfile = useMyProfilePOD();
   const { mutate: setMyProfile, isPending: isSettingMyProfile } =
     useSetMyProfilePOD();
@@ -17,35 +18,31 @@ function NewProfile() {
 
     if (!semaphoreIdBase64 || !spiritFrog) return;
     return {
+      telegramUsername: "",
+      farcasterUsername: "",
+      ...(myProfile ?? {}),
+
       ...spiritFrog,
       timestampSigned: Date.now(),
       ownerSemaphoreId: semaphoreIdBase64,
 
       profileId: semaphoreIdBase64,
       profileName: getUsernameFromHash(userState.myScore.semaphoreIdHash),
-      telegramUsername: "",
-      farcasterUsername: "",
 
       signature: "",
       signerPublicKey: "",
     } satisfies ProfileFrogPOD;
-  }, [semaphoreIdBase64, userState]);
-
-  useEffect(() => {
-    if (myProfile) {
-      setLocation("/social");
-    }
-  }, [myProfile, setLocation]);
+  }, [myProfile, semaphoreIdBase64, userState]);
 
   useEffect(() => {
     if (isSettingMyProfile) return;
     if (!templateFrog) return;
-    if (!myProfile) {
+    if (!myProfile || !isSpiritFrogDataEqualish(myProfile, templateFrog)) {
       setMyProfile(templateFrog);
     }
   }, [isSettingMyProfile, myProfile, setMyProfile, templateFrog]);
 
-  return <Loader />;
+  return null;
 }
 
-export default NewProfile;
+export default EnsureProfilePOD;

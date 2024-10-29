@@ -1,5 +1,7 @@
 import {
+  compressBigInt,
   decompressBigInt,
+  isSpiritFrogDataEqualish,
   parseProfileFrogPOD,
   userPublicKeyToUserId,
 } from "@frogcrypto/shared";
@@ -19,16 +21,58 @@ import { getSpiritFrog } from "../db/frogs";
 const MAX_REQUESTS_PER_DAY = 100;
 const REQUEST_VISIBILITY_DAYS = 7; // Requests older than this will not be returned in queries
 
+async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
+  const profilePOD = parseProfileFrogPOD(podToPODData(pod));
+  if (!profilePOD) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid Frog Request POD: could not parse profile POD",
+    });
+  }
+
+  if (profilePOD.profileId !== semaphoreIdBase64) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Invalid Frog Request POD: profile ID does not match semaphore ID",
+    });
+  }
+  const signerPk = profilePOD.signerPublicKey;
+  if (userPublicKeyToUserId(signerPk) !== profilePOD.profileId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Invalid Frog Request POD: signer public key does not match profile ID",
+    });
+  }
+
+  const spiritFrog = await getSpiritFrog(decompressBigInt(semaphoreIdBase64));
+  if (!spiritFrog) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid Frog Request POD: signer does not have a spirit frog",
+    });
+  }
+
+  if (!isSpiritFrogDataEqualish(spiritFrog, profilePOD)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Invalid Frog Request POD: signer does not have the correct spirit frog",
+    });
+  }
+
+  return profilePOD;
+}
+
 export const socialRouter = router({
   createOrUpdateSocialRequest: authedProcedure
     .input(
       z.object({
-        requestPOD: z.custom<POD>(
-          (x) => x instanceof POD && x.verifySignature()
-        ),
+        requestPOD: z.custom<POD>((x) => x instanceof POD),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: { requestPOD } }) => {
       // if (!ctx.user.devcon7TicketId) {
       //   throw new TRPCError({
       //     code: "BAD_REQUEST",
@@ -36,32 +80,15 @@ export const socialRouter = router({
       //   });
       // }
 
-      const { requestPOD } = input;
       const myId = ctx.user.semaphoreIdBase64;
 
-      const profilePOD = parseProfileFrogPOD(podToPODData(requestPOD));
-      if (!profilePOD) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid Frog Request POD",
-        });
-      }
-      // FIXME: validate this contains a valid spirit frog for the signer
-      const otherPartyId = profilePOD.ownerSemaphoreId;
+      const profilePOD = await validateFrogRequestPOD(requestPOD, myId);
 
+      const otherPartyId = profilePOD.ownerSemaphoreId;
       if (myId === otherPartyId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You cannot send a request to yourself",
-        });
-      }
-      if (
-        userPublicKeyToUserId(requestPOD.signerPublicKey) !==
-        ctx.user.semaphoreIdBase64
-      ) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You cannot send a request on behalf of another user",
         });
       }
 
@@ -206,12 +233,10 @@ export const socialRouter = router({
     .input(
       z.object({
         requestId: z.number(),
-        responsePOD: z.custom<POD>(
-          (x) => x instanceof POD && x.verifySignature()
-        ),
+        responsePOD: z.custom<POD>((x) => x instanceof POD),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: { requestId, responsePOD } }) => {
       // if (!ctx.user.devcon7TicketId) {
       //   throw new TRPCError({
       //     code: "BAD_REQUEST",
@@ -219,7 +244,7 @@ export const socialRouter = router({
       //   });
       // }
 
-      const { requestId, responsePOD } = input;
+      await validateFrogRequestPOD(responsePOD, ctx.user.semaphoreIdBase64);
 
       return db.transaction(async (tx) => {
         const request = await tx
@@ -339,7 +364,7 @@ export const socialRouter = router({
           return Promise.all(
             scores.map(async (score) => ({
               ...score,
-              imgUrl: await getSpiritFrog(score.semaphoreIdHash).then(
+              imgUrl: await getSpiritFrog(BigInt(score.semaphoreId)).then(
                 (frog) => frog?.imageUrl ?? ""
               ),
             }))

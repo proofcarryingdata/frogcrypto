@@ -68,11 +68,9 @@ export const COMMON_TEMPERAMENT_SET = [
  * FROGCRYPTO Data Model
  */
 export interface IFrogData {
-  // The fields below are not signed and are used for display purposes.
   name: string;
   description: string;
   imageUrl: string;
-  // The fields below are signed using the passport-server's private EdDSA key.
   frogId: number;
   biome: Biome;
   rarity: Rarity;
@@ -83,4 +81,18 @@ export interface IFrogData {
   beauty: number;
   timestampSigned: number;
   ownerSemaphoreId: string;
+}
+
+/**
+ * Check if two spirit frogs are the same by comparing some set of fields
+ */
+export function isSpiritFrogDataEqualish(a: IFrogData, b: IFrogData) {
+  return (
+    a.name === b.name &&
+    a.description === b.description &&
+    a.imageUrl === b.imageUrl &&
+    a.frogId === b.frogId &&
+    a.biome === b.biome &&
+    a.rarity === b.rarity
+  );
 }

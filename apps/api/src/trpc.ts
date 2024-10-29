@@ -7,9 +7,15 @@ import type { Context } from "./context";
 
 registerCustom<POD, string>(
   {
-    isApplicable: (v): v is POD => v instanceof POD && v.verifySignature(),
+    isApplicable: (v): v is POD => v instanceof POD,
     serialize: (v) => JSON.stringify(v.toJSON()),
-    deserialize: (v) => POD.fromJSON(JSON.parse(v) as JSONPOD),
+    deserialize: (v) => {
+      const pod = POD.fromJSON(JSON.parse(v) as JSONPOD);
+      if (!pod.verifySignature()) {
+        throw new Error("Invalid POD");
+      }
+      return pod;
+    },
   },
   "pcd-pod"
 );

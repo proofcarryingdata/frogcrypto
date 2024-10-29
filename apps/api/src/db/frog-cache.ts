@@ -5,13 +5,14 @@ import {
   type FrogCryptoFrogData,
   Rarity,
   toFrogData,
+  type Biome,
 } from "@frogcrypto/shared";
 import { max } from "drizzle-orm";
 import { frogsTable } from "./schema";
 import { db } from ".";
 
 // Hard-coded list of spirit frog IDs
-const SPIRIT_FROG_IDS = [6, 16, 24]; // Replace with actual spirit frog IDs
+const SPIRIT_FROG_BIOMS: (keyof typeof Biome)[] = ["Swamp"];
 const CACHE_DURATION = 1000 * 60; // 1 minute
 
 let cachedSpiritFrogs: FrogCryptoFrogData[] = [];
@@ -62,14 +63,16 @@ export async function refreshFrogCache() {
 
     cachedDexFrogs = allFrogs
       .map((frog) => ({
-        ...frog,
+        id: frog.id,
         rarity: parseFrogEnum(Rarity, frog.rarity),
       }))
       .filter((frog) => frog.rarity !== Number(Rarity.Object));
 
-    cachedSpiritFrogs = allFrogs.filter((frog) =>
-      SPIRIT_FROG_IDS.includes(frog.id)
-    );
+    cachedSpiritFrogs = allFrogs
+      .filter((frog) =>
+        SPIRIT_FROG_BIOMS.includes(frog.biome as keyof typeof Biome)
+      )
+      .sort((a, b) => a.id - b.id);
 
     lastUpdateTimestamp = new Date();
   } catch (e) {

@@ -12,7 +12,7 @@ import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
 import Frog from "./components/shared/Frog";
 import Loader from "./components/shared/Loader";
 import FrogNecklace from "./components/social/FrogNecklace";
-import NewProfile from "./components/social/NewProfile";
+import NewProfile from "./components/social/EnsureProfilePOD";
 import PendingRequests from "./components/social/PendingRequests";
 import SocialTab from "./components/SocialTab";
 import { useConnectFrogStore } from "./hooks/useFrogs";
@@ -101,10 +101,7 @@ function FrogCrypto() {
           <Route path="/" component={GetFrogTab} />
           <Route path="/dex" component={DexTab} />
           {/* {userState.myScore.devcon7TicketId ? ( */}
-          <>
-            <Route path="/social/tadpole" component={NewProfile} />
-            <Route path="/social" component={SocialTab} nest />
-          </>
+          <Route path="/social" component={SocialTab} nest />
           {/* ) : null} */}
           <Route component={NotFound} />
         </Switch>

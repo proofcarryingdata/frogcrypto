@@ -17,6 +17,7 @@ import { FrogEmoji } from "../Frog";
 import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
 import FrogImg from "../shared/FrogImg";
 import Modal from "../shared/Modal";
+import EnsureProfilePOD from "./EnsureProfilePOD";
 
 export const SEARCH_PARAM_NECKLACE_QR = "necklace_qr";
 
@@ -239,53 +240,59 @@ function FrogRequestModal({
     useSendFrogRequest();
 
   return (
-    <Modal isOpen onClose={onClose} shouldCloseOnOverlayClick={false}>
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
-        <h2 className="text-md font-bold text-center">FROG NECKLACE SCANNED</h2>
+    <>
+      <EnsureProfilePOD />
+      <Modal isOpen onClose={onClose} shouldCloseOnOverlayClick={false}>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
+          <h2 className="text-md font-bold text-center">
+            FROG NECKLACE SCANNED
+          </h2>
 
-        <div className="flex flex-col gap-4 items-center bg-white bg-opacity-80">
-          <FrogImg
-            frog={frog}
-            className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}
-          />
+          <div className="flex flex-col gap-4 items-center bg-white bg-opacity-80">
+            <FrogImg
+              frog={frog}
+              className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}
+            />
 
-          <FrogCardHeader
-            rarity={frog.rarity}
-            title={
-              <span>
-                {profileName} (+1 <FrogEmoji className="w-5 h-5 inline pb-1" />)
-              </span>
-            }
-            subtitle={`0x${shortCommitment(semaphoreIdBase64)}'s ${frog.name}`}
-          />
+            <FrogCardHeader
+              rarity={frog.rarity}
+              title={
+                <span>
+                  {profileName} (+1{" "}
+                  <FrogEmoji className="w-5 h-5 inline pb-1" />)
+                </span>
+              }
+              subtitle={`0x${shortCommitment(semaphoreIdBase64)}'s ${frog.name}`}
+            />
 
-          <button
-            type="button"
-            className="w-48 text-sm bg-green-500 text-white px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
-            onClick={() => {
-              void onSendFrogRequest(semaphoreIdBase64).then(onClose);
-            }}
-            disabled={isSendingFrogRequest}
-          >
-            send frog request
-          </button>
+            <button
+              type="button"
+              className="w-48 text-sm bg-green-500 text-white px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
+              onClick={() => {
+                void onSendFrogRequest(semaphoreIdBase64).then(onClose);
+              }}
+              disabled={isSendingFrogRequest}
+            >
+              send frog request
+            </button>
 
-          <span className="text-xs text-center px-8 text-gray-500">
-            For your safety, only send frog requests to verified and reputable
-            sources.
-          </span>
+            <span className="text-xs text-center px-8 text-gray-500">
+              For your safety, only send frog requests to verified and reputable
+              sources.
+            </span>
 
-          <button
-            type="button"
-            className="w-48 text-sm bg-gray-200 text-gray-500 px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
-            onClick={onClose}
-            disabled={isSendingFrogRequest}
-          >
-            hop away
-          </button>
+            <button
+              type="button"
+              className="w-48 text-sm bg-gray-200 text-gray-500 px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
+              onClick={onClose}
+              disabled={isSendingFrogRequest}
+            >
+              hop away
+            </button>
+          </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+    </>
   );
 }
 

@@ -59,22 +59,18 @@ export async function sampleFrogData(
 }
 
 export async function getSpiritFrog(
-  semaphoreIdHash: string | undefined
+  semaphoreId: bigint
 ): Promise<IFrogData | undefined> {
-  if (!semaphoreIdHash) {
-    return undefined;
-  }
-
   const spiritFrogs = await getSpiritFrogs();
   const spiritFrogIndex = Math.abs(
-    Number(BigInt(semaphoreIdHash) % BigInt(spiritFrogs.length))
+    Number(semaphoreId % BigInt(spiritFrogs.length))
   );
   const spiritFrog = spiritFrogs[spiritFrogIndex];
   if (!spiritFrog) {
     return undefined;
   }
 
-  return generateFrogData(spiritFrog, BigInt(0));
+  return generateFrogData(spiritFrog, semaphoreId);
 }
 
 export function generateFrogData(
@@ -107,7 +103,9 @@ export function generateFrogData(
   };
 }
 
-export async function tryConsumeCyberfrogNullifier(nullifier: string): Promise<boolean> {
+export async function tryConsumeCyberfrogNullifier(
+  nullifier: string
+): Promise<boolean> {
   const result = await db
     .insert(cyberfrogNullifiersTable)
     .values({ nullifier })

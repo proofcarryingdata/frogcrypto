@@ -15,12 +15,10 @@ import { useParcnetClient } from "./useParcnetClient";
 export function useAcceptedFrogRequests() {
   const semaphoreId = useSemaphoreIdBase64();
   const z = useParcnetClient();
-  const queryClient = useQueryClient();
 
   const otherProfilePODs = useOtherProfilePODs();
 
-  const acceptedRequestsQuery = trpc.social.getAcceptedRequests.useQuery();
-  const { data: acceptedRequests } = acceptedRequestsQuery;
+  const { data: acceptedRequests } = trpc.social.getAcceptedRequests.useQuery();
 
   const knownProfilePODs = useMemo(
     () => _.keyBy(otherProfilePODs, "profileId"),
@@ -59,7 +57,5 @@ export function useAcceptedFrogRequests() {
         z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podToPODData(pod))
       ),
     ]);
-  }, [acceptedRequests, knownProfilePODs, queryClient, semaphoreId, z]);
-
-  return acceptedRequestsQuery;
+  }, [acceptedRequests, knownProfilePODs, semaphoreId, z]);
 }

@@ -87,6 +87,16 @@ function useInitializeUser() {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
+      console.log("fetching tickets");
+      console.log(
+        "tickets",
+        await z.pod.collection(DEVCON_7_TICKET_COLLECTION_ID).query(
+          p.pod({
+            entries: {},
+          })
+        )
+      );
+
       const [ticket] = await z.pod
         .collection(DEVCON_7_TICKET_COLLECTION_ID)
         .query(
@@ -174,10 +184,10 @@ function useInitializeUser() {
   }, [meError, initializeUser]);
   const hasRemoteTicket = Boolean(userState?.myScore.devcon7TicketId);
   useEffect(() => {
-    if (hasIdentity && !hasRemoteTicket) {
+    if (hasIdentity && !hasRemoteTicket && devcon7Ticket) {
       initializeUser(false);
     }
-  }, [hasIdentity, hasRemoteTicket, initializeUser]);
+  }, [hasIdentity, hasRemoteTicket, initializeUser, devcon7Ticket]);
 
   useEffect(() => {
     if (semaphoreId && !semaphoreIdBase64 && hasIdentity) {
