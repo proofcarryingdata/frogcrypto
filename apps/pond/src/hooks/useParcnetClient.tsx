@@ -87,7 +87,9 @@ export function ParcnetIframeProvider({
 
     if (window.parent === window.self) {
       if (ref.current) {
+        console.log("connecting to zupass");
         void connect(ZAPP, ref.current, url).then((zupass) => {
+          console.log("connected to zupass");
           setValue({
             state: ClientConnectionState.CONNECTED,
             z: zupass,
@@ -97,7 +99,9 @@ export function ParcnetIframeProvider({
         });
       }
     } else {
+      console.log("connecting to host");
       void connectToHost(ZAPP).then((zupass) => {
+        console.log("connected to host");
         setValue({
           state: ClientConnectionState.CONNECTED,
           z: zupass,
