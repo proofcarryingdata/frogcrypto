@@ -65,7 +65,7 @@ function App() {
   }
 
   if (!isReady) {
-    return null;
+    return <StaticButton />;
   }
 
   if (error) {
