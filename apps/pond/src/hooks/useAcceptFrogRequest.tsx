@@ -53,7 +53,7 @@ const useAcceptFrogRequest = () => {
         data?.filter((request) => request.id !== variables.id)
       );
 
-      if (data.success) {
+      if (data) {
         toast.success(() => (
           <div className="flex">
             Success! {variables.requestedBy} is now your friend, and you now

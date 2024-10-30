@@ -320,7 +320,8 @@ export const socialRouter = router({
               eq(socialRequestsTable.version, request.version)
             )
           )
-          .returning();
+          .returning()
+          .then((result) => result[0]);
       });
     }),
 
