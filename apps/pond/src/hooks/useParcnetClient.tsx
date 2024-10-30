@@ -65,11 +65,13 @@ export const parcnetAPIAtom = atom<ParcnetAPI | null>(null);
 
 export function ParcnetIframeProvider({
   children,
+  skipConnection = false,
 }: {
   children: React.ReactNode;
+  skipConnection?: boolean;
 }): ReactNode {
   const ref = useRef<HTMLDivElement>(null);
-  const isMounted = useRef(false);
+  const isMounted = useRef(Boolean(skipConnection));
   const url = useAtomValue(zupassUrlAtom);
 
   const [value, setValue] = useState<ClientState>({

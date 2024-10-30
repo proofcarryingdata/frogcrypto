@@ -80,7 +80,7 @@ createRoot(root).render(
     <Provider>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <ParcnetIframeProvider>
+          <ParcnetIframeProvider skipConnection>
             <App />
 
             {window.self === window.top && (
