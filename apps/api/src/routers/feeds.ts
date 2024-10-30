@@ -204,7 +204,7 @@ export const feedsRouter = router({
         if (!feed) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Feed not found",
+            message: `Feed not found: ${feedId} (${publicKey})`,
           });
         }
         if (feed.activeUntil <= Date.now() / 1000) {
