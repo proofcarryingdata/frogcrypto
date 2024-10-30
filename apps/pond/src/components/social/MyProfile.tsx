@@ -113,6 +113,7 @@ function MyProfile() {
                   setTelegramUsername(e.target.value);
                 }}
                 className="border border-green-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-green-600 focus:ring-opacity-50 focus:ring-1 p-1"
+                maxLength={36}
               />
             </div>
             <div>
@@ -130,6 +131,7 @@ function MyProfile() {
                   setFarcasterUsername(e.target.value);
                 }}
                 className="border border-green-600 border-opacity-50 block w-full focus:border-opacity-100 focus:outline-none focus:ring-green-600 focus:ring-opacity-50 focus:ring-1 p-1"
+                maxLength={36}
               />
             </div>
             <div className="flex justify-between">

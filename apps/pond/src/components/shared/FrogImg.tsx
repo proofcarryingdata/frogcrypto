@@ -22,47 +22,80 @@ class IDCache {
     if (this.initPromise) {
       return this.initPromise;
     }
-    return (this.initPromise = new Promise<void>((resolve) => {
-      const request = indexedDB.open("INDEXED.image.cache", this.version);
+    return (this.initPromise = Promise.race([
+      new Promise<void>((resolve, reject) => {
+        const request = indexedDB.open("INDEXED.image.cache", this.version);
 
-      request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-        (event.target as IDBOpenDBRequest).result.createObjectStore("cache");
+        request.addEventListener("upgradeneeded", (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          if (db.objectStoreNames.contains("cache")) {
+            db.deleteObjectStore("cache");
+          }
+          db.createObjectStore("cache");
+        });
+
+        request.addEventListener("blocked", () => {
+          reject(new Error("DB blocked"));
+        });
+
+        request.addEventListener("error", () => {
+          reject(new Error("Error opening db"));
+        });
+
+        request.addEventListener("success", () => {
+          this.db = request.result;
+
+          this.db.addEventListener("error", () => {
+            logger.error("Error creating/accessing db");
+          });
+          resolve();
+        });
+      }),
+      new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error("Error opening db in 2s"));
+        }, 2000);
+      }),
+    ]));
+  }
+
+  static blobToBase64(blob: Blob) {
+    return new Promise<string>((resolve, _) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
       };
+      reader.readAsDataURL(blob);
+    });
+  }
 
-      request.onsuccess = () => {
-        this.db = request.result;
-
-        this.db.onerror = () => {
-          logger.error("Error creating/accessing db");
-        };
-        resolve();
-      };
-    }));
+  async fetchImage(url: string) {
+    return fetch(url)
+      .then((res) => res.blob())
+      .then((blob) => IDCache.blobToBase64(blob));
   }
 
   putImage(key: string, url: string) {
     return new Promise<string>((resolve, reject) => {
       if (!this.db) {
-        reject("DB not initialized. Call the init method");
+        reject(new Error("DB not initialized. Call the init method"));
         return;
       }
 
       const db = this.db;
 
-      void fetch(url)
-        .then((res) => res.blob())
-        .then((blob) => {
-          const transaction = db.transaction(["cache"], "readwrite");
-          transaction.objectStore("cache").put(blob, key);
-          resolve(URL.createObjectURL(blob));
-        });
+      void this.fetchImage(url).then((base64) => {
+        const transaction = db.transaction(["cache"], "readwrite");
+        transaction.objectStore("cache").put(base64, key);
+        resolve(base64);
+      });
     });
   }
 
   putBlob(key: string, blob: Blob) {
     return new Promise<void>((resolve, reject) => {
       if (!this.db) {
-        reject("DB not initialized. Call the init method");
+        reject(new Error("DB not initialized. Call the init method"));
         return;
       }
 
@@ -82,12 +115,12 @@ class IDCache {
         return;
       }
       transaction.objectStore("cache").get(key).onsuccess = (event) => {
-        const blob = (event.target as IDBRequest<Blob>).result;
-        if (!blob) {
+        const base64 = (event.target as IDBRequest<string>).result;
+        if (!base64) {
           resolve(null);
           return;
         }
-        resolve(URL.createObjectURL(blob));
+        resolve(base64);
       };
     });
   }
@@ -110,20 +143,26 @@ class IDCache {
     transaction?.objectStore("cache").clear();
   }
 }
-const idCache = new IDCache({ version: 1 });
+const idCache = new IDCache({ version: 2 });
 
 const imgCache = {
   __cache: {} as Record<string, string | Promise<void>>,
   read(src: string) {
     if (!this.__cache[src]) {
-      this.__cache[src] = idCache.init().then(() =>
-        idCache
-          .getImage(src)
-          .then((blob) => blob ?? idCache.putImage(src, src))
-          .then((blob) => {
-            this.__cache[src] = blob;
-          })
-      );
+      this.__cache[src] = idCache
+        .init()
+        .then(() =>
+          idCache
+            .getImage(src)
+            .then((blob) => blob ?? idCache.putImage(src, src))
+        )
+        .catch((error) => {
+          logger.error("Error fetching image from db", { src, error });
+          return idCache.fetchImage(src);
+        })
+        .then((blob) => {
+          this.__cache[src] = blob;
+        });
     }
     const cached = this.__cache[src];
     if (cached instanceof Promise) {
@@ -153,7 +192,13 @@ function FrogImg({
   frog: Pick<IFrogData, "imageUrl" | "name">;
 } & React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <Suspense fallback={<Loader className={className} />}>
+    <Suspense
+      fallback={
+        <div className="w-full h-auto aspect-video flex justify-center items-center">
+          <Loader />
+        </div>
+      }
+    >
       <SuspenseImg
         src={frog.imageUrl}
         alt={frog.name}

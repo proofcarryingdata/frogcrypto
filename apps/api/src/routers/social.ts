@@ -62,6 +62,23 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     });
   }
 
+  if (profilePOD.telegramUsername && profilePOD.telegramUsername.length > 36) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Telegram username is too long (max 32 characters)",
+    });
+  }
+
+  if (
+    profilePOD.farcasterUsername &&
+    profilePOD.farcasterUsername.length > 36
+  ) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Farcaster username is too long (max 32 characters)",
+    });
+  }
+
   return profilePOD;
 }
 
