@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useParcnetClient } from "../hooks/useParcnetClient";
 import useSearchParams from "../hooks/useSearchParams";
 import { trpc } from "../trpc";
+import { useManageFrogs } from "../hooks/useFrogs";
 
 const SEARCH_PARAM_CYBERFROG_SIGNATURE = "cfsig";
 const SEARCH_PARAM_CYBERFROG_NONCE = "cfnonce";
@@ -26,13 +27,10 @@ function CyberFrog() {
     );
   }, [setSearchParams]);
 
-  const z = useParcnetClient();
+  const frogs = useManageFrogs();
   const { mutateAsync: getCyberFrog } = trpc.feeds.getCyberFrog.useMutation({
-    onSuccess: (data) => {
-      // FIXME: upstream bug where insert doesn't resolve
-      void z.pod
-        .collection(FROGCRYPTO_FOLDER_NAME)
-        .insert(podToPODData(data.pod));
+    onSuccess: async (data) => {
+      await frogs.insert(podToPODData(data.pod));
     },
   });
   const { mutate: claimCyberFrog, isPending: isClaimingCyberFrog } =

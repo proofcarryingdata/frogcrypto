@@ -11,10 +11,12 @@ import { trpc } from "../trpc";
 import { FrogEmoji } from "../components/Frog";
 import { useMyProfilePOD } from "./useProfilePOD";
 import { useParcnetClient } from "./useParcnetClient";
+import { useManageFrogs } from "./useFrogs";
 
 const useAcceptFrogRequest = () => {
   const profilePOD = useMyProfilePOD();
   const z = useParcnetClient();
+  const frogs = useManageFrogs();
 
   const utils = trpc.useUtils();
   const createSocialRequest = trpc.social.acceptRequest.useMutation();
@@ -49,8 +51,8 @@ const useAcceptFrogRequest = () => {
     onSuccess: async (data, variables) => {
       void utils.users.me.invalidate();
 
-      utils.social.getPendingRequests.setData(undefined, (data) =>
-        data?.filter((request) => request.id !== variables.id)
+      utils.social.getPendingRequests.setData(undefined, (reqs) =>
+        reqs?.filter((request) => request.id !== variables.id)
       );
 
       if (data) {
@@ -67,14 +69,9 @@ const useAcceptFrogRequest = () => {
         throw new Error("Request POD not found");
       }
 
-      // FIXME: upstream bug where insert doesn't resolve
-      void z.pod
-        .collection(FROGCRYPTO_FOLDER_NAME)
-        .insert(
-          podToPODData(
-            POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD)
-          )
-        );
+      await frogs.insert(
+        podToPODData(POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD))
+      );
     },
     onError: (error) => {
       toast.error(error.message);

@@ -5,7 +5,7 @@ import {
 } from "@frogcrypto/shared";
 import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
 import { atom, useAtomValue } from "jotai";
-import { profileFrogsAtom } from "./useFrogs";
+import { profileFrogsAtom, useManageFrogs } from "./useFrogs";
 import { useParcnetClient } from "./useParcnetClient";
 import { semaphoreIdBase64Atom } from "./useUserState";
 
@@ -38,19 +38,12 @@ export function useSetMyProfilePOD(
   opts?: Omit<UseMutationOptions<void, Error, ProfileFrogPOD>, "mutationFn">
 ) {
   const z = useParcnetClient();
-  const myProfilePOD = useMyProfilePOD();
+  const frogs = useManageFrogs();
 
   return useMutation({
     mutationFn: async (unsignedPOD: ProfileFrogPOD) => {
-      const oldSignature = myProfilePOD?.signature;
-
       const signedPOD = await z.pod.sign(toProfileFrogPODEntries(unsignedPOD));
-      // FIXME: upstream bug where insert doesn't resolve
-      void z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(signedPOD);
-
-      if (oldSignature) {
-        void z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(oldSignature);
-      }
+      await frogs.insert(signedPOD);
     },
     ...opts,
   });

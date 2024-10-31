@@ -38,6 +38,7 @@ function Intro({ hasFrog }: { hasFrog: boolean }) {
           }
         >
           <Button
+            className="font-mono"
             onClick={() => {
               setStage("enter");
             }}
@@ -48,7 +49,7 @@ function Intro({ hasFrog }: { hasFrog: boolean }) {
             // frog holders cannot retreat
             !hasFrog && (
               <Button
-                className="ml-2"
+                className="font-mono ml-2"
                 onClick={() => {
                   setStage("retreat");
                 }}

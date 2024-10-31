@@ -22,7 +22,7 @@ function TypistText({
 
   return (
     <>
-      <div className="select-none text-lg">
+      <div className="select-none text-lg font-mono">
         <Typewriter
           onInit={(typewriter): void => {
             onInit(typewriter)

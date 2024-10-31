@@ -11,7 +11,7 @@ import { type Subscription } from "@parcnet-js/app-connector";
 import { pod, podToPODData, type PODData } from "@parcnet-js/podspec";
 import { atom, useAtom, useAtomValue } from "jotai";
 import _ from "lodash";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { atomWithStorage, loadable } from "jotai/utils";
 import { type JSONPOD, POD } from "@pcd/pod";
 import { toast } from "react-hot-toast";
@@ -138,6 +138,35 @@ export const profileFrogsAtom = atom<Promise<ProfileFrogPOD[]>>(async (get) => {
 });
 export function useProfileFrogs() {
   return useAtomValue(profileFrogsAtom);
+}
+
+const Z_OPERATION_TIMEOUT = 2_000;
+function withTimeout(promise: Promise<void> | undefined): Promise<void> {
+  if (!promise) {
+    return Promise.resolve();
+  }
+  return Promise.race([
+    promise,
+    new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve(undefined);
+      }, Z_OPERATION_TIMEOUT);
+    }),
+  ]);
+}
+export function useManageFrogs() {
+  const z = useAtomValue(parcnetAPIAtom);
+
+  return useMemo(() => {
+    return {
+      insert: async (data: PODData) =>
+        withTimeout(z?.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(data)),
+      delete: async (signature: string) =>
+        withTimeout(
+          z?.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(signature)
+        ),
+    };
+  }, [z]);
 }
 
 export default useFrogs;

@@ -126,7 +126,7 @@ function SearchButton({
                 return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
               }
               if (fetchErrorMsg.includes("next fetch")) {
-                return "Froggy hiccup! Seems like one of our amphibians is playing camouflage. Zoo staff are peeking under every leaf. Hop back later for another try!";
+                return `${feed.name} needs a moment to refill the pond. No double-dipping!`;
               }
               if (fetchErrorMsg.includes("faucet off")) {
                 return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";

@@ -11,10 +11,11 @@ import { trpc } from "../trpc";
 import { useOtherProfilePODs } from "./useProfilePOD";
 import { useSemaphoreIdBase64 } from "./useUserState";
 import { useParcnetClient } from "./useParcnetClient";
+import { useManageFrogs } from "./useFrogs";
 
 export function useAcceptedFrogRequests() {
   const semaphoreId = useSemaphoreIdBase64();
-  const z = useParcnetClient();
+  const frogs = useManageFrogs();
 
   const otherProfilePODs = useOtherProfilePODs();
 
@@ -49,14 +50,9 @@ export function useAcceptedFrogRequests() {
       }
     });
 
-    // FIXME: upstream bug where insert doesn't resolve
     void Promise.all([
-      ...toDelete.map((pod) =>
-        z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(pod.signature)
-      ),
-      ...toAdd.map((pod) =>
-        z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(podToPODData(pod))
-      ),
+      ...toDelete.map((pod) => frogs.delete(pod.signature)),
+      ...toAdd.map((pod) => frogs.insert(podToPODData(pod))),
     ]);
-  }, [acceptedRequests, knownProfilePODs, semaphoreId, z]);
+  }, [acceptedRequests, knownProfilePODs, semaphoreId, frogs]);
 }

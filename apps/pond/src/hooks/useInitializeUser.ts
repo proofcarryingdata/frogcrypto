@@ -12,41 +12,41 @@ import {
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
 import { stringify } from "superjson";
 import { setToken, trpc } from "../trpc";
-import { useMaybeParcnetClient } from "./useParcnetClient";
+import { parcnetAPIAtom, useMaybeParcnetClient } from "./useParcnetClient";
 import { semaphoreIdBase64Atom } from "./useUserState";
+
+const zupassSemaphoreIdAtom = atom<Promise<bigint | null>>(async (get) => {
+  const z = get(parcnetAPIAtom);
+  return z?.identity.getSemaphoreV4Commitment() ?? null;
+});
 
 function useInitializeUser() {
   const [semaphoreIdBase64, setSemaphoreIdBase64] = useAtom(
     semaphoreIdBase64Atom
   );
-  const z = useMaybeParcnetClient();
+  const zupassSemaphoreId = useAtomValue(zupassSemaphoreIdAtom);
+
+  useEffect(() => {
+    if (semaphoreIdBase64 && zupassSemaphoreId) {
+      if (compressBigInt(zupassSemaphoreId) !== semaphoreIdBase64) {
+        // reset local storage and reload app
+        localStorage.clear();
+        window.location.reload();
+      }
+    }
+  }, [zupassSemaphoreId, semaphoreIdBase64, setSemaphoreIdBase64]);
+
+  const z = useAtomValue(parcnetAPIAtom);
   const { mutateAsync: auth } = trpc.users.auth.useMutation();
 
-  const { data: semaphoreId } = useQuery({
-    queryKey: ["zupassId"],
-    queryFn: () => z?.identity.getSemaphoreV4Commitment(),
-    enabled: Boolean(z),
-  });
-
-  // reset rootId if it doesn't match semaphoreId
-  useEffect(() => {
-    if (
-      semaphoreId &&
-      semaphoreIdBase64 &&
-      compressBigInt(semaphoreId) !== semaphoreIdBase64
-    ) {
-      setSemaphoreIdBase64(null);
-    }
-  }, [semaphoreIdBase64, semaphoreId, setSemaphoreIdBase64]);
-
   const { data: isPwtSet = false } = useQuery({
-    queryKey: ["refreshToken", Boolean(z), String(semaphoreId)],
+    queryKey: ["refreshToken", Boolean(z), String(zupassSemaphoreId)],
     queryFn: async () => {
-      if (!z || !semaphoreId) {
+      if (!z || !zupassSemaphoreId) {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
@@ -61,7 +61,7 @@ function useInitializeUser() {
           },
           iss: {
             type: "cryptographic",
-            value: semaphoreId,
+            value: zupassSemaphoreId,
           },
         })
       );
@@ -74,16 +74,16 @@ function useInitializeUser() {
 
       return true;
     },
-    enabled: Boolean(z) && Boolean(semaphoreId),
+    enabled: Boolean(z) && Boolean(zupassSemaphoreId),
     refetchInterval: 1000 * 60 * 60,
     refetchOnWindowFocus: false,
   });
 
   const { data: devcon7Ticket } = useQuery({
-    queryKey: ["devcon7Ticket", Boolean(z), String(semaphoreId)],
-    enabled: Boolean(z) && Boolean(semaphoreId),
+    queryKey: ["devcon7Ticket", Boolean(z), String(zupassSemaphoreId)],
+    enabled: Boolean(z) && Boolean(zupassSemaphoreId),
     queryFn: async () => {
-      if (!z || !semaphoreId) {
+      if (!z || !zupassSemaphoreId) {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
@@ -157,8 +157,8 @@ function useInitializeUser() {
       //     : null,
       // });
 
-      if (semaphoreId) {
-        setSemaphoreIdBase64(compressBigInt(semaphoreId));
+      if (zupassSemaphoreId) {
+        setSemaphoreIdBase64(compressBigInt(zupassSemaphoreId));
       }
       await utils.users.me.invalidate();
 
@@ -190,10 +190,10 @@ function useInitializeUser() {
   }, [hasIdentity, hasRemoteTicket, initializeUser, devcon7Ticket]);
 
   useEffect(() => {
-    if (semaphoreId && !semaphoreIdBase64 && hasIdentity) {
-      setSemaphoreIdBase64(compressBigInt(semaphoreId));
+    if (zupassSemaphoreId && !semaphoreIdBase64 && hasIdentity) {
+      setSemaphoreIdBase64(compressBigInt(zupassSemaphoreId));
     }
-  }, [semaphoreIdBase64, semaphoreId, setSemaphoreIdBase64, hasIdentity]);
+  }, [semaphoreIdBase64, zupassSemaphoreId, setSemaphoreIdBase64, hasIdentity]);
 
   return { hasIdentity, error };
 }

@@ -42,7 +42,7 @@ function SocialTabButton() {
       onClick={() => {
         toast.error(
           <span>
-            You need 10 <FrogEmoji className="w-2 h-2 inline" /> to unlock
+            You need 10 <FrogEmoji className="w-4 h-4 inline mb-1" /> to unlock
             unlock this feature!
           </span>
         );
@@ -110,13 +110,27 @@ function FrogCrypto() {
   );
 }
 
+function AppWrapper() {
+  const { hasIdentity, error } = useInitializeUser();
+
+  return error ? (
+    <Unauthorized />
+  ) : (
+    <ErrorBoundary>
+      {hasIdentity ? (
+        <Suspense fallback={<Loader />}>
+          <FrogCrypto />
+        </Suspense>
+      ) : (
+        <Loader />
+      )}
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   useTsParticles();
   useConnectFrogStore();
-
-  const isConnected = useParcnetClientConnected();
-  const { hasIdentity, error } = useInitializeUser();
-  const isReady = isConnected && hasIdentity;
 
   return (
     <main className="flex justify-center w-screen min-h-screen max-h-screen py-6 bg-dot-pattern overflow-auto">
@@ -125,19 +139,9 @@ function App() {
           <span>{FROGCRYPTO_FOLDER_NAME}</span>
         </h1>
 
-        {error ? (
-          <Unauthorized />
-        ) : (
-          <ErrorBoundary>
-            {isReady ? (
-              <Suspense fallback={<Loader />}>
-                <FrogCrypto />
-              </Suspense>
-            ) : (
-              <Loader />
-            )}
-          </ErrorBoundary>
-        )}
+        <Suspense fallback={<Loader />}>
+          <AppWrapper />
+        </Suspense>
       </div>
     </main>
   );
