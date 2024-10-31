@@ -1,7 +1,7 @@
 import { shortCommitmentHex, type ProfileFrogPOD } from "@frogcrypto/shared";
 import React from "react";
 import { trpc } from "../../trpc";
-import Frog from "../Frog";
+import Frog from "../shared/Frog";
 import { SocialButton } from "../shared/Button";
 import FrogImg from "../shared/FrogImg";
 import SocialContainer from "./SocialContainer";

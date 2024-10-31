@@ -13,7 +13,7 @@ import useSearchParams from "../../hooks/useSearchParams";
 import useSendFrogRequest from "../../hooks/useSendFrogRequest";
 import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
-import { FrogEmoji } from "../Frog";
+import { FrogEmoji } from "../shared/Frog";
 import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
 import FrogImg from "../shared/FrogImg";
 import Modal from "../shared/Modal";

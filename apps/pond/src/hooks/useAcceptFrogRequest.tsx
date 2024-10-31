@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { podToPODData } from "@parcnet-js/podspec";
 import React from "react";
 import { trpc } from "../trpc";
-import { FrogEmoji } from "../components/Frog";
+import { FrogEmoji } from "../components/shared/Frog";
 import { useMyProfilePOD } from "./useProfilePOD";
 import { useParcnetClient } from "./useParcnetClient";
 import { useManageFrogs } from "./useFrogs";

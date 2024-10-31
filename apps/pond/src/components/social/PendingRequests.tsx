@@ -6,7 +6,7 @@ import { type RouterOutputs } from "@frogcrypto/api/src/routers";
 import { Siren } from "lucide-react";
 import useAcceptFrogRequest from "../../hooks/useAcceptFrogRequest";
 import { trpc } from "../../trpc";
-import { FrogEmoji } from "../Frog";
+import { FrogEmoji } from "../shared/Frog";
 import { FrogCardHeader, RARITY_COLORS } from "../shared/FrogCard";
 import FrogImg from "../shared/FrogImg";
 import Modal from "../shared/Modal";

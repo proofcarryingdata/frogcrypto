@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
 import { default as CyberFrog } from "./components/CyberFrog";
 import { DexTab } from "./components/DexTab";
-import { FrogEmoji } from "./components/Frog";
+import { FrogEmoji } from "./components/shared/Frog";
 import GetFrogTab from "./components/GetFrogTab";
 import Intro from "./components/Intro";
 import NotFound from "./components/NotFound";

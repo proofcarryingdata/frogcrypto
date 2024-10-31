@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import frogSvgUrl from "../../assets/frog.svg?url";
+import frog2SvgUrl from "../../assets/frog2.svg?url";
 
 export const FROG_LEVELS = [
   { score: 0, className: "text-black", emoji: "⚪️", title: "NOVICE" },
@@ -56,13 +57,30 @@ export function frogScoreToLevel(score: number): {
   };
 }
 
-function FrogEmoji() {
+export function FrogEmoji({ className }: { className?: string }) {
+  const [pressed, setPressed] = useState(false);
+  useEffect(() => {
+    if (pressed) {
+      const timeout = setTimeout(() => {
+        setPressed(false);
+      }, Math.random() * 3000);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [pressed]);
+
   return (
     <img
-      src={frogSvgUrl}
+      src={pressed ? frog2SvgUrl : frogSvgUrl}
       alt="Frog"
-      className="h-full aspect-square"
+      className={className ?? "h-full aspect-square inline-block"}
       draggable={false}
+      onClick={() => {
+        console.log("mouse down");
+        setPressed(true);
+      }}
+      role="button"
     />
   );
 }

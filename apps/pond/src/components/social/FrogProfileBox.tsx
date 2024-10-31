@@ -2,7 +2,7 @@ import React from "react";
 import { type ProfileFrogPOD, shortCommitment } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import { trpc } from "../../trpc";
-import Frog from "../Frog";
+import Frog from "../shared/Frog";
 import FrogImg from "../shared/FrogImg";
 
 interface FrogProfileBoxProps {
