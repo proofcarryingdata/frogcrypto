@@ -130,7 +130,7 @@ function App() {
   useConnectFrogStore();
 
   return (
-    <main className="flex justify-center w-screen max-w-full py-6 bg-dot-pattern overflow-auto">
+    <main className="flex justify-center w-screen max-w-full pt-6 pb-12 bg-dot-pattern overflow-auto">
       <div className="flex flex-col gap-4 w-full max-w-sm items-stretch px-4 flex-1">
         <h1 className="font-superfunky text-2xl self-center">
           <span>FrogCrypto</span>

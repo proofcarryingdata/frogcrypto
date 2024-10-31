@@ -3,6 +3,7 @@ import React, { useCallback, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import ReactModal from "react-modal";
 import { type FrogPOD } from "@frogcrypto/shared";
+import { XCircle } from "lucide-react";
 import FrogCard from "./FrogCard";
 
 export function FrogsModal({
@@ -62,40 +63,45 @@ export function FrogsModal({
         },
       }}
     >
-      <div className="flex items-stretch justify-around" {...handlers}>
-        <button
-          type="button"
-          onClick={onSwipeRight}
-          disabled={focused === 0}
-          className={`flex justify-center items-center flex-1 p-2 text-2xl ${
-            focused === 0
-              ? "cursor-default text-white opacity-20"
-              : "cursor-pointer text-white opacity-80 hover:opacity-100"
-          }`}
-        >
-          &lsaquo;
+      <div className="flex flex-col items-center gap-4">
+        <button type="button" onClick={onClose}>
+          <XCircle className="h-8 w-8 text-white bg-moss-500 rounded-full" />
         </button>
-        <div
-          style={{
-            boxShadow,
-            border: `1px solid ${color}`,
-            borderRadius: "8px",
-          }}
-        >
-          <FrogCard frog={focusedPOD} expanded />
+        <div className="flex items-stretch justify-around" {...handlers}>
+          <button
+            type="button"
+            onClick={onSwipeRight}
+            disabled={focused === 0}
+            className={`flex justify-center items-center flex-1 p-2 text-2xl ${
+              focused === 0
+                ? "cursor-default text-white opacity-20"
+                : "cursor-pointer text-white opacity-80 hover:opacity-100"
+            }`}
+          >
+            &lsaquo;
+          </button>
+          <div
+            style={{
+              boxShadow,
+              border: `1px solid ${color}`,
+              borderRadius: "8px",
+            }}
+          >
+            <FrogCard frog={focusedPOD} expanded />
+          </div>
+          <button
+            type="button"
+            onClick={onSwipeLeft}
+            disabled={focused === pods.length - 1}
+            className={`flex justify-center items-center flex-1 p-2 text-2xl ${
+              focused === pods.length - 1
+                ? "cursor-default text-white opacity-20"
+                : "cursor-pointer text-white opacity-80 hover:opacity-100"
+            }`}
+          >
+            &rsaquo;
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onSwipeLeft}
-          disabled={focused === pods.length - 1}
-          className={`flex justify-center items-center flex-1 p-2 text-2xl ${
-            focused === pods.length - 1
-              ? "cursor-default text-white opacity-20"
-              : "cursor-pointer text-white opacity-80 hover:opacity-100"
-          }`}
-        >
-          &rsaquo;
-        </button>
       </div>
     </ReactModal>
   );

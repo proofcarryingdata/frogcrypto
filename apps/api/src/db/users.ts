@@ -2,6 +2,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import { type FrogCryptoScore } from "@frogcrypto/shared";
 import { userScoresTable } from "./schema";
 import { db, type Transaction } from ".";
+import redis from "../redis";
 
 export const incrementScore = async (
   tx: Transaction,
@@ -19,6 +20,8 @@ export const incrementScore = async (
   if (!result) {
     throw new Error("Failed to increment score");
   }
+
+  void redis.set(`frogcrypto:users:score:${String(semaphoreId)}`, result.score);
 
   return result;
 };

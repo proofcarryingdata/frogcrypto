@@ -17,6 +17,7 @@ import { recordFriendCount, userScoresView } from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
 import { getSpiritFrog } from "../db/frogs";
+import redis from "../redis";
 
 const MAX_REQUESTS_PER_DAY = 100;
 const REQUEST_VISIBILITY_DAYS = 7; // Requests older than this will not be returned in queries
@@ -224,6 +225,11 @@ export const socialRouter = router({
           eq(socialRequestsTable.status, "pending")
         )
       );
+
+    void redis.set(
+      `frogcrypto:users:pendingRequests:${String(ctx.user.semaphoreId)}`,
+      requests.length
+    );
 
     return requests.map((request) => ({
       id: request.id,

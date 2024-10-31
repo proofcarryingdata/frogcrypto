@@ -8,6 +8,7 @@ import { appRouter } from "./routers";
 import path from "path";
 import { getUserScoreLite } from "./db/users";
 import { engine } from "express-handlebars";
+import { getUserSnapshot } from "./redis";
 
 export const createServer = (): Express => {
   const app = express();
@@ -25,9 +26,12 @@ export const createServer = (): Express => {
       trpcExpress.createExpressMiddleware({ router: appRouter, createContext })
     )
     .get("/button/:id", async (req, res) => {
-      const score = await getUserScoreLite(req.params.id);
+      const [score, pendingRequests] = await getUserSnapshot(req.params.id);
 
-      res.render("button", { score: score?.score ?? 0 });
+      res.render("button", {
+        score: score ?? 0,
+        pendingRequests: pendingRequests ?? 0,
+      });
     })
     .get("/redirect(/*)?", (req, res) => {
       const params = new URLSearchParams(req.query as Record<string, string>);
