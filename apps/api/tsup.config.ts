@@ -5,6 +5,6 @@ export default defineConfig((options: Options) => ({
   clean: true,
   format: ["cjs"],
   onSuccess:
-    "cp -a node_modules/@pcd/proto-pod-gpc-artifacts/*.{zkey,json} dist",
+    "cp -a node_modules/@pcd/proto-pod-gpc-artifacts/*.{zkey,json} dist && cp -a views dist",
   ...options,
 }));
