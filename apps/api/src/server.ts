@@ -29,7 +29,7 @@ export const createServer = (): Express => {
 
       res.render("button", { score: score?.score ?? 0 });
     })
-    .get("/redirect", (req, res) => {
+    .get("/redirect(/*)?", (req, res) => {
       const params = new URLSearchParams(req.query as Record<string, string>);
       params.set("folder", "frogcrypto");
 
