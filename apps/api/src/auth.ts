@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import type express from "express";
 import { db } from "./db";
 import { userScoresTable } from "./db/schema";
+import _ from "lodash";
 
 export interface AuthSession {
   user: {
@@ -20,11 +21,15 @@ export interface AuthSession {
   };
 }
 
-async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
+const memoizedDecodeAndVerifyPwt = _.memoize((token: string) => {
   const pod = POD.fromJSON(JSON.parse(token) as JSONPOD);
+  return verifyPwtAndGetSemaphoreId(pod);
+});
+
+async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
   let semaphoreId: bigint;
   try {
-    semaphoreId = verifyPwtAndGetSemaphoreId(pod);
+    semaphoreId = memoizedDecodeAndVerifyPwt(token);
   } catch (e) {
     logger.error("Invalid PWT", e);
     throw new TRPCError({

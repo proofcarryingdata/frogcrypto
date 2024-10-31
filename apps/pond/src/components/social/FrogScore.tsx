@@ -69,6 +69,7 @@ function ScoreTable({
                       name: getUsername(score.semaphoreIdHash),
                     }}
                     className="w-8 h-8 object-cover"
+                    fallback={<Loader className="w-8 h-8" />}
                   />
                 </td>
                 <td className="w-8">{score.rank}.</td>

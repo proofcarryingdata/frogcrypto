@@ -187,16 +187,20 @@ function SuspenseImg({
 function FrogImg({
   frog,
   className,
+  fallback,
   ...rest
 }: {
   frog: Pick<IFrogData, "imageUrl" | "name">;
+  fallback?: React.ReactNode;
 } & React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
     <Suspense
       fallback={
-        <div className="w-full h-auto aspect-[2/1] flex justify-center items-center">
-          <Loader />
-        </div>
+        fallback ?? (
+          <div className="w-full h-auto aspect-[2/1] flex justify-center items-center">
+            <Loader />
+          </div>
+        )
       }
     >
       <SuspenseImg

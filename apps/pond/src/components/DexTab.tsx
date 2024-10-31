@@ -203,6 +203,9 @@ function DexGrid({
                 <FrogImg
                   frog={frogPODs.frog}
                   className="w-full h-auto object-cover rounded-lg aspect-square"
+                  fallback={
+                    <Loader className="w-full h-auto aspect-square m-auto" />
+                  }
                 />
               ) : (
                 <img
