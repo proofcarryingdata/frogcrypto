@@ -25,7 +25,7 @@ export const createServer = (): Express => {
     .get("/button/:id", async (req, res) => {
       const score = await getUserScore(req.params.id);
 
-      res.render("button", { score: score?.score });
+      res.render("button", { score: score?.score ?? 0 });
     });
 
   return app;

@@ -7,12 +7,15 @@
     <title>FrogCrypto</title>
   </head>
   <body>
-    <div>
-      {{score}}
+    <div style="width: 100vw; height: 100vh; max-width: 400px; max-height: 100px;">
+      <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; border-radius: 8px; border-image-source: linear-gradient(0deg, #FFC971 0%, #44F9CE 100%); background: linear-gradient(0deg, #FFAE00 0%, #4CCCB0 100%); padding: 10px;">
+
+        <span style="font-family: monospace; font-size: 28px; line-height: 38px; color: #154133;">Score: {{score}}</span>
 
       <svg
-        width="17"
-        height="13"
+        style="display:inline-block; margin-left: 10px;"
+        width="38"
+        height="28"
         viewBox="0 0 17 13"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +60,9 @@
             mask="url(#path-6-inside-1_27_26696)"
           />
         </g>
-      </svg>
+        </svg>
+
+      </div>
     </div>
   </body>
 </html>
