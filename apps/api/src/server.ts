@@ -6,7 +6,7 @@ import morgan from "morgan";
 import { createContext } from "./context";
 import { appRouter } from "./routers";
 import path from "path";
-import { getUserScore } from "./db/users";
+import { getUserScoreLite } from "./db/users";
 import { engine } from "express-handlebars";
 
 export const createServer = (): Express => {
@@ -25,7 +25,7 @@ export const createServer = (): Express => {
       trpcExpress.createExpressMiddleware({ router: appRouter, createContext })
     )
     .get("/button/:id", async (req, res) => {
-      const score = await getUserScore(req.params.id);
+      const score = await getUserScoreLite(req.params.id);
 
       res.render("button", { score: score?.score ?? 0 });
     })

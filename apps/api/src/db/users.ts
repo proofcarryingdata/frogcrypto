@@ -62,9 +62,7 @@ export const userScoresView = db.$with("user_scores_view").as(
     .from(userScoresTable)
 );
 
-export async function getUserScore(
-  semaphoreId: string | bigint
-): Promise<
+export async function getUserScore(semaphoreId: string | bigint): Promise<
   | (FrogCryptoScore & {
       socialId: string | null;
       devcon7TicketId: string | null;
@@ -76,5 +74,19 @@ export async function getUserScore(
     .select()
     .from(userScoresView)
     .where(eq(userScoresView.semaphoreId, String(semaphoreId)));
+  return score;
+}
+
+export async function getUserScoreLite(
+  semaphoreId: string | bigint
+): Promise<{ score: number } | undefined> {
+  const [score] = await db
+    .with(userScoresView)
+    .select({
+      score: userScoresView.score,
+    })
+    .from(userScoresView)
+    .where(eq(userScoresView.semaphoreId, String(semaphoreId)));
+
   return score;
 }
