@@ -28,6 +28,12 @@ export const createServer = (): Express => {
       const score = await getUserScore(req.params.id);
 
       res.render("button", { score: score?.score ?? 0 });
+    })
+    .get("/redirect", (req, res) => {
+      const params = new URLSearchParams(req.query as Record<string, string>);
+      params.set("folder", "frogcrypto");
+
+      res.redirect(`https://staging.zupass.org/#/?${params.toString()}`);
     });
 
   return app;

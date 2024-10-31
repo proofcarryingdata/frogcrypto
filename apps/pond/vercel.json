@@ -6,7 +6,7 @@
   "redirects": [
     {
       "source": "/redirect/(.*)",
-      "destination": "https://staging.zupass.org/#/?folder=frogcrypto&path=$1"
+      "destination": "https://frogcrypto.zupass.org/redirect/$1"
     },
     {
       "source": "/button/:id",
