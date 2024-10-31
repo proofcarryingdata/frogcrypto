@@ -1,6 +1,13 @@
 {
   "rewrites": [
     { "source": "/button", "destination": "/button.html" },
+    { "source": "/button/:id", "destination": "/api/button/:id" },
     { "source": "/(.*)", "destination": "/" }
+  ],
+  "redirects": [
+    {
+      "source": "/redirect/(.*)",
+      "destination": "https://staging.zupass.org/?folder=frogcrypto&path=$1"
+    }
   ]
 }

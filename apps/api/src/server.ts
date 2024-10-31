@@ -5,11 +5,15 @@ import express, { type Express } from "express";
 import morgan from "morgan";
 import { createContext } from "./context";
 import { appRouter } from "./routers";
+import path from "path";
+import { getUserScore } from "./db/users";
 
 export const createServer = (): Express => {
   const app = express();
   app
     .disable("x-powered-by")
+    .set("view engine", "hbs")
+    .set("views", path.join(__dirname, "../views"))
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
     .use(json())
@@ -17,7 +21,12 @@ export const createServer = (): Express => {
     .use(
       "/trpc",
       trpcExpress.createExpressMiddleware({ router: appRouter, createContext })
-    );
+    )
+    .get("/button/:id", async (req, res) => {
+      const score = await getUserScore(req.params.id);
+
+      res.render("button", { score: score?.score });
+    });
 
   return app;
 };
