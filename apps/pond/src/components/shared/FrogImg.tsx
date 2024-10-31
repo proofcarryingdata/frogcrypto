@@ -160,8 +160,11 @@ const imgCache = {
           logger.error("Error fetching image from db", { src, error });
           return idCache.fetchImage(src);
         })
-        .then((blob) => {
-          this.__cache[src] = blob;
+        .then((base64) => fetch(base64))
+        .then((res) => res.blob())
+        .then((blob) => URL.createObjectURL(blob))
+        .then((url) => {
+          this.__cache[src] = url;
         });
     }
     const cached = this.__cache[src];
