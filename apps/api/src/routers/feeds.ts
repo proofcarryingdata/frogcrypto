@@ -198,7 +198,12 @@ export const feedsRouter = router({
           });
         }
         const feedId = publicKeyToUUID(publicKey);
-        logger.info("CyberSwamp Activated: ", publicKey, feedId);
+        logger.info("CyberSwamp Activated: ", {
+          publicKey,
+          feedId,
+          signature,
+          nonce,
+        });
 
         const feed = getFeeds().find((f) => f.id === feedId);
         if (!feed) {
