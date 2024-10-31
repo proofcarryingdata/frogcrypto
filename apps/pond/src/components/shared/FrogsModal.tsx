@@ -3,7 +3,7 @@ import React, { useCallback, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import ReactModal from "react-modal";
 import { type FrogPOD } from "@frogcrypto/shared";
-import { XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import FrogCard from "./FrogCard";
 
 export function FrogsModal({
@@ -63,28 +63,34 @@ export function FrogsModal({
         },
       }}
     >
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 max-w-full">
         <button type="button" onClick={onClose}>
           <XCircle className="h-8 w-8 text-white bg-moss-500 rounded-full" />
         </button>
-        <div className="flex items-stretch justify-around" {...handlers}>
+        <div
+          className="flex gap-1 justify-center mx-4 max-w-full"
+          {...handlers}
+        >
           <button
             type="button"
             onClick={onSwipeRight}
             disabled={focused === 0}
-            className={`flex justify-center items-center flex-1 p-2 text-2xl ${
+            className={`flex justify-center items-center text-2xl ${
               focused === 0
                 ? "cursor-default text-white opacity-20"
                 : "cursor-pointer text-white opacity-80 hover:opacity-100"
             }`}
           >
-            &lsaquo;
+            <ChevronLeft className="h-8 w-8" />
           </button>
           <div
             style={{
               boxShadow,
               border: `1px solid ${color}`,
               borderRadius: "8px",
+              maxHeight: "80vh",
+              overflow: "auto",
+              flex: "1 1 0",
             }}
           >
             <FrogCard frog={focusedPOD} expanded />
@@ -93,13 +99,13 @@ export function FrogsModal({
             type="button"
             onClick={onSwipeLeft}
             disabled={focused === pods.length - 1}
-            className={`flex justify-center items-center flex-1 p-2 text-2xl ${
+            className={`flex justify-center items-center text-2xl ${
               focused === pods.length - 1
                 ? "cursor-default text-white opacity-20"
                 : "cursor-pointer text-white opacity-80 hover:opacity-100"
             }`}
           >
-            &rsaquo;
+            <ChevronRight className="h-8 w-8" />
           </button>
         </div>
       </div>

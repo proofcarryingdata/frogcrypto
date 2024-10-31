@@ -168,9 +168,9 @@ function FrogCard({
               </>
             ) : (
               <>
-                <p className="text-sm text-gray-700">{frog.description}</p>
+                <p className="text-xs text-gray-700">{frog.description}</p>
 
-                <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3">
+                <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3 text-sm">
                   <div className="text-moss-700 px-3">Signed at</div>
                   <div
                     className="text-right px-3 font-medium"
@@ -256,7 +256,7 @@ export function FrogAttributes({
 
 export function FrogSocialAttributes({ frog }: { frog: ProfileFrogPOD }) {
   return (
-    <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3">
+    <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3 text-sm">
       <div className="text-moss-700 px-3">Public Key</div>
       <div className="text-right px-3 font-medium">
         {shortCommitmentHex(frog.signerPublicKey)}

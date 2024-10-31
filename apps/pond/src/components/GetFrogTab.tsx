@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { ViewportList } from "react-viewport-list";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
-import useFrogs from "../hooks/useFrogs";
+import useFrogs, { isProfileFrogPOD } from "../hooks/useFrogs";
 import useGetFrog from "../hooks/useGetFrog";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
@@ -30,6 +30,13 @@ function GetFrogTab() {
   const frogs = useFrogs();
 
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const visibleFrogs = useMemo(() => {
+    return frogs.filter(
+      (frog) =>
+        !(isProfileFrogPOD(frog) && frog.profileId === frog.ownerSemaphoreId)
+    );
+  }, [frogs]);
 
   return (
     <>
@@ -52,9 +59,9 @@ function GetFrogTab() {
         })}
       </div>
 
-      {Boolean(frogs.length) && (
+      {Boolean(visibleFrogs.length) && (
         <div className="flex flex-col gap-4" ref={ref}>
-          <ViewportList viewportRef={ref} items={frogs}>
+          <ViewportList viewportRef={ref} items={visibleFrogs}>
             {(frog) => <FrogCard key={frog.signature} frog={frog} />}
           </ViewportList>
         </div>
