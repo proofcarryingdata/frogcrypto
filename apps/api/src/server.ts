@@ -15,7 +15,7 @@ export const createServer = (): Express => {
     .disable("x-powered-by")
     .engine("handlebars", engine())
     .set("view engine", "handlebars")
-    .set("views", path.join(__dirname, "../views"))
+    .set("views", path.join(__dirname, "../api/views"))
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
     .use(json())
