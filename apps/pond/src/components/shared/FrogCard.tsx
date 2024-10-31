@@ -124,7 +124,10 @@ function FrogCard({
   const textColor = RARITY_COLORS[frog.rarity].text || "";
 
   return (
-    <div className="w-full flex flex-col bg-white rounded-lg" style={style}>
+    <div
+      className="w-full flex flex-col bg-white rounded-lg font-mono"
+      style={style}
+    >
       <div className="w-full flex flex-col gap-4 items-center p-4">
         <FrogImg
           frog={frog}

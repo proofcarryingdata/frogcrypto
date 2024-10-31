@@ -1,4 +1,3 @@
-import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import React, { Suspense } from "react";
 import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
@@ -12,12 +11,10 @@ import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
 import Frog from "./components/shared/Frog";
 import Loader from "./components/shared/Loader";
 import FrogNecklace from "./components/social/FrogNecklace";
-import NewProfile from "./components/social/EnsureProfilePOD";
 import PendingRequests from "./components/social/PendingRequests";
 import SocialTab from "./components/SocialTab";
 import { useConnectFrogStore } from "./hooks/useFrogs";
 import useInitializeUser from "./hooks/useInitializeUser";
-import { useParcnetClientConnected } from "./hooks/useParcnetClient";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
@@ -76,7 +73,7 @@ function FrogCrypto() {
       <Frog className="self-center" score={myScore ?? "?"} />
 
       {(myScore ?? 0) >= 2 && (
-        <nav className="flex w-full gap-3 [&>*]:text-center [&>*]:whitespace-nowrap">
+        <nav className="flex w-full gap-3 font-mono [&>*]:text-center [&>*]:whitespace-nowrap">
           <Link
             href="/"
             className={`btn ${location === "/" ? "bg-green-500" : "bg-teal-500"}`}

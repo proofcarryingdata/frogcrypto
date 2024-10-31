@@ -62,7 +62,7 @@ function ScoreTable({
                     : ""
                 }
               >
-                <td className="w-10">
+                <td className="w-10 h-8">
                   <FrogImg
                     frog={{
                       imageUrl: score.imgUrl ?? "",
@@ -71,9 +71,9 @@ function ScoreTable({
                     className="w-8 h-8 object-cover"
                   />
                 </td>
-                <td>{score.rank}.</td>
+                <td className="w-8">{score.rank}.</td>
                 <td>{getUsername(score.semaphoreIdHash)}</td>
-                <td className="text-right">
+                <td className="text-right h-8">
                   <Frog
                     score={score.score}
                     colorize

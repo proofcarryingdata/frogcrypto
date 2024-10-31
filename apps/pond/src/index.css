@@ -50,30 +50,6 @@
     @apply flex items-stretch h-min gap-2;
   }
 
-  .text-enchanted {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500;
-  }
-
-  .btn-frog {
-    @apply text-sm p-2 border-none rounded-md bg-green-600 text-white cursor-pointer flex-1 select-none font-mono transition-all duration-300 ease-in-out;
-
-    &:hover {
-      @apply bg-green-500 transform scale-105;
-    }
-
-    &:disabled {
-      @apply bg-gray-400 text-gray-200 cursor-not-allowed;
-    }
-  }
-
-  .minting-mode {
-    @apply bg-black transition-all duration-[3000ms];
-
-    & > * {
-      @apply opacity-50 blur-sm transition-all duration-[3000ms];
-    }
-  }
-
   .text-link {
     @apply text-lg text-green-400;
 

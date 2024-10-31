@@ -20,11 +20,11 @@ export function DexTab() {
   const [mode, setMode] = useState<"grid" | "list">("list");
   const frogs = useFrogs();
   const possibleFrogs = usePossibleFrogs();
-  const groupedPODs = useGroupedPODs(frogs ?? []);
+  const groupedPODs = useGroupedPODs(frogs);
 
   const [focusedFrogs, setFocusedFrogs] = useState<FrogPOD[]>([]);
 
-  if (!possibleFrogs || !frogs) {
+  if (!possibleFrogs) {
     return <Loader />;
   }
 
@@ -124,8 +124,8 @@ function DexList({
           if (!frogPODs) {
             return (
               <tr key={id}>
-                <td className="px-4 py-2">{id}</td>
-                <td className="px-4 py-2">
+                <td className="pl-4 py-2 w-min">{id}</td>
+                <td className="py-2">
                   <div
                     className="px-2 py-1 border rounded text-center"
                     style={{
@@ -149,8 +149,8 @@ function DexList({
               }}
               className="cursor-pointer hover:bg-gray-100"
             >
-              <td className="px-4 py-2">{id}</td>
-              <td className="px-4 py-2">
+              <td className="pl-4 py-2 w-min">{id}</td>
+              <td className="py-2">
                 <div
                   className="px-2 py-1 rounded text-center"
                   style={{

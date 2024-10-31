@@ -166,13 +166,7 @@ export const FrogSearchButton = forwardRef(
     }, [container, enableParticles, pending]);
 
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "stretch",
-        }}
-        ref={ref}
-      >
+      <div ref={ref} className="font-mono flex items-stretch">
         <Button
           pending={pending}
           disabled={disabled}
