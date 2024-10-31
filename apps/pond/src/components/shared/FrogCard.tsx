@@ -121,6 +121,7 @@ function FrogCard({
 }) {
   const profileFrog = isProfileFrogPOD(frog) ? frog : undefined;
   const [showMore, setShowMore] = useState(expanded);
+  const [showAsPOD, setShowAsPOD] = useState(false);
   const textColor = RARITY_COLORS[frog.rarity].text || "";
 
   return (
@@ -150,6 +151,7 @@ function FrogCard({
           type="button"
           onClick={() => {
             setShowMore(!showMore);
+            setShowAsPOD(false);
           }}
           className="text-green-500 hover:text-green-700 transition-colors duration-200"
         >
@@ -158,26 +160,48 @@ function FrogCard({
 
         {showMore ? (
           <>
-            <p className="text-sm text-gray-700">{frog.description}</p>
+            {showAsPOD ? (
+              <>
+                <pre className="text-xs text-gray-700 truncate whitespace-pre overflow-clip w-full">
+                  {JSON.stringify(frog, null, 2)}
+                </pre>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-700">{frog.description}</p>
 
-            <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3">
-              <div className="text-moss-700 px-3">Signed at</div>
-              <div
-                className="text-right px-3 font-medium"
-                title={`Signed at: ${String(frog.timestampSigned)}`}
-              >
-                {new Date(frog.timestampSigned).toLocaleDateString()}
-              </div>
+                <div className="w-full rounded-md border border-gray-300 grid grid-cols-2 py-3 gap-3">
+                  <div className="text-moss-700 px-3">Signed at</div>
+                  <div
+                    className="text-right px-3 font-medium"
+                    title={`Signed at: ${String(frog.timestampSigned)}`}
+                  >
+                    {new Date(frog.timestampSigned).toLocaleDateString()}
+                  </div>
 
-              <div className="col-span-2 h-px bg-gray-300" />
+                  <div className="col-span-2 h-px bg-gray-300" />
 
-              <div className="text-moss-700 px-3">Source</div>
-              <div className="text-right px-3 font-medium">
-                {biomeValue(frog.biome)}
-              </div>
-            </div>
+                  <div className="text-moss-700 px-3">Source</div>
+                  <div className="text-right px-3 font-medium">
+                    {biomeValue(frog.biome)}
+                  </div>
+                </div>
 
-            {profileFrog ? <FrogSocialAttributes frog={profileFrog} /> : null}
+                {profileFrog ? (
+                  <FrogSocialAttributes frog={profileFrog} />
+                ) : null}
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowAsPOD(!showAsPOD);
+              }}
+              className="text-green-500 hover:text-green-700 transition-colors duration-200"
+            >
+              {showAsPOD ? "View as Frog" : "View as POD"}
+            </button>
           </>
         ) : null}
       </div>
