@@ -7,12 +7,14 @@ import { createContext } from "./context";
 import { appRouter } from "./routers";
 import path from "path";
 import { getUserScore } from "./db/users";
+import { engine } from "express-handlebars";
 
 export const createServer = (): Express => {
   const app = express();
   app
     .disable("x-powered-by")
-    .set("view engine", "hbs")
+    .engine("handlebars", engine())
+    .set("view engine", "handlebars")
     .set("views", path.join(__dirname, "../views"))
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
