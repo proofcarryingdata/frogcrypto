@@ -17,12 +17,4 @@ export default defineConfig({
     nodePolyfills(),
     svgLoader(),
   ],
-  build: {
-    rollupOptions: {
-      input: {
-        index: fileURLToPath(new URL("./index.html", import.meta.url)),
-        button: fileURLToPath(new URL("./button.html", import.meta.url)),
-      },
-    },
-  },
 });

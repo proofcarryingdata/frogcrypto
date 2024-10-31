@@ -116,7 +116,7 @@ function DexList({
   onClick: Dispatch<SetStateAction<FrogPOD[]>>;
 }): JSX.Element {
   return (
-    <table className="rounded-lg bg-white">
+    <table className="rounded-lg bg-white text-sm">
       <tbody className="divide-y divide-gray-200">
         {possibleFrogs.map(({ id, rarity }) => {
           const frogPODs = pods[id];
@@ -125,9 +125,9 @@ function DexList({
             return (
               <tr key={id}>
                 <td className="pl-4 py-2 w-min">{id}</td>
-                <td className="py-2">
+                <td className="py-2 w-16">
                   <div
-                    className="px-2 py-1 border rounded text-center"
+                    className="mx-auto px-2 border rounded text-center"
                     style={{
                       borderColor: RARITY_COLORS[rarity].color,
                       background: "rgba(45, 144, 97, 0.1)",
@@ -152,7 +152,7 @@ function DexList({
               <td className="pl-4 py-2 w-min">{id}</td>
               <td className="py-2">
                 <div
-                  className="px-2 py-1 rounded text-center"
+                  className="px-2 rounded text-center"
                   style={{
                     border: `1px solid ${RARITY_COLORS[rarity].color}`,
                     background: RARITY_COLORS[rarity].color,
