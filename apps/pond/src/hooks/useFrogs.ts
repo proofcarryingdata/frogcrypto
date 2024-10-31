@@ -7,25 +7,15 @@ import {
   parseProfileFrogPOD,
   type ProfileFrogPOD,
 } from "@frogcrypto/shared";
-import { type Subscription } from "@parcnet-js/app-connector";
+import { type ParcnetAPI, type Subscription } from "@parcnet-js/app-connector";
 import { pod, podToPODData, type PODData } from "@parcnet-js/podspec";
 import { atom, useAtom, useAtomValue } from "jotai";
 import _ from "lodash";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { atomWithStorage, loadable } from "jotai/utils";
 import { type JSONPOD, POD } from "@pcd/pod";
 import { toast } from "react-hot-toast";
 import { parcnetAPIAtom } from "./useParcnetClient";
-
-const sortedFrogPODs = (frogs: PODData[]) => {
-  return _.sortBy(frogs, (p) => {
-    const timestampSigned = p.entries.timestampSigned?.value;
-    if (typeof timestampSigned === "bigint") {
-      return -timestampSigned;
-    }
-    return 0;
-  });
-};
 
 const frogsSubscriptionAtom = atom<
   Promise<Subscription<typeof FrogSpec.schema> | undefined>
@@ -91,9 +81,87 @@ const frogPODDataAtom = atomWithStorage<PODData[] | null>("frogPODData", null, {
   },
 });
 
+function reconcileFrogPODData(
+  rawData: PODData[],
+  z: ParcnetAPI | null
+): PODData[] {
+  // Sort by timestamp, newest first
+  const sorted = _.sortBy(rawData, (p) => {
+    const timestampSigned = p.entries.timestampSigned?.value;
+    if (typeof timestampSigned === "bigint") {
+      return -timestampSigned;
+    }
+    return 0;
+  });
+
+  // Keep track of seen profileIds to deduplicate profile frogs
+  const seenProfileIds = new Set<string>();
+
+  // Filter out older profile frog versions
+  return sorted.filter((podData) => {
+    const profileId = podData.entries.profileId?.value as string | undefined;
+
+    // If not a profile frog, keep it
+    if (!profileId) {
+      return true;
+    }
+
+    // For profile frogs, only keep the first (newest) occurrence
+    if (seenProfileIds.has(profileId)) {
+      void z?.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(podData.signature);
+      return false;
+    }
+
+    seenProfileIds.add(profileId);
+    return true;
+  });
+}
+
+/**
+ * Creates a function to reconcile frog POD data with the following rules:
+ * 1. Sorts frogs by timestampSigned (newest first)
+ * 2. For profile frogs (PODs with profileId), keeps only the latest version per profileId
+ * 3. Compares with current store and updates only if the sorted, deduplicated data differs
+ *
+ * @returns A function that takes PODData[] and returns reconciled PODData[]
+ */
+function useReconcileFrogs() {
+  const z = useAtomValue(parcnetAPIAtom);
+  const [_frogs, setFrogs] = useAtom(frogPODDataAtom);
+
+  return useCallback(
+    (rawData: PODData[]) => {
+      const deduplicated = reconcileFrogPODData(rawData, z);
+
+      setFrogs((prev) => {
+        if (!prev) {
+          return deduplicated;
+        }
+        if (
+          _.isEqualWith(prev, deduplicated, (a, b) => {
+            if (
+              typeof a === "object" &&
+              typeof b === "object" &&
+              "signature" in a &&
+              "signature" in b
+            ) {
+              return a.signature === b.signature;
+            }
+            return undefined;
+          })
+        ) {
+          return prev;
+        }
+        return deduplicated;
+      });
+    },
+    [setFrogs, z]
+  );
+}
+
 export function useConnectFrogStore() {
   const value = useAtomValue(loadableFrogsSubscriptionAtom);
-  const [_frogs, setFrogs] = useAtom(frogPODDataAtom);
+  const reconcileFrogs = useReconcileFrogs();
 
   useEffect(() => {
     if (value.state === "hasError") {
@@ -101,11 +169,10 @@ export function useConnectFrogStore() {
       return;
     }
     if (value.state === "hasData") {
-      value.data?.on("update", (data) => {
-        setFrogs(sortedFrogPODs(data));
-      });
+      void value.data?.query().then(reconcileFrogs);
+      value.data?.on("update", reconcileFrogs);
     }
-  }, [setFrogs, value]);
+  }, [reconcileFrogs, value]);
 }
 
 const suspendableFrogPODDataAtom = atom<Promise<PODData[]>>((get) => {
@@ -115,7 +182,7 @@ const suspendableFrogPODDataAtom = atom<Promise<PODData[]>>((get) => {
   }
   return get(frogsSubscriptionAtom)
     .then((s) => s?.query() ?? [])
-    .then(sortedFrogPODs);
+    .then((rawData) => reconcileFrogPODData(rawData, get(parcnetAPIAtom)));
 });
 
 const frogsAtom = atom<FrogPOD[] | Promise<FrogPOD[]>>(async (get) => {
@@ -140,8 +207,11 @@ export function useProfileFrogs() {
   return useAtomValue(profileFrogsAtom);
 }
 
-const Z_OPERATION_TIMEOUT = 2_000;
-function withTimeout(promise: Promise<void> | undefined): Promise<void> {
+const Z_DEFAULT_TIMEOUT = 2_000;
+function withTimeout(
+  promise: Promise<void> | undefined,
+  timeout: number = Z_DEFAULT_TIMEOUT
+): Promise<void> {
   if (!promise) {
     return Promise.resolve();
   }
@@ -150,23 +220,35 @@ function withTimeout(promise: Promise<void> | undefined): Promise<void> {
     new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve(undefined);
-      }, Z_OPERATION_TIMEOUT);
+      }, timeout);
     }),
   ]);
 }
 export function useManageFrogs() {
   const z = useAtomValue(parcnetAPIAtom);
+  const [_frogs, setFrogs] = useAtom(frogPODDataAtom);
 
   return useMemo(() => {
     return {
-      insert: async (data: PODData) =>
-        withTimeout(z?.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(data)),
-      delete: async (signature: string) =>
-        withTimeout(
+      insert: async (data: PODData) => {
+        setFrogs((prev) => reconcileFrogPODData([...(prev ?? []), data], z));
+        await withTimeout(
+          z?.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(data)
+        );
+      },
+      delete: async (signature: string) => {
+        setFrogs((prev) =>
+          reconcileFrogPODData(
+            (prev ?? []).filter((p) => p.signature !== signature),
+            z
+          )
+        );
+        await withTimeout(
           z?.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(signature)
-        ),
+        );
+      },
     };
-  }, [z]);
+  }, [setFrogs, z]);
 }
 
 export default useFrogs;

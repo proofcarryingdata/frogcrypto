@@ -194,7 +194,7 @@ function FrogImg({
   return (
     <Suspense
       fallback={
-        <div className="w-full h-auto aspect-video flex justify-center items-center">
+        <div className="w-full h-auto aspect-[2/1] flex justify-center items-center">
           <Loader />
         </div>
       }

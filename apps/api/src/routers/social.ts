@@ -79,6 +79,13 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     });
   }
 
+  if (profilePOD.timestampSigned > Date.now() + 60 * 1000) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Profile POD is too far in the future",
+    });
+  }
+
   return profilePOD;
 }
 

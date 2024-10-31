@@ -1,5 +1,4 @@
 import {
-  FROGCRYPTO_FOLDER_NAME,
   type ProfileFrogPOD,
   toProfileFrogPODEntries,
 } from "@frogcrypto/shared";

@@ -1,4 +1,4 @@
-export const FROGCRYPTO_FOLDER_NAME = "FrogCrypto";
+export const FROGCRYPTO_FOLDER_NAME = "FrogCrypto (alpha)";
 
 export const FROM_SUBSCRIPTION_PARAM_KEY = "fromFrogSubscription";
 
