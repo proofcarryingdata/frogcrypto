@@ -3,12 +3,11 @@ import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
 import { default as CyberFrog } from "./components/CyberFrog";
 import { DexTab } from "./components/DexTab";
-import { FrogEmoji } from "./components/shared/Frog";
 import GetFrogTab from "./components/GetFrogTab";
 import Intro from "./components/Intro";
 import NotFound from "./components/NotFound";
 import ErrorBoundary, { Unauthorized } from "./components/shared/ErrorBoundary";
-import Frog from "./components/shared/Frog";
+import Frog, { FrogEmoji } from "./components/shared/Frog";
 import Loader from "./components/shared/Loader";
 import FrogNecklace from "./components/social/FrogNecklace";
 import PendingRequests from "./components/social/PendingRequests";
@@ -110,7 +109,7 @@ function FrogCrypto() {
 function AppWrapper() {
   const { hasIdentity, error } = useInitializeUser();
 
-  return error ? (
+  return error && !hasIdentity ? (
     <Unauthorized />
   ) : (
     <ErrorBoundary>

@@ -65,7 +65,7 @@ export function useFrogParticles(
               value: 1,
             },
             size: {
-              value: { min: 5, max: 10 },
+              value: { min: 5, max: 25 },
               animation: {
                 enable: true,
                 speed: 10,
@@ -104,7 +104,7 @@ export function useFrogParticles(
             modes: {
               trail: {
                 delay: 0.1,
-                quantity: 10,
+                quantity: 2,
               },
             },
           },

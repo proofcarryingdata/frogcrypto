@@ -1,7 +1,5 @@
-import { FROGCRYPTO_FOLDER_NAME } from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
 import { trpc } from "../trpc";
-import { useParcnetClient } from "./useParcnetClient";
 import { useManageFrogs } from "./useFrogs";
 
 const useGetFrog = () => {

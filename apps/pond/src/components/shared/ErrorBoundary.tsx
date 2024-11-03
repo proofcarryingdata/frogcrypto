@@ -25,10 +25,12 @@ export function Unauthorized(): React.ReactElement {
         <li>Your account doesn&apos;t have the necessary permissions</li>
         <li>This area isn&apos;t open to the public yet</li>
         <li>There was an error verifying your credentials</li>
+        <li>Your internet connection is unstable</li>
       </ul>
       <p className="text-xs text-green-400 mt-4 text-center italic">
-        If you believe this is a mistake, please contact support or try logging
-        in again.
+        If you believe this is a mistake, please try refreshing the page or
+        check your internet connection. If the problem persists, contact
+        support.
       </p>
     </div>
   );
