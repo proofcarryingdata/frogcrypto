@@ -23,7 +23,7 @@ createRoot(root).render(
         <QueryClientProvider client={queryClient}>
           <ParcnetIframeProvider>
             <App />
-            <Toaster />
+            <Toaster containerClassName="select-none" />
             {window.self === window.top && (
               <ReactQueryDevtools initialIsOpen={false} />
             )}

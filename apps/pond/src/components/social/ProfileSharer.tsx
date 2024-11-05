@@ -1,10 +1,9 @@
 import { shortCommitment } from "@frogcrypto/shared";
-import { ChevronLeft, Link as LinkIcon, Loader, Share } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import { Link as LinkIcon, Loader, Share } from "lucide-react";
+import React, { useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import QRCode from "react-qr-code";
-import { useZxing } from "react-zxing";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useUserState } from "../../hooks/useUserState";
 import { Button } from "../shared/Button";
@@ -12,7 +11,6 @@ import FrogImg from "../shared/FrogImg";
 import { SEARCH_PARAM_NECKLACE_QR } from "./FrogNecklace";
 
 export function ProfileSharer() {
-  const [mode, setMode] = useState<"scan" | "frogme">("frogme");
   const myProfilePOD = useMyProfilePOD();
   const { data } = useUserState();
   const socialId = data?.myScore.socialId;
@@ -21,14 +19,6 @@ export function ProfileSharer() {
     : undefined;
 
   const [, setLocation] = useLocation();
-  const { ref } = useZxing({
-    onDecodeResult(result) {
-      const txt = result.getText();
-      if (txt.startsWith(window.location.origin)) {
-        setLocation(txt);
-      }
-    },
-  });
 
   const shareData = useMemo(() => {
     if (!myProfilePOD) {
@@ -64,83 +54,41 @@ export function ProfileSharer() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <Link href="/">
-          <ChevronLeft />
-        </Link>
+    <div className="flex flex-col items-center justify-center gap-1">
+      <p className="mt-4 text-sm">
+        {myProfilePOD.profileName} the {myProfilePOD.name}
+      </p>
+      <p className="text-xs text-gray-500">{myProfilePOD.profileId}</p>
 
-        <div className="bg-gray-200 p-1 rounded-full text-xs">
-          <button
-            type="button"
-            className={`px-4 py-2 rounded-full ${
-              mode === "scan" ? "bg-white shadow" : ""
-            }`}
-            onClick={() => {
-              setMode("scan");
-            }}
-          >
-            Scan
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 rounded-full ${
-              mode === "frogme" ? "bg-white shadow" : ""
-            }`}
-            onClick={() => {
-              setMode("frogme");
-            }}
-          >
-            Frog Me
-          </button>
-        </div>
+      <div className="relative">
+        <QRCode value={profileUrl} size={250} />
+        <FrogImg
+          frog={myProfilePOD}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-white"
+        />
       </div>
 
-      {mode === "scan" ? (
-        <div className="aspect-square rounded-lg overflow-hidden shadow-lg border-2 border-gray-300">
-          <video ref={ref} className="w-full h-full object-cover">
-            <track kind="captions" />
-          </video>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center gap-1">
-          <p className="mt-4 text-sm">
-            {shortCommitment(myProfilePOD.profileId)}&apos;s
-            {myProfilePOD.name}
-          </p>
-          <p className="text-xs text-gray-500">{myProfilePOD.profileId}</p>
-
-          <div className="relative">
-            <QRCode value={profileUrl} size={250} />
-            <FrogImg
-              frog={myProfilePOD}
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-white"
-            />
-          </div>
-
-          <div className="btn-group">
-            {isShareable ? (
-              <Button
-                onClick={() => {
-                  void navigator.share(shareData);
-                }}
-                className="mt-4"
-              >
-                <Share className="w-4 h-4" />
-              </Button>
-            ) : null}
-            <Button
-              onClick={() => {
-                void navigator.clipboard.writeText(profileUrl);
-                toast.success("Profile link copied to clipboard!");
-              }}
-              className="mt-4"
-            >
-              <LinkIcon className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="btn-group">
+        {isShareable ? (
+          <Button
+            onClick={() => {
+              void navigator.share(shareData);
+            }}
+            className="mt-4"
+          >
+            <Share className="w-4 h-4" />
+          </Button>
+        ) : null}
+        <Button
+          onClick={() => {
+            void navigator.clipboard.writeText(profileUrl);
+            toast.success("Profile link copied to clipboard!");
+          }}
+          className="mt-4"
+        >
+          <LinkIcon className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }

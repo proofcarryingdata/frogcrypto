@@ -1,12 +1,12 @@
-import { FROGCRYPTO_FOLDER_NAME, parseFrogPOD } from "@frogcrypto/shared";
+import { parseFrogPOD } from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useMutation } from "@tanstack/react-query";
-import { useParcnetClient } from "../hooks/useParcnetClient";
-import useSearchParams from "../hooks/useSearchParams";
-import { trpc } from "../trpc";
 import { useManageFrogs } from "../hooks/useFrogs";
+import useSearchParams from "../hooks/useSearchParams";
+import { useUserState } from "../hooks/useUserState";
+import { trpc } from "../trpc";
 
 const SEARCH_PARAM_CYBERFROG_SIGNATURE = "cfsig";
 const SEARCH_PARAM_CYBERFROG_NONCE = "cfnonce";
@@ -15,6 +15,8 @@ function CyberFrog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const signature = searchParams.get(SEARCH_PARAM_CYBERFROG_SIGNATURE);
   const rawNonce = searchParams.get(SEARCH_PARAM_CYBERFROG_NONCE);
+  const { data: user, isPending: isLoadingUser } = useUserState();
+  const hasScore = user?.myScore.score && user.myScore.score > 0;
 
   const resetUrl = useCallback(() => {
     setSearchParams(
@@ -28,14 +30,19 @@ function CyberFrog() {
   }, [setSearchParams]);
 
   const frogs = useManageFrogs();
+  const utils = trpc.useUtils();
   const { mutateAsync: getCyberFrog } = trpc.feeds.getCyberFrog.useMutation({
     onSuccess: async (data) => {
+      await utils.users.me.invalidate();
       await frogs.insert(podToPODData(data.pod));
     },
   });
   const { mutate: claimCyberFrog, isPending: isClaimingCyberFrog } =
     useMutation({
       mutationFn: async () => {
+        if (!hasScore) {
+          return;
+        }
         if (!signature || !rawNonce) {
           return;
         }
@@ -68,9 +75,12 @@ function CyberFrog() {
     if (!signature && !rawNonce) {
       return;
     }
+    if (isLoadingUser) {
+      return;
+    }
 
     claimCyberFrog();
-  }, [claimCyberFrog, isClaimingCyberFrog, rawNonce, signature]);
+  }, [claimCyberFrog, isClaimingCyberFrog, isLoadingUser, rawNonce, signature]);
 
   return null;
 }
