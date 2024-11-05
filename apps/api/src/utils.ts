@@ -22,7 +22,7 @@ export interface UserFeedState {
 
 export function computeUserFeedState(
   state: Pick<UserFeed, "lastFetchedAt"> | undefined,
-  feed: Feed
+  feed: Feed,
 ): UserFeedState {
   const lastFetchedAt = state?.lastFetchedAt?.getTime() ?? 0;
   const nextFetchAt = lastFetchedAt + feed.cooldown * 1000;
@@ -38,11 +38,11 @@ export function computeUserFeedState(
 export function sampleFrogAttribute(
   min?: number,
   max?: number,
-  rarity?: Rarity
+  rarity?: Rarity,
 ): number {
   return _.random(
     Math.round(min ?? 0),
-    Math.round(max ?? (rarity === Rarity.Common ? 7 : 15))
+    Math.round(max ?? (rarity === Rarity.Common ? 7 : 15)),
   );
 }
 
@@ -74,10 +74,10 @@ export function compareIds(id1: string, id2: string): number {
 
 export function numberToUint8Array(num: number): Uint8Array {
   const arr = new Uint8Array(4);
-  for (let i = 0; i < 4; i++) {
-    arr[3 - i] = num & 0xff;
-    num = num >> 8;
-  }
+  arr[0] = (num >> 24) & 0xff;
+  arr[1] = (num >> 16) & 0xff;
+  arr[2] = (num >> 8) & 0xff;
+  arr[3] = num & 0xff;
   return arr;
 }
 

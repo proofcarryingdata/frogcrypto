@@ -2,6 +2,7 @@ import { SerialPort } from "serialport";
 import { ReadlineParser } from "@serialport/parser-readline";
 import { spawn } from "child_process";
 import { logger } from "@frogcrypto/shared";
+import { publicKeyToUUID } from "./utils";
 
 /**
  * pnpm run setup-cyberfrog will set up a Cyberfrog device for FrogCrypto.
@@ -28,7 +29,7 @@ interface PortInfo {
 async function findESP32Port(): Promise<string> {
   const ports: PortInfo[] = await SerialPort.list();
   const esp32Port = ports.find((port: PortInfo) =>
-    port.manufacturer?.toLowerCase().includes("espressif"),
+    port.manufacturer?.toLowerCase().includes("espressif")
   );
 
   if (!esp32Port) {
@@ -67,18 +68,18 @@ function flashFirmware(port: string): Promise<void> {
     const esptool = spawn("esptool.py", args, { env: process.env });
 
     esptool.stdout.on("data", (data: string) => {
-      console.log(data);
+      console.log(data.toString());
     });
 
     esptool.stderr.on("data", (data: string) => {
-      console.error(data);
+      console.error(data.toString());
     });
 
     esptool.on("close", (code: number) => {
       if (code !== 0) {
         console.error(`esptool.py process exited with code ${code.toString()}`);
         reject(
-          new Error(`esptool.py process exited with code ${code.toString()}`),
+          new Error(`esptool.py process exited with code ${code.toString()}`)
         );
       } else {
         console.info("Flashing complete.");
@@ -126,6 +127,11 @@ async function main() {
     // now we can do whatever we want with the pubkey:
     console.log("Public key captured successfully:");
     console.log(publicKey);
+
+    // get the uuid from the public key
+    const uuid = publicKeyToUUID(publicKey);
+    console.log("UUID captured successfully:");
+    console.log(uuid);
     // setupCyberFeed(publicKey)
   } catch (error) {
     console.error(`An error occurred: ${(error as Error).message}`);

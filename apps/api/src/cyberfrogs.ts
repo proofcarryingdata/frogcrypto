@@ -23,7 +23,7 @@ export interface CyberfrogData {
  */
 export const parseCyberfrogData = (
   signature: string,
-  nonce: number
+  nonce: number,
 ): CyberfrogData => {
   try {
     const recoveryBit = parseInt(signature.slice(-1));
