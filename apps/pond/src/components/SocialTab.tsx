@@ -9,8 +9,7 @@ import EnsureProfilePOD from "./social/EnsureProfilePOD";
 import FrogFriends from "./social/FrogFriends";
 import FrogScore from "./social/FrogScore";
 import MyProfile from "./social/MyProfile";
-
-const ProfileSharer = lazy(() => import("./social/ProfileSharer"));
+import ProfileSharer from "./social/ProfileSharer";
 
 function NavBar() {
   useAcceptedFrogRequests();
