@@ -1,5 +1,5 @@
 import * as p from "@parcnet-js/podspec";
-import { ticketProofRequest } from "@parcnet-js/ticket-spec";
+import { TicketProofRequest as TicketProofRequestType } from "@parcnet-js/ticket-spec";
 
 import { shortCommitment, userPublicKeyToUserId } from "./semaphore";
 
@@ -67,7 +67,7 @@ export const DEVCON_7_SIGNER_PUBLIC_KEY =
   "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs";
 export const DEVCON_7_EVENT_ID = "5074edf5-f079-4099-b036-22223c0c6995";
 
-export const TicketProofRequest = ticketProofRequest({
+export const TicketProofRequest: TicketProofRequestType = {
   classificationTuples: [
     {
       signerPublicKey: DEVCON_7_SIGNER_PUBLIC_KEY,
@@ -86,4 +86,4 @@ export const TicketProofRequest = ticketProofRequest({
     type: "string",
     value: "FROGCRYPTO",
   },
-});
+};
