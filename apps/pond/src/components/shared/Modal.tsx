@@ -9,6 +9,7 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   shouldCloseOnOverlayClick?: boolean;
+  overlayClassName?: string;
 }
 
 function Modal({
@@ -16,6 +17,7 @@ function Modal({
   onClose,
   children,
   shouldCloseOnOverlayClick,
+  overlayClassName,
 }: ModalProps) {
   return (
     <ReactModal
@@ -23,7 +25,7 @@ function Modal({
       onRequestClose={onClose}
       shouldCloseOnOverlayClick={shouldCloseOnOverlayClick}
       className="max-w-[calc(24rem-1.5rem)] w-full m-auto outline-none"
-      overlayClassName="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50"
+      overlayClassName={`fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 ${overlayClassName ?? ""}`}
     >
       {children}
     </ReactModal>

@@ -43,6 +43,7 @@ function FrogFriends(): React.ReactElement {
         onClose={() => {
           setFocusedFrog(undefined);
         }}
+        overlayClassName="bg-opacity-100"
       >
         {focusedFrog ? (
           <FrogFriendProfile

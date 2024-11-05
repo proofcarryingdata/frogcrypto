@@ -117,26 +117,29 @@ function DexList({
 }): JSX.Element {
   return (
     <table className="rounded-lg bg-white text-sm">
-      <tbody className="divide-y divide-gray-200">
+      <thead className="h-2" />
+      <tbody>
         {possibleFrogs.map(({ id, rarity }) => {
           const frogPODs = pods[id];
 
           if (!frogPODs) {
             return (
               <tr key={id}>
-                <td className="pl-4 py-2 w-min">{id}</td>
+                <td className="pl-4 py-2 w-min">
+                  {id.toString().padStart(3, "0")}
+                </td>
                 <td className="py-2 w-16">
                   <div
-                    className="mx-auto px-2 border rounded text-center"
+                    className="mx-2 px-2 border rounded text-center"
                     style={{
                       borderColor: RARITY_COLORS[rarity].color,
-                      background: "rgba(45, 144, 97, 0.1)",
+                      color: RARITY_COLORS[rarity].color,
                     }}
                   >
                     {RARITY_COLORS[rarity].label}
                   </div>
                 </td>
-                <td className="px-4 py-2 text-gray-500">???</td>
+                <td className="px-2 py-2 text-gray-500">???</td>
               </tr>
             );
           }
@@ -149,10 +152,12 @@ function DexList({
               }}
               className="cursor-pointer hover:bg-gray-100"
             >
-              <td className="pl-4 py-2 w-min">{id}</td>
+              <td className="pl-4 py-2 w-min">
+                {id.toString().padStart(3, "0")}
+              </td>
               <td className="py-2">
                 <div
-                  className="px-2 rounded text-center"
+                  className="mx-2 px-2 border rounded text-center"
                   style={{
                     border: `1px solid ${RARITY_COLORS[rarity].color}`,
                     background: RARITY_COLORS[rarity].color,
@@ -162,11 +167,12 @@ function DexList({
                   {RARITY_COLORS[rarity].label}
                 </div>
               </td>
-              <td className="px-4 py-2">{frogPODs.frog.name}</td>
+              <td className="px-2 py-2">{frogPODs.frog.name}</td>
             </tr>
           );
         })}
       </tbody>
+      <tfoot className="h-2" />
     </table>
   );
 }
