@@ -1,8 +1,8 @@
 import { eq, inArray, sql } from "drizzle-orm";
 import { type FrogCryptoScore } from "@frogcrypto/shared";
-import { userScoresTable } from "./schema";
-import { db, type Transaction } from ".";
 import redis from "../redis";
+import { frogsocialNullifiersTable, userScoresTable } from "./schema";
+import { db, type Transaction } from ".";
 
 export const incrementScore = async (
   tx: Transaction,
@@ -29,7 +29,20 @@ export const incrementScore = async (
 export const recordFriendCount = async (
   tx: Transaction,
   semaphoreIds: [string, string]
-): Promise<(typeof userScoresTable.$inferInsert)[]> => {
+): Promise<void> => {
+  // FIXME: replace this with devcon ticket id and make sure they are sorted
+  const { rowCount } = await tx
+    .insert(frogsocialNullifiersTable)
+    .values({
+      party1: semaphoreIds[0],
+      party2: semaphoreIds[1],
+    })
+    .onConflictDoNothing();
+
+  if (rowCount === 0) {
+    return;
+  }
+
   const result = await tx
     .update(userScoresTable)
     .set({
@@ -42,8 +55,6 @@ export const recordFriendCount = async (
   if (result.length === 0) {
     throw new Error("Failed to record friend count");
   }
-
-  return result;
 };
 
 export const userScoresView = db.$with("user_scores_view").as(

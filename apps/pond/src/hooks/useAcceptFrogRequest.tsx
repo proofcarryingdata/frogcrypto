@@ -1,17 +1,14 @@
-import { toast } from "react-hot-toast";
-import { type JSONPOD, POD } from "@pcd/pod";
-import {
-  FROGCRYPTO_FOLDER_NAME,
-  toProfileFrogPODEntries,
-} from "@frogcrypto/shared";
-import { useMutation } from "@tanstack/react-query";
+import { toProfileFrogPODEntries } from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
+import { type JSONPOD, POD } from "@pcd/pod";
+import { useMutation } from "@tanstack/react-query";
 import React from "react";
-import { trpc } from "../trpc";
+import { toast } from "react-hot-toast";
 import { FrogEmoji } from "../components/shared/Frog";
-import { useMyProfilePOD } from "./useProfilePOD";
-import { useParcnetClient } from "./useParcnetClient";
+import { trpc } from "../trpc";
 import { useManageFrogs } from "./useFrogs";
+import { useParcnetClient } from "./useParcnetClient";
+import { useMyProfilePOD } from "./useProfilePOD";
 
 const useAcceptFrogRequest = () => {
   const profilePOD = useMyProfilePOD();
@@ -55,23 +52,29 @@ const useAcceptFrogRequest = () => {
         reqs?.filter((request) => request.id !== variables.id)
       );
 
-      if (data) {
-        toast.success(() => (
-          <div className="flex">
-            Success! {variables.requestedBy} is now your friend, and you now
-            have +1
-            <FrogEmoji />.
-          </div>
-        ));
-      }
-
       if (!variables.requestPOD) {
         throw new Error("Request POD not found");
       }
 
-      await frogs.insert(
-        podToPODData(POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD))
+      const podData = podToPODData(
+        POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD)
       );
+      await frogs.insert(podData);
+
+      const profileName = String(podData.entries.profileName?.value);
+      if (data && profileName) {
+        toast.success(
+          () => (
+            <span>
+              Success! <b>{profileName}</b> is now your friend, and you now have
+              +1 <FrogEmoji className="w-4 h-4 inline mb-1" />.
+            </span>
+          ),
+          {
+            duration: 5000,
+          }
+        );
+      }
     },
     onError: (error) => {
       toast.error(error.message);

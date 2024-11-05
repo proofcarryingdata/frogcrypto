@@ -331,7 +331,7 @@ export const socialRouter = router({
         }
 
         const now = new Date();
-        return db
+        return tx
           .update(socialRequestsTable)
           .set({
             [request.party1 === ctx.user.semaphoreIdBase64

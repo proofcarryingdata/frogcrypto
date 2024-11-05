@@ -141,3 +141,16 @@ export const cyberfrogNullifiersTable = pgTable(
     uniqueNullifier: unique().on(table.nullifier),
   })
 );
+
+export const frogsocialNullifiersTable = pgTable(
+  "frogsocial_nullifiers",
+  {
+    id: serial("id").primaryKey().notNull(),
+    party1: text("party1").notNull(),
+    party2: text("party2").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    uniqueRequest: unique().on(table.party1, table.party2),
+  })
+);
