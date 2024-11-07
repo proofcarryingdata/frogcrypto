@@ -11,6 +11,8 @@ import { trpc } from "../trpc";
 const SEARCH_PARAM_CYBERFROG_SIGNATURE = "cfsig";
 const SEARCH_PARAM_CYBERFROG_NONCE = "cfnonce";
 
+const processedSignatures = new Set<string>();
+
 function CyberFrog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const signature = searchParams.get(SEARCH_PARAM_CYBERFROG_SIGNATURE);
@@ -19,6 +21,7 @@ function CyberFrog() {
   const hasScore = user?.myScore.score && user.myScore.score > 0;
 
   const resetUrl = useCallback(() => {
+    processedSignatures.add(signature ?? "");
     setSearchParams(
       (params) => {
         params.delete(SEARCH_PARAM_CYBERFROG_SIGNATURE);
@@ -27,7 +30,7 @@ function CyberFrog() {
       },
       { replace: true }
     );
-  }, [setSearchParams]);
+  }, [setSearchParams, signature]);
 
   const frogs = useManageFrogs();
   const utils = trpc.useUtils();
@@ -73,6 +76,9 @@ function CyberFrog() {
       return;
     }
     if (!signature && !rawNonce) {
+      return;
+    }
+    if (processedSignatures.has(signature ?? "")) {
       return;
     }
     if (isLoadingUser) {

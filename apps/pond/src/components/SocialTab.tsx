@@ -44,7 +44,14 @@ function NavBar() {
         <span className="text-link-disabled">Friends</span>
       )}
       <div className="relative">
-        <span className="text-link-disabled">Newsfeed</span>
+        <a
+          className="text-link-disabled"
+          href="https://t.me/+rvx1scQbQU1hOGZh"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Newsfeed
+        </a>
         <span className="absolute rounded-sm bottom-0 right-0 -mr-1 px-0.5 bg-orange-500 text-white text-[6px] bg-opacity-90">
           SOON
         </span>

@@ -23,7 +23,15 @@ import EnsureProfilePOD from "./EnsureProfilePOD";
 
 export const SEARCH_PARAM_NECKLACE_QR = "necklace_qr";
 
-function ConnectedModal({ onClose }: { onClose: () => void }) {
+const processedSocialIds = new Set<string>();
+
+function ConnectedModal({
+  onClose,
+  socialId,
+}: {
+  onClose: () => void;
+  socialId: string;
+}) {
   const [panel, setPanel] = useState(0);
   const semaphoreIdBase64 = useSemaphoreIdBase64();
 
@@ -46,7 +54,11 @@ function ConnectedModal({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <Modal isOpen onClose={onClose} shouldCloseOnOverlayClick={false}>
+    <Modal
+      isOpen={!processedSocialIds.has(socialId)}
+      onClose={onClose}
+      shouldCloseOnOverlayClick={false}
+    >
       <div
         className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative"
         {...handlers}
@@ -139,9 +151,15 @@ function ConnectedModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function UnactivatedModal({ onClose }: { onClose: () => void }) {
+function UnactivatedModal({
+  onClose,
+  socialId,
+}: {
+  onClose: () => void;
+  socialId: string;
+}) {
   return (
-    <Modal isOpen onClose={onClose}>
+    <Modal isOpen={!processedSocialIds.has(socialId)} onClose={onClose}>
       <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
         <h2 className="text-md font-bold text-center">RIBBIT</h2>
 
@@ -188,7 +206,11 @@ function ActivationModal({
     });
 
   return (
-    <Modal isOpen onClose={onClose} shouldCloseOnOverlayClick={false}>
+    <Modal
+      isOpen={!processedSocialIds.has(socialId)}
+      onClose={onClose}
+      shouldCloseOnOverlayClick={false}
+    >
       <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
         <h2 className="text-md font-bold text-center">
           ACTIVATE THIS FROG NECKLACE?
@@ -229,11 +251,13 @@ function ActivationModal({
 
 function FrogRequestModal({
   onClose,
+  socialId,
   frog,
   semaphoreIdBase64,
   profileName,
 }: {
   onClose: () => void;
+  socialId: string;
   frog: IFrogData;
   semaphoreIdBase64: string;
   profileName: string;
@@ -278,7 +302,11 @@ function FrogRequestModal({
   return (
     <>
       <EnsureProfilePOD />
-      <Modal isOpen onClose={onClose} shouldCloseOnOverlayClick={false}>
+      <Modal
+        isOpen={!processedSocialIds.has(socialId)}
+        onClose={onClose}
+        shouldCloseOnOverlayClick={false}
+      >
         <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
           <h2 className="text-md font-bold text-center">
             FROG NECKLACE SCANNED
@@ -359,6 +387,7 @@ function FrogNecklace() {
   const [searchParams, setSearchParams] = useSearchParams();
   const socialId = searchParams.get(SEARCH_PARAM_NECKLACE_QR);
   const onClose = () => {
+    processedSocialIds.add(socialId ?? "");
     setSearchParams(
       (params) => {
         params.delete(SEARCH_PARAM_NECKLACE_QR);
@@ -402,7 +431,7 @@ function FrogNecklace() {
 
   if (userState) {
     if (mySocialId === userState.socialId) {
-      return <ConnectedModal onClose={onClose} />;
+      return <ConnectedModal onClose={onClose} socialId={socialId} />;
     }
 
     return (
@@ -411,12 +440,13 @@ function FrogNecklace() {
         frog={userState.spiritFrog}
         semaphoreIdBase64={userState.semaphoreIdBase64}
         profileName={userState.profileName}
+        socialId={socialId}
       />
     );
   }
 
   if (mySocialId) {
-    return <UnactivatedModal onClose={onClose} />;
+    return <UnactivatedModal onClose={onClose} socialId={socialId} />;
   }
 
   return <ActivationModal onClose={onClose} socialId={socialId} />;

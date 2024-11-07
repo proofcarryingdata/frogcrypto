@@ -25,38 +25,9 @@ registerCustom<POD, string>(
   "pcd-pod"
 );
 
-const TOKEN_KEY = "_PWT_TOKEN";
-const TOKEN_VERSION = 1;
-export function loadToken(): { value: string; exp: number } | null {
-  const entryString = localStorage.getItem(TOKEN_KEY);
-  if (!entryString) {
-    return null;
-  }
-  const entry = JSON.parse(entryString) as {
-    version: number;
-    token: { value: string; exp: number };
-  };
-  if (entry.version !== TOKEN_VERSION) {
-    localStorage.removeItem(TOKEN_KEY);
-    return null;
-  }
-  const now = new Date();
-  if (now.getTime() > entry.token.exp) {
-    localStorage.removeItem(TOKEN_KEY);
-    return null;
-  }
-  return entry.token;
-}
-let token: { value: string; exp: number } | null = loadToken();
+let token: { value: string; exp: number } | null = null;
 export function setToken(newToken: string, exp: number): void {
   token = { value: newToken, exp };
-  localStorage.setItem(
-    TOKEN_KEY,
-    JSON.stringify({ version: TOKEN_VERSION, token })
-  );
-}
-export function hasToken(): boolean {
-  return Boolean(token && token.exp > Date.now());
 }
 
 export const trpc = createTRPCReact<AppRouter>();

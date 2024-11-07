@@ -1,12 +1,10 @@
 import {
   compressBigInt,
   DEVCON_7_EVENT_ID,
-  DEVCON_7_SIGNER_PUBLIC_KEY,
+  DEVCON_7_SIGNER_PUBLIC_KEYS,
   DEVCON_7_TICKET_COLLECTION_ID,
-  logger,
   POD_TYPE_FROGCRYPTO_PWT,
   PwtSpec,
-  TicketProofRequest,
   TicketSpec,
 } from "@frogcrypto/shared";
 import * as p from "@parcnet-js/podspec";
@@ -14,9 +12,8 @@ import { POD } from "@pcd/pod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { atom, useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
-import { stringify } from "superjson";
 import { setToken, trpc } from "../trpc";
-import { parcnetAPIAtom, useMaybeParcnetClient } from "./useParcnetClient";
+import { parcnetAPIAtom } from "./useParcnetClient";
 import { semaphoreIdBase64Atom } from "./useUserState";
 
 const zupassSemaphoreIdAtom = atom<Promise<bigint | null>>(async (get) => {
@@ -87,36 +84,30 @@ function useInitializeUser() {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
-      console.log("fetching tickets");
-      console.log(
-        "tickets",
-        await z.pod.collection(DEVCON_7_TICKET_COLLECTION_ID).query(
-          p.pod({
-            entries: {},
-          })
-        )
-      );
+      const publicKey = await z.identity.getPublicKey();
 
-      const [ticket] = await z.pod
+      const tickets = await z.pod
         .collection(DEVCON_7_TICKET_COLLECTION_ID)
         .query(
           p.pod({
             ...TicketSpec.schema,
-            // signerPublicKey: {
-            //   isMemberOf: [DEVCON_7_SIGNER_PUBLIC_KEY],
-            // },
-            // tuples: [
-            //   {
-            //     entries: ["eventId"],
-            //     isMemberOf: [[{ type: "string", value: DEVCON_7_EVENT_ID }]],
-            //   },
-            //   {
-            //     entries: ["attendeeSemaphoreId"],
-            //     isMemberOf: [[{ type: "cryptographic", value: semaphoreId }]],
-            //   },
-            // ],
+            signerPublicKey: {
+              isMemberOf: [...DEVCON_7_SIGNER_PUBLIC_KEYS],
+            },
+            tuples: [
+              {
+                entries: ["eventId"],
+                isMemberOf: [[{ type: "string", value: DEVCON_7_EVENT_ID }]],
+              },
+              {
+                entries: ["owner"],
+                isMemberOf: [[{ type: "eddsa_pubkey", value: publicKey }]],
+              },
+            ],
           })
         );
+
+      const ticket = tickets.find((podData) => !("isAddOn" in podData.entries));
 
       if (!ticket) {
         throw new Error("No devcon7 ticket found");
@@ -129,33 +120,20 @@ function useInitializeUser() {
 
   const utils = trpc.useUtils();
   const { mutate: initializeUser, error } = useMutation({
-    mutationFn: async (force: boolean) => {
+    mutationFn: async () => {
       if (!z) {
         throw new Error("Missing zupassAPI");
       }
 
-      // try {
-      //   const proof = await z.gpc.prove({
-      //     request: TicketProofRequest.schema,
-      //   });
-      //   if (!proof.success) {
-      //     logger.error("Failed to prove ticket", proof);
-      //     throw new Error("Failed to prove ticket");
-      //   }
-
-      //   await auth({ ticket: null, proof: stringify(proof) });
-      // } catch (e) {
-      //   if (force) {
-      //     await auth({ ticket: null, proof: null });
-      //   }
-      // }
-      await auth({ ticket: null, proof: null });
-
-      // await auth({
-      //   ticket: ticket
-      //     ? POD.load(ticket.entries, ticket.signature, ticket.signerPublicKey)
-      //     : null,
-      // });
+      await auth({
+        ticket: devcon7Ticket
+          ? POD.load(
+              devcon7Ticket.entries,
+              devcon7Ticket.signature,
+              devcon7Ticket.signerPublicKey
+            )
+          : null,
+      });
 
       if (zupassSemaphoreId) {
         setSemaphoreIdBase64(compressBigInt(zupassSemaphoreId));
@@ -179,13 +157,16 @@ function useInitializeUser() {
   const hasIdentity = Boolean(userState);
   useEffect(() => {
     if (meError) {
-      initializeUser(true);
+      initializeUser();
     }
   }, [meError, initializeUser]);
   const hasRemoteTicket = Boolean(userState?.myScore.devcon7TicketId);
   useEffect(() => {
+    console.log("hasIdentity", hasIdentity);
+    console.log("hasRemoteTicket", hasRemoteTicket);
+    console.log("devcon7Ticket", devcon7Ticket);
     if (hasIdentity && !hasRemoteTicket && devcon7Ticket) {
-      initializeUser(false);
+      initializeUser();
     }
   }, [hasIdentity, hasRemoteTicket, initializeUser, devcon7Ticket]);
 
