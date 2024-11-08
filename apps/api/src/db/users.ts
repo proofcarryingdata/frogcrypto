@@ -1,7 +1,11 @@
-import { eq, inArray, sql } from "drizzle-orm";
-import { type FrogCryptoScore } from "@frogcrypto/shared";
+import { eq, inArray, sql, asc, and, isNotNull, or } from "drizzle-orm";
+import { logger, type FrogCryptoScore } from "@frogcrypto/shared";
 import redis from "../redis";
-import { frogsocialNullifiersTable, userScoresTable } from "./schema";
+import {
+  frogsocialNullifiersTable,
+  socialRequestsTable,
+  userScoresTable,
+} from "./schema";
 import { db, type Transaction } from ".";
 
 export const incrementScore = async (
@@ -30,16 +34,33 @@ export const recordFriendCount = async (
   tx: Transaction,
   semaphoreIds: [string, string]
 ): Promise<void> => {
-  // FIXME: replace this with devcon ticket id and make sure they are sorted
+  const [row1, row2] = await tx
+    .select({
+      ticketId: userScoresTable.devcon7TicketId,
+    })
+    .from(userScoresTable)
+    .where(inArray(userScoresTable.semaphoreId, semaphoreIds))
+    .orderBy(asc(userScoresTable.devcon7TicketId));
+
+  if (!row1?.ticketId || !row2?.ticketId) {
+    throw new Error(
+      "Failed to record friend count because at least one of the tickets is missing"
+    );
+  }
+
   const { rowCount } = await tx
     .insert(frogsocialNullifiersTable)
     .values({
-      party1: semaphoreIds[0],
-      party2: semaphoreIds[1],
+      party1: row1.ticketId,
+      party2: row2.ticketId,
     })
     .onConflictDoNothing();
 
+  // If the row already exists, they got credits for this already
   if (rowCount === 0) {
+    logger.warn(
+      `Friend count already recorded for tickets ${row1.ticketId} and ${row2.ticketId}, initiated by ${semaphoreIds[0]} and ${semaphoreIds[1]}.`
+    );
     return;
   }
 
@@ -56,6 +77,40 @@ export const recordFriendCount = async (
     throw new Error("Failed to record friend count");
   }
 };
+
+export async function recordPendingRequest(semaphoreId: string): Promise<void> {
+  try {
+    const requests = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(socialRequestsTable)
+      .where(
+        and(
+          or(
+            and(
+              eq(socialRequestsTable.party1, semaphoreId),
+              isNotNull(socialRequestsTable.party2POD)
+            ),
+            and(
+              eq(socialRequestsTable.party2, semaphoreId),
+              isNotNull(socialRequestsTable.party1POD)
+            )
+          ),
+          eq(socialRequestsTable.status, "pending")
+        )
+      );
+
+    void redis.set(
+      `frogcrypto:users:pendingRequests:${String(semaphoreId)}`,
+      requests[0]?.count ?? 0
+    );
+  } catch (error) {
+    logger.error(`Failed to record pending requests for ${semaphoreId}`, {
+      error,
+    });
+  }
+}
 
 export const userScoresView = db.$with("user_scores_view").as(
   db

@@ -1,17 +1,12 @@
-import { useMemo, useEffect } from "react";
-import _ from "lodash";
-import { useQueryClient } from "@tanstack/react-query";
-import { type JSONPOD, POD } from "@pcd/pod";
-import {
-  FROGCRYPTO_FOLDER_NAME,
-  type ProfileFrogPOD,
-} from "@frogcrypto/shared";
+import { type ProfileFrogPOD } from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
+import { type JSONPOD, POD } from "@pcd/pod";
+import _ from "lodash";
+import { useEffect, useMemo } from "react";
 import { trpc } from "../trpc";
+import { useManageFrogs } from "./useFrogs";
 import { useOtherProfilePODs } from "./useProfilePOD";
 import { useSemaphoreIdBase64 } from "./useUserState";
-import { useParcnetClient } from "./useParcnetClient";
-import { useManageFrogs } from "./useFrogs";
 
 export function useAcceptedFrogRequests() {
   const semaphoreId = useSemaphoreIdBase64();

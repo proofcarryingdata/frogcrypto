@@ -1,26 +1,28 @@
 import {
-  compressBigInt,
   decompressBigInt,
   isSpiritFrogDataEqualish,
   parseProfileFrogPOD,
   userPublicKeyToUserId,
 } from "@frogcrypto/shared";
+import { podToPODData } from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, gt, isNotNull, isNull, or, sql } from "drizzle-orm";
-import { z } from "zod";
 import { validate as uuidValidate } from "uuid";
-import { podToPODData } from "@parcnet-js/podspec";
+import { z } from "zod";
 import { db } from "../db";
+import { getSpiritFrog } from "../db/frogs";
 import { socialRequestsTable, userScoresTable } from "../db/schema";
-import { recordFriendCount, userScoresView } from "../db/users";
+import {
+  recordFriendCount,
+  recordPendingRequest,
+  userScoresView,
+} from "../db/users";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
-import { getSpiritFrog } from "../db/frogs";
-import redis from "../redis";
 
 const MAX_REQUESTS_PER_DAY = 100;
-const REQUEST_VISIBILITY_DAYS = 7; // Requests older than this will not be returned in queries
+const REQUEST_VISIBILITY_DAYS = 30;
 
 async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
   const profilePOD = parseProfileFrogPOD(podToPODData(pod));
@@ -98,12 +100,12 @@ export const socialRouter = router({
       })
     )
     .mutation(async ({ ctx, input: { requestPOD } }) => {
-      // if (!ctx.user.devcon7TicketId) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "FrogSocial is only available to Devcon 7 attendees",
-      //   });
-      // }
+      if (!ctx.user.devcon7TicketId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "FrogSocial is only available to Devcon 7 attendees",
+        });
+      }
 
       const myId = ctx.user.semaphoreIdBase64;
 
@@ -199,6 +201,8 @@ export const socialRouter = router({
         });
       }
 
+      void recordPendingRequest(otherPartyId);
+
       return request;
     }),
 
@@ -221,15 +225,9 @@ export const socialRouter = router({
               isNotNull(socialRequestsTable.party1POD)
             )
           ),
-          sql`${socialRequestsTable.updatedAt} > ${new Date(Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000)}`,
           eq(socialRequestsTable.status, "pending")
         )
       );
-
-    void redis.set(
-      `frogcrypto:users:pendingRequests:${String(ctx.user.semaphoreId)}`,
-      requests.length
-    );
 
     return requests.map((request) => ({
       id: request.id,
@@ -284,12 +282,12 @@ export const socialRouter = router({
       })
     )
     .mutation(async ({ ctx, input: { requestId, responsePOD } }) => {
-      // if (!ctx.user.devcon7TicketId) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "FrogSocial is only available to Devcon 7 attendees",
-      //   });
-      // }
+      if (!ctx.user.devcon7TicketId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "FrogSocial is only available to Devcon 7 attendees",
+        });
+      }
 
       await validateFrogRequestPOD(responsePOD, ctx.user.semaphoreIdBase64);
 
@@ -323,7 +321,8 @@ export const socialRouter = router({
           });
         }
 
-        if (request.status === "pending") {
+        // NB: we need to be careful not to double-count friends, esp if user could manipulate the request status such as declining an already accepted request
+        if (request.status !== "connected") {
           await recordFriendCount(tx, [
             String(decompressBigInt(request.party1)),
             String(decompressBigInt(request.party2)),
@@ -351,23 +350,28 @@ export const socialRouter = router({
             )
           )
           .returning()
-          .then((result) => result[0]);
+          .then((result) => {
+            if (result.length > 0) {
+              void recordPendingRequest(ctx.user.semaphoreIdBase64);
+            }
+            return result[0];
+          });
       });
     }),
 
   declineRequest: authedProcedure
     .input(z.object({ requestId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      // if (!ctx.user.devcon7TicketId) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "FrogSocial is only available to Devcon 7 attendees",
-      //   });
-      // }
+      if (!ctx.user.devcon7TicketId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "FrogSocial is only available to Devcon 7 attendees",
+        });
+      }
 
       const { requestId } = input;
 
-      await db
+      const res = await db
         .update(socialRequestsTable)
         .set({ status: "declined" })
         .where(
@@ -386,6 +390,10 @@ export const socialRouter = router({
             eq(socialRequestsTable.status, "pending")
           )
         );
+
+      if (res.rowCount && res.rowCount > 0) {
+        void recordPendingRequest(ctx.user.semaphoreIdBase64);
+      }
     }),
 
   getFrogRequest: authedProcedure

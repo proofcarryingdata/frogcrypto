@@ -183,6 +183,39 @@ function UnactivatedModal({
   );
 }
 
+function UnavailableModal({
+  onClose,
+  socialId,
+}: {
+  onClose: () => void;
+  socialId: string;
+}) {
+  return (
+    <Modal isOpen={!processedSocialIds.has(socialId)} onClose={onClose}>
+      <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
+        <h2 className="text-md font-bold text-center">RIBBIT</h2>
+
+        <div className="relative flex justify-center w-32 h-32 m-auto">
+          <img src={frogNecklaceDisabledSvg} alt="Frog Necklace" />
+        </div>
+
+        <span className="text-xs text-center">
+          You&apos;ve scanned a FROG NECKLACE but you don&apos;t have a Devcon 7
+          ticket.
+        </span>
+
+        <button
+          type="button"
+          className="text-xs m-auto bg-green-600 text-white px-4 py-1 rounded-sm"
+          onClick={onClose}
+        >
+          Oh
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 function ActivationModal({
   onClose,
   socialId,
@@ -428,6 +461,11 @@ function FrogNecklace() {
   }
 
   const mySocialId = myState.myScore.socialId;
+  const myDevcon7TicketId = myState.myScore.devcon7TicketId;
+
+  if (!myDevcon7TicketId) {
+    return <UnavailableModal onClose={onClose} socialId={socialId} />;
+  }
 
   if (userState) {
     if (mySocialId === userState.socialId) {

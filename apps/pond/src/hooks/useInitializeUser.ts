@@ -86,11 +86,25 @@ function useInitializeUser() {
 
       const publicKey = await z.identity.getPublicKey();
 
-      const tickets = await z.pod
+      const [ticket] = await z.pod
         .collection(DEVCON_7_TICKET_COLLECTION_ID)
         .query(
           p.pod({
-            ...TicketSpec.schema,
+            entries: {
+              ...TicketSpec.schema.entries,
+              isAddOn: {
+                type: "optional",
+                innerType: {
+                  type: "int",
+                  isNotMemberOf: [
+                    {
+                      type: "int",
+                      value: 1n,
+                    },
+                  ],
+                },
+              },
+            },
             signerPublicKey: {
               isMemberOf: [...DEVCON_7_SIGNER_PUBLIC_KEYS],
             },
@@ -106,8 +120,6 @@ function useInitializeUser() {
             ],
           })
         );
-
-      const ticket = tickets.find((podData) => !("isAddOn" in podData.entries));
 
       if (!ticket) {
         throw new Error("No devcon7 ticket found");
@@ -162,9 +174,6 @@ function useInitializeUser() {
   }, [meError, initializeUser]);
   const hasRemoteTicket = Boolean(userState?.myScore.devcon7TicketId);
   useEffect(() => {
-    console.log("hasIdentity", hasIdentity);
-    console.log("hasRemoteTicket", hasRemoteTicket);
-    console.log("devcon7Ticket", devcon7Ticket);
     if (hasIdentity && !hasRemoteTicket && devcon7Ticket) {
       initializeUser();
     }

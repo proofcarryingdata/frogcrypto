@@ -12,8 +12,6 @@ import MyProfile from "./social/MyProfile";
 import ProfileSharer from "./social/ProfileSharer";
 
 function NavBar() {
-  useAcceptedFrogRequests();
-
   const [location] = useLocation();
 
   const otherProfilePODs = useOtherProfilePODs();

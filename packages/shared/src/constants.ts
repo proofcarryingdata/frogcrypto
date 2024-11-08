@@ -1,4 +1,7 @@
-export const FROGCRYPTO_FOLDER_NAME = "FrogCrypto (alpha)";
+export const FROGCRYPTO_FOLDER_NAME =
+  process.env.NODE_ENV === "production"
+    ? "FrogCrypto (beta)"
+    : "FrogCrypto (alpha)";
 
 export const FROM_SUBSCRIPTION_PARAM_KEY = "fromFrogSubscription";
 

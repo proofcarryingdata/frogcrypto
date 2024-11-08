@@ -17,6 +17,7 @@ import useInitializeUser from "./hooks/useInitializeUser";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
+import { useAcceptedFrogRequests } from "./hooks/useFrogRequests";
 
 function SocialTabButton() {
   const socialTabAvailable = useSocialTabAvailable();
@@ -54,6 +55,7 @@ function FrogCrypto() {
   const myScore = userState?.myScore.score;
   const { subscriptions } = useSubscriptions();
   const [location] = useLocation();
+  useAcceptedFrogRequests();
 
   if (!userState) {
     return <Loader />;
