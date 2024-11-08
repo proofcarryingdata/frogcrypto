@@ -161,11 +161,9 @@ function FrogCard({
         {showMore ? (
           <>
             {showAsPOD ? (
-              <>
-                <pre className="text-xs text-gray-700 truncate whitespace-pre overflow-clip w-full">
-                  {JSON.stringify(frog, null, 2)}
-                </pre>
-              </>
+              <pre className="text-xs text-gray-700 truncate whitespace-pre overflow-clip w-full">
+                {JSON.stringify(frog, null, 2)}
+              </pre>
             ) : (
               <>
                 <p className="text-xs text-gray-700">{frog.description}</p>
@@ -217,14 +215,7 @@ export function FrogAttributes({
   color: string;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,_1fr)_1px_repeat(5,_minmax(0,_1fr))] gap-4 w-full">
-      <FrogAttribute
-        label="ID"
-        title="ID"
-        value={`#${String(frog.frogId)}`}
-        color={color}
-      />
-      <div className="min-w-px max-w-px h-full bg-gray-300" />
+    <div className="grid grid-cols-5 gap-4 w-full">
       <FrogAttribute label="JMP" title="Jump" value={frog.jump} color={color} />
       <FrogAttribute
         label="VIB"

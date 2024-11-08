@@ -82,7 +82,7 @@ function PendingRequest({
           </button>
 
           <span className="text-xs text-center px-8 text-gray-500">
-            For your safety, only accept frog requests from verified and
+            For your safety, only accept FROG REQUESTS from verified and
             reputable sources.
           </span>
 

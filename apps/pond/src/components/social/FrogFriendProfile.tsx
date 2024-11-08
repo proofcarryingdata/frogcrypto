@@ -19,13 +19,13 @@ function FrogFriendProfile({
   });
 
   return (
-    <SocialContainer title={frog.name}>
+    <SocialContainer title={`${frog.profileName} the ${frog.name}`}>
       <div className="w-32 h-32 mx-auto">
         <FrogImg frog={frog} className="w-full h-full object-cover" />
       </div>
 
       <div className="flex flex-col w-full items-center">
-        <span className="font-semibold">{frog.name}</span>
+        <span className="font-semibold">{frog.profileName}</span>
         {userData ? (
           <Frog score={userData.frogCount} className="text-sm" />
         ) : null}

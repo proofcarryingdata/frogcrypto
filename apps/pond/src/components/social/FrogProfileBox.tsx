@@ -33,7 +33,7 @@ function FrogProfileBox({
       <FrogImg frog={frog} className="w-16 h-16 object-cover mb-1" />
 
       <h3 className="text-sm font-semibold text-green-700">
-        {`0x${shortCommitment(semaphoreIdBase64)}`}
+        {frog.profileName}
       </h3>
 
       {userData ? (

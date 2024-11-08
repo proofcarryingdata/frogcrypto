@@ -398,7 +398,7 @@ function FrogRequestModal({
                 : null}
               {!isFriend &&
                 !hasDeclinedRequest &&
-                "For your safety, only send frog requests to verified and reputable sources."}
+                "For your safety, only send FROG REQUESTS to verified and reputable sources."}
             </span>
 
             <button
