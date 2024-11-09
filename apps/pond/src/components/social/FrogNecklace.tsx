@@ -36,7 +36,7 @@ function ConnectedModal({
   const semaphoreIdBase64 = useSemaphoreIdBase64();
 
   const onSwipeLeft = useCallback(() => {
-    setPanel((prev) => Math.min(2, prev + 1));
+    setPanel((prev) => Math.min(3, prev + 1));
   }, []);
 
   const onSwipeRight = useCallback(() => {
@@ -91,6 +91,17 @@ function ConnectedModal({
         {panel === 1 && (
           <>
             <div className="relative flex justify-center w-32 h-32 m-auto">
+              <img src="/images/necklace_guide_0.png" alt="Scan Frog" />
+            </div>
+
+            <span className="text-xs text-center">
+              Find friends wearing a FROG NECKLACE
+            </span>
+          </>
+        )}
+        {panel === 2 && (
+          <>
+            <div className="relative flex justify-center w-32 h-32 m-auto">
               <img src="/images/necklace_guide_1.png" alt="Scan Frog" />
             </div>
 
@@ -99,21 +110,20 @@ function ConnectedModal({
             </span>
           </>
         )}
-
-        {panel === 2 && (
+        {panel === 3 && (
           <>
             <div className="relative flex justify-center w-32 h-32 m-auto">
               <img src="/images/necklace_guide_2.png" alt="Send Request" />
             </div>
 
             <span className="text-xs text-center">
-              Earn <FrogEmoji /> by sending FROG REQUESTS
+              Earn (+1 <FrogEmoji />) by sending FROG REQUESTS
             </span>
           </>
         )}
 
         <div className="flex gap-4 justify-center">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <button
               type="button"
               // eslint-disable-next-line react/no-array-index-key -- key is needed for the array
@@ -137,7 +147,7 @@ function ConnectedModal({
             <ChevronLeft className="w-4 h-4" />
           </button>
         )}
-        {panel < 2 && (
+        {panel < 3 && (
           <button
             type="button"
             className="absolute bottom-4 right-4"

@@ -32,7 +32,7 @@ function SocialTabButton() {
           : "bg-teal-500"
       }`}
     >
-      frog social
+      FROG SOCIAL
     </Link>
   ) : (
     <button
@@ -42,7 +42,7 @@ function SocialTabButton() {
         toast.error(
           <span>
             You need 10 <FrogEmoji className="w-4 h-4 inline mb-1" /> to unlock
-            unlock this feature!
+            this feature!
           </span>
         );
       }}

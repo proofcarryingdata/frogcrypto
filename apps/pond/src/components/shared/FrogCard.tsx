@@ -178,11 +178,6 @@ function FrogCard({
                   </div>
 
                   <div className="col-span-2 h-px bg-gray-300" />
-
-                  <div className="text-moss-700 px-3">Source</div>
-                  <div className="text-right px-3 font-medium">
-                    {biomeValue(frog.biome)}
-                  </div>
                 </div>
 
                 {profileFrog ? (

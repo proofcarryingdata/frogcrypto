@@ -36,16 +36,13 @@ function NavBar() {
       </Link>
       <div className="relative">
         <a
-          className="text-link-disabled"
+          className="text-link"
           href="https://t.me/+rvx1scQbQU1hOGZh"
           target="_blank"
           rel="noreferrer"
         >
           Newsfeed
         </a>
-        <span className="absolute rounded-sm bottom-0 right-0 -mr-1 px-0.5 bg-orange-500 text-white text-[6px] bg-opacity-90">
-          SOON
-        </span>
       </div>
     </div>
   );
