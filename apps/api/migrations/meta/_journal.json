@@ -5,78 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1726203162481,
-      "tag": "0000_left_spacker_dave",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1726253465478,
-      "tag": "0001_jazzy_black_tarantula",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1726299492294,
-      "tag": "0002_daily_the_order",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1726866097873,
-      "tag": "0003_harsh_lightspeed",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1727116330053,
-      "tag": "0004_clammy_archangel",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1728339940500,
-      "tag": "0005_slimy_zarda",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1728599377478,
-      "tag": "0006_massive_war_machine",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1728947350892,
-      "tag": "0007_legal_chimera",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1729019017930,
-      "tag": "0008_cool_landau",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1730156469367,
-      "tag": "0009_funny_leo",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1730764007336,
-      "tag": "0010_acoustic_monster_badoon",
+      "when": 1731170338559,
+      "tag": "0000_misty_crystal",
       "breakpoints": true
     }
   ]
