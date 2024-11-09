@@ -11,8 +11,6 @@ import { max } from "drizzle-orm";
 import { frogsTable } from "./schema";
 import { db } from ".";
 
-// Hard-coded list of spirit frog IDs
-const SPIRIT_FROG_BIOMS: (keyof typeof Biome)[] = ["Swamp"];
 const CACHE_DURATION = 1000 * 60; // 1 minute
 
 let cachedSpiritFrogs: FrogCryptoFrogData[] = [];
@@ -69,9 +67,7 @@ export async function refreshFrogCache() {
       .filter((frog) => frog.rarity !== Number(Rarity.Object));
 
     cachedSpiritFrogs = allFrogs
-      .filter((frog) =>
-        SPIRIT_FROG_BIOMS.includes(frog.biome as keyof typeof Biome)
-      )
+      .filter((frog) => !frog.drop_weight && frog.rarity === "rare")
       .sort((a, b) => a.id - b.id);
 
     lastUpdateTimestamp = new Date();

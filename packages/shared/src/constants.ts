@@ -1,7 +1,5 @@
 export const FROGCRYPTO_FOLDER_NAME =
-  process.env.NODE_ENV === "production"
-    ? "FrogCrypto (beta)"
-    : "FrogCrypto (alpha)";
+  process.env.NODE_ENV === "production" ? "FrogCrypto" : "FrogCrypto (alpha)";
 
 export const FROM_SUBSCRIPTION_PARAM_KEY = "fromFrogSubscription";
 
@@ -11,6 +9,6 @@ export const SERVER_URL =
     : "http://localhost:4001";
 
 export const DEFAULT_ZUPASS_URL =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "production"
     ? "http://staging.zupass.org"
     : "https://staging.zupass.org";
