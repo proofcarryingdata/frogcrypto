@@ -1,4 +1,6 @@
 import { logger } from "@frogcrypto/shared";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { db } from "./db";
 import { createServer } from "./server";
 import { initializeFrogCache } from "./db/frog-cache";
 import { initializeFeedCache } from "./db/feeds";
@@ -14,6 +16,8 @@ async function main() {
   await initializeFeedCache();
 
   if (!isProduction || isRender) {
+    await migrate(db, { migrationsFolder: "migrations" });
+
     server.listen(port, () => {
       logger.info(`api running on ${String(port)}`);
     });
