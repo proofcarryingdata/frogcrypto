@@ -27,7 +27,9 @@ function SocialTabButton() {
     <Link
       href="/social"
       className={`btn ${
-        location.startsWith("/social") ? "bg-green-500" : "bg-teal-500"
+        location.startsWith("/social")
+          ? "bg-green-500 font-semibold"
+          : "bg-teal-500"
       }`}
     >
       frog social
@@ -77,14 +79,14 @@ function FrogCrypto() {
         <nav className="flex w-full gap-3 font-mono [&>*]:text-center [&>*]:whitespace-nowrap">
           <Link
             href="/"
-            className={`btn ${location === "/" ? "bg-green-500" : "bg-teal-500"}`}
+            className={`btn ${location === "/" ? "bg-green-500 font-semibold" : "bg-teal-500"}`}
             title="get frogs"
           >
             get frogs
           </Link>
           <Link
             href="/dex"
-            className={`btn ${location === "/dex" ? "bg-green-500" : "bg-teal-500"}`}
+            className={`btn ${location === "/dex" ? "bg-green-500 font-semibold" : "bg-teal-500"}`}
             title="frogedex"
           >
             frogedex
@@ -97,9 +99,7 @@ function FrogCrypto() {
         <Switch>
           <Route path="/" component={GetFrogTab} />
           <Route path="/dex" component={DexTab} />
-          {userState.myScore.devcon7TicketId ? (
-            <Route path="/social" component={SocialTab} />
-          ) : null}
+          <Route path="/social" component={SocialTab} nest />
           <Route component={NotFound} />
         </Switch>
       </Suspense>

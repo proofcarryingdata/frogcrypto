@@ -11,7 +11,7 @@ import SocialContainer from "./SocialContainer";
  * The Score tab shows the user their score and the leaderboard.
  */
 function FrogScore(): JSX.Element {
-  const { data: { myScore: score } = {} } = useUserState();
+  const { data: { myScore: score, spiritFrog } = {} } = useUserState();
   const { data: scores } = trpc.social.scoreboard.useQuery();
 
   if (!score) {
@@ -20,7 +20,12 @@ function FrogScore(): JSX.Element {
 
   return (
     <SocialContainer title="Leaderboard">
-      <ScoreTable scores={[score]} getUsername={getUsernameFromHash} />
+      <ScoreTable
+        scores={[score]}
+        getUsername={(id) =>
+          `${getUsernameFromHash(id)} the ${spiritFrog?.name ?? "Unknown Toad"}`
+        }
+      />
 
       <div className="min-h-px max-h-px w-full bg-green-600 bg-opacity-30" />
 
@@ -73,7 +78,7 @@ function ScoreTable({
                   />
                 </td>
                 <td className="w-8">{score.rank}.</td>
-                <td>{getUsername(score.semaphoreIdHash)}</td>
+                <td>{score.username ?? getUsername(score.semaphoreIdHash)}</td>
                 <td className="text-right h-8">
                   <Frog
                     score={score.score}

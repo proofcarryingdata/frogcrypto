@@ -5,6 +5,7 @@ function NotFound() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
+    console.debug("Not found, redirecting to /");
     setLocation("/");
   }, [setLocation]);
 

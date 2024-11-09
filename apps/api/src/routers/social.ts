@@ -1,5 +1,6 @@
 import {
   decompressBigInt,
+  getUsernameFromHash,
   isSpiritFrogDataEqualish,
   parseProfileFrogPOD,
   userPublicKeyToUserId,
@@ -425,6 +426,7 @@ export const socialRouter = router({
           rank: z.number(),
           score: z.number(),
           semaphoreIdHash: z.string(),
+          username: z.string(),
           imgUrl: z.string(),
         })
       )
@@ -439,12 +441,18 @@ export const socialRouter = router({
         .limit(50)
         .then((scores) => {
           return Promise.all(
-            scores.map(async (score) => ({
-              ...score,
-              imgUrl: await getSpiritFrog(BigInt(score.semaphoreId)).then(
-                (frog) => frog?.imageUrl ?? ""
-              ),
-            }))
+            scores.map(async (score) => {
+              const frog = await getSpiritFrog(BigInt(score.semaphoreId));
+              const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
+                frog?.name ?? "Unknown Toad"
+              }`;
+
+              return {
+                ...score,
+                username,
+                imgUrl: frog?.imageUrl ?? "",
+              };
+            })
           );
         });
     }),

@@ -48,5 +48,7 @@ export function usePossibleFrogs() {
 export function useSocialTabAvailable() {
   const { data: userState } = useUserState();
 
-  return (userState?.myScore.score ?? 0) >= 10;
+  return (
+    (userState?.myScore.score ?? 0) >= 10 && userState?.myScore.devcon7TicketId
+  );
 }
