@@ -16,9 +16,9 @@ import { setToken, trpc } from "../trpc";
 import { parcnetAPIAtom } from "./useParcnetClient";
 import { semaphoreIdBase64Atom } from "./useUserState";
 
-const zupassSemaphoreIdAtom = atom<Promise<bigint | null>>(async (get) => {
-  const z = get(parcnetAPIAtom);
-  return z?.identity.getSemaphoreV4Commitment() ?? null;
+const zupassSemaphoreIdAtom = atom<Promise<bigint>>(async (get) => {
+  const z = await get(parcnetAPIAtom);
+  return z.identity.getSemaphoreV4Commitment();
 });
 
 function useInitializeUser() {

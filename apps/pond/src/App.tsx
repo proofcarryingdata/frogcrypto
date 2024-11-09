@@ -71,7 +71,7 @@ function FrogCrypto() {
       <FrogNecklace />
       <PendingRequests />
 
-      <Frog className="self-center" score={myScore ?? "?"} />
+      <Frog className="self-center" score={myScore ?? "?"} prefix="Score " />
 
       {(myScore ?? 0) >= 2 && (
         <nav className="flex w-full gap-3 font-mono [&>*]:text-center [&>*]:whitespace-nowrap">
@@ -89,8 +89,7 @@ function FrogCrypto() {
           >
             frogedex
           </Link>
-          {/* {userState.myScore.devcon7TicketId ? <SocialTabButton /> : null} */}
-          <SocialTabButton />
+          {userState.myScore.devcon7TicketId ? <SocialTabButton /> : null}
         </nav>
       )}
 
@@ -98,9 +97,9 @@ function FrogCrypto() {
         <Switch>
           <Route path="/" component={GetFrogTab} />
           <Route path="/dex" component={DexTab} />
-          {/* {userState.myScore.devcon7TicketId ? ( */}
-          <Route path="/social" component={SocialTab} nest />
-          {/* ) : null} */}
+          {userState.myScore.devcon7TicketId ? (
+            <Route path="/social" component={SocialTab} />
+          ) : null}
           <Route component={NotFound} />
         </Switch>
       </Suspense>
@@ -137,7 +136,7 @@ function App() {
           <span>FrogCrypto</span>
         </h1>
 
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={<Loader message="Connecting to Zupass..." />}>
           <AppWrapper />
         </Suspense>
       </div>

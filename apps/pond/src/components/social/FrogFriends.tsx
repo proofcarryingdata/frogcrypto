@@ -36,7 +36,12 @@ function FrogFriends(): React.ReactElement {
             ))}
           </div>
         </SocialContainer>
-      ) : null}
+      ) : (
+        <span>
+          Your lily pad is waiting for company! Scan some frog necklaces to make
+          new friends in the pond.
+        </span>
+      )}
 
       <Modal
         isOpen={Boolean(focusedFrog)}

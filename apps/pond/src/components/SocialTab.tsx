@@ -14,9 +14,6 @@ import ProfileSharer from "./social/ProfileSharer";
 function NavBar() {
   const [location] = useLocation();
 
-  const otherProfilePODs = useOtherProfilePODs();
-  const showFriendsTab = otherProfilePODs.length > 0;
-
   return (
     <div className="px-2 mb-1 flex justify-between [&>*]:select-none">
       <Link
@@ -31,16 +28,12 @@ function NavBar() {
       >
         Profile
       </Link>
-      {showFriendsTab ? (
-        <Link
-          href="/friends"
-          className={` ${location === "/friends" ? "text-link-active" : "text-link"}`}
-        >
-          Friends
-        </Link>
-      ) : (
-        <span className="text-link-disabled">Friends</span>
-      )}
+      <Link
+        href="/friends"
+        className={` ${location === "/friends" ? "text-link-active" : "text-link"}`}
+      >
+        Friends
+      </Link>
       <div className="relative">
         <a
           className="text-link-disabled"

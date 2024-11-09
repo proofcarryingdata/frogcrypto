@@ -1,20 +1,14 @@
 import {
   DEFAULT_ZUPASS_URL,
-  FROGCRYPTO_FOLDER_NAME,
   DEVCON_7_TICKET_COLLECTION_ID,
+  FROGCRYPTO_FOLDER_NAME,
 } from "@frogcrypto/shared";
 import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
 import { connect, connectToHost } from "@parcnet-js/app-connector";
-import { atom, useAtom, useAtomValue } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atom, useAtomValue } from "jotai";
+import { atomWithStorage, loadable } from "jotai/utils";
 import type { ReactNode } from "react";
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, useContext, useMemo, useRef } from "react";
 
 enum ClientConnectionState {
   CONNECTING,
@@ -61,58 +55,44 @@ const ZAPP: Zapp = {
   },
 };
 
-export const parcnetAPIAtom = atom<ParcnetAPI | null>(null);
+export const parcnetAPIAtom = atom<Promise<ParcnetAPI>>(async (get) => {
+  const url = get(zupassUrlAtom);
+  if (window.parent === window.self) {
+    let container = document.getElementById("parcnet-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "parcnet-container";
+      document.body.appendChild(container);
+    }
+    return connect(ZAPP, container, url);
+  }
+  return connectToHost(ZAPP);
+});
+export const loadableParcnetAPIAtom = loadable(parcnetAPIAtom);
 
 export function ParcnetIframeProvider({
   children,
-  skipConnection = false,
 }: {
   children: React.ReactNode;
-  skipConnection?: boolean;
 }): ReactNode {
+  const loadableParcnetAPI = useAtomValue(loadableParcnetAPIAtom);
   const ref = useRef<HTMLDivElement>(null);
-  const isMounted = useRef(Boolean(skipConnection));
-  const url = useAtomValue(zupassUrlAtom);
-
-  const [value, setValue] = useState<ClientState>({
-    state: ClientConnectionState.CONNECTING,
-    ref,
-  });
-  const [_, setParcnetAPI] = useAtom(parcnetAPIAtom);
-
-  useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
-    } else {
-      return;
+  const value = useMemo<ClientState>(() => {
+    if (loadableParcnetAPI.state === "loading") {
+      return {
+        state: ClientConnectionState.CONNECTING,
+        ref: null,
+      };
     }
-
-    if (window.parent === window.self) {
-      if (ref.current) {
-        void connect(ZAPP, ref.current, url).then((zupass) => {
-          setValue({
-            state: ClientConnectionState.CONNECTED,
-            z: zupass,
-            ref,
-          });
-          setParcnetAPI(zupass);
-        });
-      }
-    } else {
-      void connectToHost(ZAPP).then((zupass) => {
-        setValue({
-          state: ClientConnectionState.CONNECTED,
-          z: zupass,
-          ref,
-        });
-        setParcnetAPI(zupass);
-      });
+    if (loadableParcnetAPI.state === "hasError") {
+      throw loadableParcnetAPI.error;
     }
-
-    return () => {
-      isMounted.current = false;
+    return {
+      state: ClientConnectionState.CONNECTED,
+      z: loadableParcnetAPI.data,
+      ref,
     };
-  }, [setParcnetAPI, url]);
+  }, [loadableParcnetAPI]);
 
   return (
     <ParcnetClientContext.Provider value={value}>

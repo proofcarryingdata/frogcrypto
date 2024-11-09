@@ -15,13 +15,13 @@ import { useCallback, useEffect, useMemo } from "react";
 import { atomWithStorage, loadable } from "jotai/utils";
 import { type JSONPOD, POD } from "@pcd/pod";
 import { toast } from "react-hot-toast";
-import { parcnetAPIAtom } from "./useParcnetClient";
+import { loadableParcnetAPIAtom, parcnetAPIAtom } from "./useParcnetClient";
 
 const frogsSubscriptionAtom = atom<
   Promise<Subscription<typeof FrogSpec.schema> | undefined>
 >(async (get) => {
-  const z = get(parcnetAPIAtom);
-  return z?.pod
+  const z = await get(parcnetAPIAtom);
+  return z.pod
     .collection(FROGCRYPTO_FOLDER_NAME)
     .subscribe(pod({ entries: FrogSpec.schema }));
 });
@@ -125,8 +125,7 @@ function reconcileFrogPODData(
  *
  * @returns A function that takes PODData[] and returns reconciled PODData[]
  */
-function useReconcileFrogs() {
-  const z = useAtomValue(parcnetAPIAtom);
+function useReconcileFrogs(z: ParcnetAPI | null) {
   const [_frogs, setFrogs] = useAtom(frogPODDataAtom);
 
   return useCallback(
@@ -161,7 +160,10 @@ function useReconcileFrogs() {
 
 export function useConnectFrogStore() {
   const value = useAtomValue(loadableFrogsSubscriptionAtom);
-  const reconcileFrogs = useReconcileFrogs();
+  const z = useAtomValue(loadableParcnetAPIAtom);
+  const reconcileFrogs = useReconcileFrogs(
+    z.state === "hasData" ? z.data : null
+  );
 
   useEffect(() => {
     if (value.state === "hasError") {
@@ -175,14 +177,15 @@ export function useConnectFrogStore() {
   }, [reconcileFrogs, value]);
 }
 
-const suspendableFrogPODDataAtom = atom<Promise<PODData[]>>((get) => {
+const suspendableFrogPODDataAtom = atom<Promise<PODData[]>>(async (get) => {
   const frogs = get(frogPODDataAtom);
   if (frogs) {
     return Promise.resolve(frogs);
   }
+  const z = await get(parcnetAPIAtom);
   return get(frogsSubscriptionAtom)
     .then((s) => s?.query() ?? [])
-    .then((rawData) => reconcileFrogPODData(rawData, get(parcnetAPIAtom)));
+    .then((rawData) => reconcileFrogPODData(rawData, z));
 });
 
 const frogsAtom = atom<FrogPOD[] | Promise<FrogPOD[]>>(async (get) => {
@@ -233,7 +236,7 @@ export function useManageFrogs() {
       insert: async (data: PODData) => {
         setFrogs((prev) => reconcileFrogPODData([...(prev ?? []), data], z));
         await withTimeout(
-          z?.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(data)
+          z.pod.collection(FROGCRYPTO_FOLDER_NAME).insert(data)
         );
       },
       delete: async (signature: string) => {
@@ -244,7 +247,7 @@ export function useManageFrogs() {
           )
         );
         await withTimeout(
-          z?.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(signature)
+          z.pod.collection(FROGCRYPTO_FOLDER_NAME).delete(signature)
         );
       },
     };

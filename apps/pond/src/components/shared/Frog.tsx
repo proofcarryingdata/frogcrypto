@@ -89,10 +89,12 @@ function Frog({
   score,
   colorize,
   className,
+  prefix,
 }: {
   score?: number | string;
   colorize?: boolean;
   className?: string;
+  prefix?: string;
 }) {
   if (typeof score === "undefined") {
     return <FrogEmoji />;
@@ -107,6 +109,7 @@ function Frog({
     <div
       className={`inline-flex min-w-0 gap-1 items-center text-frog-score font-mono ${className ?? ""}`}
     >
+      {prefix ? <span>{prefix}</span> : null}
       <span className={colorize ? color : ""}>{score}</span>
       <FrogEmoji />
     </div>
