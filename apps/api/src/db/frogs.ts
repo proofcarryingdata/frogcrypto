@@ -44,6 +44,8 @@ export async function sampleFrogData(
     select * from ${frogsTable}
     join biome_scaling on replace(lower(${jsonbField(frogsTable.frog, "biome")}), ' ', '') = lower(biome_scaling.biome)
 
+    where cast(${jsonbField(frogsTable.frog, "drop_weight")} as double precision) > 0
+
     order by
     -- prevent underflow
     random() ^ least(1.0 / cast(${jsonbField(frogsTable.frog, "drop_weight")} as double precision) / scaling_factor, 10)

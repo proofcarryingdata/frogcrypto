@@ -1,13 +1,13 @@
+import path from "node:path";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { json, urlencoded } from "body-parser";
 import cors from "cors";
 import express, { type Express } from "express";
 import morgan from "morgan";
+import { engine } from "express-handlebars";
 import { createContext } from "./context";
 import { appRouter } from "./routers";
-import path from "path";
 import { getUserScoreLite } from "./db/users";
-import { engine } from "express-handlebars";
 import { getUserSnapshot } from "./redis";
 
 export const createServer = (): Express => {
