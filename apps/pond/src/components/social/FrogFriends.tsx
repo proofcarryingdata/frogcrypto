@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { type ProfileFrogPOD } from "@frogcrypto/shared";
 import _ from "lodash";
+import { AlertCircle } from "lucide-react";
 import { useProfileFrogs } from "../../hooks/useFrogs";
 import { useSemaphoreIdBase64 } from "../../hooks/useUserState";
 import Modal from "../shared/Modal";
@@ -37,10 +38,10 @@ function FrogFriends(): React.ReactElement {
           </div>
         </SocialContainer>
       ) : (
-        <span>
-          Your lily pad is waiting for company! Scan some frog necklaces to make
-          new friends in the pond.
-        </span>
+        <div className="mx-4">
+          You have no friends yet. Scan some frog necklaces to make new friends
+          in the pond.
+        </div>
       )}
 
       <Modal
