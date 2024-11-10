@@ -14,11 +14,11 @@ import { type inferTRPCClientTypes } from "@trpc/server";
 import { type AppRouter } from "./routers";
 
 const NUM_ROUNDS = 10;
-const NUM_USERS = 1000;
-const NUM_REQUESTS = 100;
+const NUM_USERS = 100;
+const NUM_REQUESTS = 1000;
 // const SERVER_URL = "http://localhost:4001";
 // const SERVER_URL = "https://frogcrypto-api.vercel.app";
-const SERVER_URL = "https://frogcrypto-api.onrender.com";
+const SERVER_URL = "https://frogcrypto-api-staging-prod-db.onrender.com";
 
 async function run(
   users: {
@@ -47,9 +47,6 @@ async function run(
       })
     );
     console.timeEnd("make requests");
-
-    console.log("Users: ", users.length);
-    console.log("Requests: ", NUM_USERS * NUM_REQUESTS);
   } catch (error) {
     console.error(`An error occurred: ${(error as Error).message}`);
   }
@@ -111,6 +108,9 @@ async function main() {
     })
   );
   console.timeEnd("generate users");
+
+  console.log("Users: ", users.length);
+  console.log("Requests: ", NUM_USERS * NUM_REQUESTS);
 
   for (let i = 0; i < NUM_ROUNDS; i++) {
     await run(users);
