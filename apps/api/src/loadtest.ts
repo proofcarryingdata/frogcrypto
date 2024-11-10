@@ -1,5 +1,5 @@
 import { POD_TYPE_FROGCRYPTO_PWT, PwtSpec } from "@frogcrypto/shared";
-import { encodePrivateKey, POD } from "@pcd/pod";
+import { encodePrivateKey, encodePublicKey, POD } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 import { crypto } from "@zk-kit/utils";
 import {
@@ -13,9 +13,9 @@ import SuperJSON from "superjson";
 import { type inferTRPCClientTypes } from "@trpc/server";
 import { type AppRouter } from "./routers";
 
-const NUM_ROUNDS = 10;
-const NUM_USERS = 100;
-const NUM_REQUESTS = 1000;
+const NUM_ROUNDS = 1;
+const NUM_USERS = 1;
+const NUM_REQUESTS = 1;
 // const SERVER_URL = "http://localhost:4001";
 // const SERVER_URL = "https://frogcrypto-api.vercel.app";
 const SERVER_URL = "https://frogcrypto-api-staging-prod-db.onrender.com";
@@ -60,6 +60,11 @@ async function main() {
       if (typeof identity.privateKey === "string") {
         throw new Error("Unsupported private key type!");
       }
+      //   console.log(
+      //     "Private Key: ",
+      //     encodePrivateKey(identity.privateKey, "hex")
+      //   );
+      //   console.log("Public Key: ", encodePublicKey(identity.publicKey, "hex"));
 
       const semaphoreId = identity.commitment;
 
