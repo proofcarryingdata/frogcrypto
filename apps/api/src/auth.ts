@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import type express from "express";
 import { db } from "./db";
 import { userScoresTable } from "./db/schema";
-import _ from "lodash";
+import redis from "./redis";
 
 export interface AuthSession {
   user: {
@@ -21,15 +21,24 @@ export interface AuthSession {
   };
 }
 
-const memoizedDecodeAndVerifyPwt = _.memoize((token: string) => {
-  const pod = POD.fromJSON(JSON.parse(token) as JSONPOD);
-  return verifyPwtAndGetSemaphoreId(pod);
-});
+const memoizedDecodeAndVerifyPwt = async (token: string) => {
+  const cached = await redis.get<string>(`pwt:${token}`);
+  if (cached) {
+    return BigInt(cached);
+  }
 
-async function decodeAndVerifyPwt(token: string): Promise<AuthSession | null> {
+  const pod = POD.fromJSON(JSON.parse(token) as JSONPOD);
+  const semaphoreId = verifyPwtAndGetSemaphoreId(pod);
+  void redis.set(`pwt:${token}`, semaphoreId.toString(), {
+    ex: 60 * 60, // 1 hour
+  });
+  return semaphoreId;
+};
+
+async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   let semaphoreId: bigint;
   try {
-    semaphoreId = memoizedDecodeAndVerifyPwt(token);
+    semaphoreId = await memoizedDecodeAndVerifyPwt(token);
   } catch (e) {
     logger.error("Invalid PWT", e);
     throw new TRPCError({
@@ -65,7 +74,6 @@ export const auth = async (
     return null;
   }
 
-  // TODO: cache this
   const pwt = authorization.split(" ")[1];
   if (!pwt) {
     throw new Error("Invalid PWT: no PWT provided");

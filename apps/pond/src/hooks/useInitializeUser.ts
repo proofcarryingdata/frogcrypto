@@ -47,7 +47,10 @@ function useInitializeUser() {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
-      const exp = Date.now() + 1000 * 60 * 60 * 24;
+      // 6 hrs from now and round to next midnight
+      const DAY_IN_MS = 1000 * 60 * 60 * 24;
+      const exp =
+        Math.ceil((Date.now() + 1000 * 60 * 60 * 6) / DAY_IN_MS) * DAY_IN_MS;
       const pwt = await z.pod.sign(
         PwtSpec.parse({
           pod_type: { type: "string", value: POD_TYPE_FROGCRYPTO_PWT },

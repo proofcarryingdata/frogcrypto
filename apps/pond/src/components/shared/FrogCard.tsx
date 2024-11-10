@@ -176,8 +176,6 @@ function FrogCard({
                   >
                     {new Date(frog.timestampSigned).toLocaleDateString()}
                   </div>
-
-                  <div className="col-span-2 h-px bg-gray-300" />
                 </div>
 
                 {profileFrog ? (
