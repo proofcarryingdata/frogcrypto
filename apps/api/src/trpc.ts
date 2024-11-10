@@ -74,6 +74,7 @@ export const protectedProcedure = t.procedure.use(function isAuthed(opts) {
   if (!user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
+      message: "Did you forget to pass the PWT?",
     });
   }
 
