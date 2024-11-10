@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "jest --detectOpenHandles",
-    "vercel-build": "pnpm run build && rm dist/index.js",
+    "vercel-build": "pnpm run build && rm index.js",
     "setup-cyberfrog": "tsx src/setup_cyberfrog.ts",
     "loadtest": "tsx src/loadtest.ts"
   },
