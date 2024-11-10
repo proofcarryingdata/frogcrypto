@@ -73,7 +73,7 @@ function FrogCrypto() {
       <FrogNecklace />
       <PendingRequests />
 
-      <Frog className="self-center" score={myScore ?? "?"} prefix="Score " />
+      <Frog className="self-center" score={myScore ?? "?"} prefix="SCORE: " />
 
       {(myScore ?? 0) >= 2 && (
         <nav className="flex w-full gap-3 font-mono [&>*]:text-center [&>*]:whitespace-nowrap">
