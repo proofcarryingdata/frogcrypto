@@ -10,6 +10,7 @@ export const createContext = async (opts: CreateExpressContextOptions) => {
 
   return {
     session,
+    cfConnectingIp: opts.req.headers["cf-connecting-ip"],
   };
 };
 

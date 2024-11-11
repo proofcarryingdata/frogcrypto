@@ -39,6 +39,7 @@ export const feedsRouter = router({
     .input(
       z.object({
         feedId: z.string(),
+        token: z.string().optional(),
       })
     )
     .output(
@@ -48,11 +49,38 @@ export const feedsRouter = router({
     )
     .mutation(
       async ({
-        input: { feedId },
+        input: { feedId, token },
         ctx: {
           user: { semaphoreId },
+          cfConnectingIp,
         },
       }) => {
+        const idempotencyKey = crypto.randomUUID();
+        const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+        const turnstileResult = await fetch(url, {
+          body: JSON.stringify({
+            secret: process.env.TURNSTILE_SECRET_KEY,
+            response: token,
+            remoteip: cfConnectingIp,
+            idempotency_key: idempotencyKey,
+          }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const turnstileOutcome = await turnstileResult.json();
+        if (
+          typeof turnstileOutcome === "object" &&
+          turnstileOutcome &&
+          "success" in turnstileOutcome &&
+          !turnstileOutcome.success
+        ) {
+          logger.error("Turnstile validation failed", {
+            turnstileOutcome,
+          });
+        }
+
         const feed = getFeeds().find((f) => f.id === feedId);
         if (!feed) {
           throw new TRPCError({

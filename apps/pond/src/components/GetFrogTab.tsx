@@ -10,6 +10,7 @@ import _ from "lodash";
 import React, { useCallback, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { ViewportList } from "react-viewport-list";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
 import useFrogs, { isProfileFrogPOD } from "../hooks/useFrogs";
@@ -109,13 +110,26 @@ function SearchButton({
   const canFetch = active && (!nextFetchAt || nextFetchAt < Date.now());
   const { mutateAsync: getFrogAsync } = useGetFrog();
   const confetti = useFrogConfetti();
+  const refTurnstile = useRef<TurnstileInstance>(null);
 
   const onClick = useCallback(
     () =>
       toast.promise(
-        new Promise<void>((resolve) => {
-          setTimeout(resolve, 4000);
-        }).then(() => getFrogAsync({ feedId: feed.id })),
+        Promise.all([
+          new Promise<void>((resolve) => {
+            setTimeout(resolve, 4000);
+          }),
+          refTurnstile.current?.execute(),
+        ])
+          .then(() =>
+            getFrogAsync({
+              feedId: feed.id,
+              token: refTurnstile.current?.getResponse(),
+            })
+          )
+          .finally(() => {
+            refTurnstile.current?.reset();
+          }),
         {
           loading: <LoadingMessages biome={feed.name} />,
           success: ({ pod }) => {
@@ -152,15 +166,25 @@ function SearchButton({
   const freerolls = FROG_FREEROLLS + 1 - (score ?? 0);
 
   return (
-    <ActionButton
-      key={feed.id}
-      onClick={onClick}
-      disabled={!canFetch}
-      ButtonComponent={FrogSearchButton}
-    >
-      {canFetch ? frogSearchText({ freerolls, name }) : null}
-      {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}
-    </ActionButton>
+    <>
+      <ActionButton
+        key={feed.id}
+        onClick={onClick}
+        disabled={!canFetch}
+        ButtonComponent={FrogSearchButton}
+      >
+        {canFetch ? frogSearchText({ freerolls, name }) : null}
+        {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}
+      </ActionButton>
+
+      <Turnstile
+        id={`turnstile-feed-${feed.id}`}
+        className="self-center"
+        color="light"
+        ref={refTurnstile}
+        siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+      />
+    </>
   );
 }
 

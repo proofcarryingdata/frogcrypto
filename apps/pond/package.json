@@ -12,6 +12,7 @@
   "dependencies": {
     "@frogcrypto/shared": "workspace:*",
     "@frogcrypto/ui": "workspace:*",
+    "@marsidev/react-turnstile": "^1.0.2",
     "@parcnet-js/app-connector": "1.1.9",
     "@parcnet-js/podspec": "1.2.0",
     "@pcd/pod": "0.5.0",
