@@ -46,8 +46,6 @@ const useAcceptFrogRequest = () => {
       });
     },
     onSuccess: async (data, variables) => {
-      void utils.users.me.invalidate();
-
       utils.social.getPendingRequests.setData(undefined, (reqs) =>
         reqs?.filter((request) => request.id !== variables.id)
       );
@@ -60,6 +58,8 @@ const useAcceptFrogRequest = () => {
         POD.fromJSON(JSON.parse(variables.requestPOD) as JSONPOD)
       );
       await frogs.insert(podData);
+
+      await utils.users.me.refetch();
 
       const profileName = String(podData.entries.profileName?.value);
       if (data && profileName) {
