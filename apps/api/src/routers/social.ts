@@ -30,7 +30,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
   if (!profilePOD) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Invalid Frog Request POD: could not parse profile POD",
+      message: "Invalid FROG REQUEST POD: could not parse profile POD",
     });
   }
 
@@ -38,7 +38,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Invalid Frog Request POD: profile ID does not match semaphore ID",
+        "Invalid FROG REQUEST POD: profile ID does not match semaphore ID",
     });
   }
   const signerPk = profilePOD.signerPublicKey;
@@ -46,7 +46,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Invalid Frog Request POD: signer public key does not match profile ID",
+        "Invalid FROG REQUEST POD: signer public key does not match profile ID",
     });
   }
 
@@ -54,7 +54,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
   if (!spiritFrog) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Invalid Frog Request POD: signer does not have a spirit frog",
+      message: "Invalid FROG REQUEST POD: signer does not have a spirit frog",
     });
   }
 
@@ -62,7 +62,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Invalid Frog Request POD: signer does not have the correct spirit frog",
+        "Invalid FROG REQUEST POD: signer does not have the correct spirit frog",
     });
   }
 
@@ -136,7 +136,7 @@ export const socialRouter = router({
         )
         .then((result) => result[0]?.count ?? 0);
 
-      if (recentRequestsCount >= MAX_REQUESTS_PER_DAY) {
+      if (Number(recentRequestsCount) >= MAX_REQUESTS_PER_DAY) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: `You have exceeded the limit of ${String(
@@ -198,7 +198,7 @@ export const socialRouter = router({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
-            "Unable to create new Frog Request. There might already be a pending Frog Request between you and this user. If your request was declined, please ask your friend to send you a new request.",
+            "Unable to create new FROG REQUEST. There might already be a pending FROG REQUEST between you and this user. If your request was declined, please ask your friend to send you a new request.",
         });
       }
 
@@ -455,6 +455,56 @@ export const socialRouter = router({
             })
           );
         });
+    }),
+
+  scoreboard2: publicProcedure
+    .output(
+      z.object({
+        totalUsers: z.number(),
+        scores: z.array(
+          z.object({
+            friendCount: z.number(),
+            rank: z.number(),
+            score: z.number(),
+            semaphoreIdHash: z.string(),
+            username: z.string(),
+            imgUrl: z.string(),
+          })
+        ),
+      })
+    )
+    .query(async () => {
+      return {
+        totalUsers: await db
+          .select({ count: sql<number>`count(*)` })
+          .from(userScoresTable)
+          .where(gt(userScoresTable.score, 0))
+          .then((result) => Number(result[0]?.count ?? 0)),
+
+        scores: await db
+          .with(userScoresView)
+          .select()
+          .from(userScoresView)
+          .orderBy(desc(userScoresView.score))
+          .where(gt(userScoresView.score, 0))
+          .limit(50)
+          .then((scores) => {
+            return Promise.all(
+              scores.map(async (score) => {
+                const frog = await getSpiritFrog(BigInt(score.semaphoreId));
+                const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
+                  frog?.name ?? "Unknown Toad"
+                }`;
+
+                return {
+                  ...score,
+                  username,
+                  imgUrl: frog?.imageUrl ?? "",
+                };
+              })
+            );
+          }),
+      };
     }),
 
   claimProfile: authedProcedure

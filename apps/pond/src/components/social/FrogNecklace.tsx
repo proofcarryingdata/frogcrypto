@@ -396,7 +396,7 @@ function FrogRequestModal({
                 hasDeclinedRequest
               }
             >
-              {hasPendingRequest ? "accept" : "send"} frog request
+              {hasPendingRequest ? "accept" : "send"} FROG REQUEST
             </button>
 
             <span className="text-xs text-center px-8 text-gray-500">
@@ -404,7 +404,7 @@ function FrogRequestModal({
                 ? "You are already froggy friends! Your updated Froggy Profile will be shared with your friend."
                 : null}
               {!isFriend && hasDeclinedRequest
-                ? "Your Frog Request was declined. Please ask your friend to send you a Frog Request instead."
+                ? "Your FROG REQUEST was declined. Please ask your friend to send you a FROG REQUEST instead."
                 : null}
               {!isFriend &&
                 !hasDeclinedRequest &&

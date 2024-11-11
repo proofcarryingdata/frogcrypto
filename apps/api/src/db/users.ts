@@ -103,7 +103,7 @@ export async function recordPendingRequest(semaphoreId: string): Promise<void> {
 
     void redis.set(
       `frogcrypto:users:pendingRequests:${String(semaphoreId)}`,
-      requests[0]?.count ?? 0
+      Number(requests[0]?.count ?? 0)
     );
   } catch (error) {
     logger.error(`Failed to record pending requests for ${semaphoreId}`, {

@@ -18,6 +18,7 @@ import { useSubscriptions } from "./hooks/useSubscriptions";
 import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 import { useAcceptedFrogRequests } from "./hooks/useFrogRequests";
+import { scoreToEmoji } from "./components/social/FrogScore";
 
 function SocialTabButton() {
   const socialTabAvailable = useSocialTabAvailable();
@@ -52,6 +53,23 @@ function SocialTabButton() {
   );
 }
 
+function Score() {
+  const { data: userState } = useUserState();
+  const myScore = userState?.myScore.score;
+
+  return (
+    <div className="flex items-center gap-2 self-center">
+      <Frog className="self-center" score={myScore ?? "?"} prefix="SCORE: " />
+      {myScore && myScore > 2 ? (
+        <span className="self-center text-frog-score">
+          {" "}
+          | {scoreToEmoji(myScore)}
+        </span>
+      ) : undefined}
+    </div>
+  );
+}
+
 function FrogCrypto() {
   const { data: userState } = useUserState();
   const myScore = userState?.myScore.score;
@@ -73,7 +91,7 @@ function FrogCrypto() {
       <FrogNecklace />
       <PendingRequests />
 
-      <Frog className="self-center" score={myScore ?? "?"} prefix="SCORE: " />
+      <Score />
 
       {(myScore ?? 0) >= 2 && (
         <nav className="flex w-full gap-3 font-mono [&>*]:text-center [&>*]:whitespace-nowrap">

@@ -12,7 +12,8 @@ import SocialContainer from "./SocialContainer";
  */
 function FrogScore(): JSX.Element {
   const { data: { myScore: score, spiritFrog } = {} } = useUserState();
-  const { data: scores } = trpc.social.scoreboard.useQuery();
+  const { data: { scores, totalUsers } = {} } =
+    trpc.social.scoreboard2.useQuery();
 
   if (!score) {
     return <Loader />;
@@ -34,6 +35,7 @@ function FrogScore(): JSX.Element {
           scores={scores}
           myScore={score}
           getUsername={getUsernameFromHash}
+          totalUsers={totalUsers}
         />
       ) : (
         <Loader />
@@ -46,10 +48,12 @@ function ScoreTable({
   scores,
   myScore,
   getUsername,
+  totalUsers,
 }: {
   getUsername: (semaphoreId: string) => string;
   scores: FrogCryptoScore[];
   myScore?: FrogCryptoScore;
+  totalUsers?: number;
 }): JSX.Element {
   const scoresByLevel = useMemo(() => groupScores(scores), [scores]);
 
@@ -90,6 +94,23 @@ function ScoreTable({
             ))}
           </React.Fragment>
         ))}
+        {totalUsers ? (
+          <>
+            <tr>
+              <td colSpan={4} className="h-4 text-center">
+                ...
+              </td>
+            </tr>
+            <tr>
+              <td className="w-10 h-8" />
+              <td className="w-8">{totalUsers}.</td>
+              <td>An Unknown Toad</td>
+              <td className="text-right h-8">
+                <Frog score={1} colorize className="justify-end text-sm" />
+              </td>
+            </tr>
+          </>
+        ) : null}
       </tbody>
     </table>
   );
@@ -115,7 +136,7 @@ export function scoreToEmoji(score: number): string {
   const percent = Math.floor(
     ((score - curr.score) / (next.score - curr.score)) * 100
   );
-  return `${curr.emoji} ${curr.title} - ${String(percent)}%`;
+  return `${String(percent)}% - ${curr.title} ${curr.emoji}`;
 }
 
 /**

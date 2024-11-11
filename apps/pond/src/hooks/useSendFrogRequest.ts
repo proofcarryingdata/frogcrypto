@@ -14,7 +14,7 @@ const useSendFrogRequest = () => {
     trpc.social.createOrUpdateSocialRequest.useMutation({
       onSuccess: (data) => {
         if (data.status === "pending") {
-          toast.success("Frog Request sent successfully!");
+          toast.success("FROG REQUEST sent successfully!");
         }
         if (data.status === "connected") {
           toast.success(
