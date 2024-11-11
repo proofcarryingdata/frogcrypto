@@ -37,7 +37,7 @@ export const createServer = (): Express => {
       const params = new URLSearchParams(req.query as Record<string, string>);
       params.set("folder", "frogcrypto");
 
-      res.redirect(`https://staging.zupass.org/#/?${params.toString()}`);
+      res.redirect(`https://zupass.org/#/?${params.toString()}`);
     });
 
   return app;
