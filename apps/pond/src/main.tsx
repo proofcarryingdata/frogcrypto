@@ -4,6 +4,7 @@ import { Provider } from "jotai";
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
 import App from "./App";
 import { ParcnetIframeProvider } from "./hooks/useParcnetClient";
 import "./index.css";
@@ -24,6 +25,7 @@ createRoot(root).render(
           <ParcnetIframeProvider>
             <App />
             <Toaster containerClassName="select-none" />
+            <Analytics />
             {window.self === window.top && (
               <ReactQueryDevtools initialIsOpen={false} />
             )}
