@@ -25,6 +25,8 @@ import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState, publicKeyToUUID } from "../utils";
 import { parseCyberfrogData } from "../cyberfrogs";
 
+const CYBERFROG_SEMAPHORE_ID = "_CYBERFROG_GLOBAL_DUMMY_ID_";
+
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
   throw new Error("ISSUER_PRIVATE_KEY is not set");
@@ -266,7 +268,7 @@ export const feedsRouter = router({
           .insert(userFeedsTable)
           .values({
             feedId,
-            semaphoreId: semaphoreId.toString(),
+            semaphoreId: CYBERFROG_SEMAPHORE_ID,
           })
           .onConflictDoNothing();
 
@@ -274,7 +276,7 @@ export const feedsRouter = router({
           .transaction(async (tx) => {
             const lastFetchedAt = await updateUserFeedState(
               tx,
-              semaphoreId.toString(),
+              CYBERFROG_SEMAPHORE_ID,
               feedId
             );
             if (!lastFetchedAt) {
@@ -291,7 +293,7 @@ export const feedsRouter = router({
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
                 code: "FORBIDDEN",
-                message: `Ribbit! You can't claim another cyberfrog yet. Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds.`,
+                message: `Ribbit! This Cyberfrog is not available yet. Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds.`,
               });
             }
 
