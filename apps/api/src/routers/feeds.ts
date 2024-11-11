@@ -80,7 +80,15 @@ export const feedsRouter = router({
         ) {
           logger.error("Turnstile validation failed", {
             turnstileOutcome,
+            semaphoreId,
           });
+          if (process.env.THROW_ON_TURNSTILE_ERROR === "true") {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message:
+                "We couldn't tell if you are human or a cyber-amphibian. Please try again.",
+            });
+          }
         }
 
         const feed = getFeeds().find((f) => f.id === feedId);

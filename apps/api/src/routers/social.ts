@@ -318,17 +318,22 @@ export const socialRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message:
-              "Request not found, expired, or you're not authorized to respond",
+              "FROG REQUEST not found, expired, or you're not authorized to respond.",
+          });
+        }
+
+        if (request.status === "connected") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "FROG REQUEST already accepted!",
           });
         }
 
         // NB: we need to be careful not to double-count friends, esp if user could manipulate the request status such as declining an already accepted request
-        if (request.status !== "connected") {
-          await recordFriendCount(tx, [
-            String(decompressBigInt(request.party1)),
-            String(decompressBigInt(request.party2)),
-          ]);
-        }
+        await recordFriendCount(tx, [
+          String(decompressBigInt(request.party1)),
+          String(decompressBigInt(request.party2)),
+        ]);
 
         const now = new Date();
         return tx
@@ -354,7 +359,13 @@ export const socialRouter = router({
           .then((result) => {
             if (result.length > 0) {
               void recordPendingRequest(ctx.user.semaphoreIdBase64);
+            } else {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "There was an error accepting the FROG REQUEST.",
+              });
             }
+
             return result[0];
           });
       });
