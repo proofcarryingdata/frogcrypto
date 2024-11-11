@@ -119,7 +119,7 @@ function SearchButton({
           new Promise<void>((resolve) => {
             setTimeout(resolve, 4000);
           }),
-          refTurnstile.current?.execute(),
+          refTurnstile.current?.getResponsePromise(),
         ])
           .then(() =>
             getFrogAsync({
@@ -177,13 +177,15 @@ function SearchButton({
         {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}
       </ActionButton>
 
-      <Turnstile
-        id={`turnstile-feed-${feed.id}`}
-        className="self-center"
-        color="light"
-        ref={refTurnstile}
-        siteKey="0x4AAAAAAAzubSJu97uBvGuG"
-      />
+      {canFetch ? (
+        <Turnstile
+          id={`turnstile-feed-${feed.id}`}
+          className="self-center"
+          color="light"
+          ref={refTurnstile}
+          siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+        />
+      ) : null}
     </>
   );
 }
