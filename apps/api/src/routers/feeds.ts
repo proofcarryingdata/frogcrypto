@@ -293,7 +293,7 @@ export const feedsRouter = router({
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
                 code: "FORBIDDEN",
-                message: `Ribbit! This Cyberfrog is not available yet. Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds.`,
+                message: `Croak! This cyber-amphibian needs a ${String(Math.floor((nextFetchAt - Date.now()) / 1000))}-second power nap! 🐸`,
               });
             }
 
