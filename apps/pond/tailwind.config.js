@@ -56,7 +56,7 @@ module.exports = {
         frog: "0px 0px 12px 2px rgb(0 0 0 / 0.05)",
       },
       fontSize: {
-        "frog-score": ["1.25rem", "1.25rem"],
+        "frog-score": ["1rem", "1rem"],
       },
       fontFamily: {
         superfunky: ["SuperFunky", "sans-serif"],
