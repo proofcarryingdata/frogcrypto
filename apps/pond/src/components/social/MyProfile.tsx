@@ -65,7 +65,7 @@ function MyProfile() {
               {getUsernameFromHash(userState.myScore.semaphoreIdHash)}
             </span>
 
-            <span className="font-semibold">Public Key</span>
+            <span className="font-semibold">Semaphore ID</span>
             <span>{shortCommitmentHex(myProfilePOD.ownerSemaphoreId)}</span>
 
             <span className="font-semibold">Telegram</span>

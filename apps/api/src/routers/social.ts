@@ -292,83 +292,89 @@ export const socialRouter = router({
 
       await validateFrogRequestPOD(responsePOD, ctx.user.semaphoreIdBase64);
 
-      return db.transaction(async (tx) => {
-        const request = await tx
-          .select()
-          .from(socialRequestsTable)
-          .where(
-            and(
-              eq(socialRequestsTable.id, requestId),
-              or(
-                and(
-                  eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
-                  isNotNull(socialRequestsTable.party2POD)
-                ),
-                and(
-                  eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
-                  isNotNull(socialRequestsTable.party1POD)
+      return db
+        .transaction(async (tx) => {
+          const request = await tx
+            .select()
+            .from(socialRequestsTable)
+            .where(
+              and(
+                eq(socialRequestsTable.id, requestId),
+                or(
+                  and(
+                    eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
+                    isNotNull(socialRequestsTable.party2POD)
+                  ),
+                  and(
+                    eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64),
+                    isNotNull(socialRequestsTable.party1POD)
+                  )
                 )
               )
             )
-          )
-          .for("update")
-          .then((result) => result[0]);
+            .for("update")
+            .then((result) => result[0]);
 
-        if (!request) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message:
-              "FROG REQUEST not found, expired, or you're not authorized to respond.",
-          });
-        }
+          if (!request) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message:
+                "FROG REQUEST not found, expired, or you're not authorized to respond.",
+            });
+          }
 
-        if (request.status === "connected") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "FROG REQUEST already accepted!",
-          });
-        }
+          if (request.status === "connected") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "FROG REQUEST already accepted!",
+            });
+          }
 
-        // NB: we need to be careful not to double-count friends, esp if user could manipulate the request status such as declining an already accepted request
-        await recordFriendCount(tx, [
-          String(decompressBigInt(request.party1)),
-          String(decompressBigInt(request.party2)),
-        ]);
+          // NB: we need to be careful not to double-count friends, esp if user could manipulate the request status such as declining an already accepted request
+          await recordFriendCount(tx, [
+            String(decompressBigInt(request.party1)),
+            String(decompressBigInt(request.party2)),
+          ]);
 
-        const now = new Date();
-        return tx
-          .update(socialRequestsTable)
-          .set({
-            [request.party1 === ctx.user.semaphoreIdBase64
-              ? "party1POD"
-              : "party2POD"]: JSON.stringify(responsePOD.toJSON()),
-            [request.party1 === ctx.user.semaphoreIdBase64
-              ? "party1PODTimestamp"
-              : "party2PODTimestamp"]: now,
-            updatedAt: now,
-            version: sql`${socialRequestsTable.version} + 1`,
-            status: "connected",
-          })
-          .where(
-            and(
-              eq(socialRequestsTable.id, requestId),
-              eq(socialRequestsTable.version, request.version)
+          const now = new Date();
+          return tx
+            .update(socialRequestsTable)
+            .set({
+              [request.party1 === ctx.user.semaphoreIdBase64
+                ? "party1POD"
+                : "party2POD"]: JSON.stringify(responsePOD.toJSON()),
+              [request.party1 === ctx.user.semaphoreIdBase64
+                ? "party1PODTimestamp"
+                : "party2PODTimestamp"]: now,
+              updatedAt: now,
+              version: sql`${socialRequestsTable.version} + 1`,
+              status: "connected",
+            })
+            .where(
+              and(
+                eq(socialRequestsTable.id, requestId),
+                eq(socialRequestsTable.version, request.version)
+              )
             )
-          )
-          .returning()
-          .then((result) => {
-            if (result.length > 0) {
-              void recordPendingRequest(ctx.user.semaphoreIdBase64);
-            } else {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "There was an error accepting the FROG REQUEST.",
-              });
-            }
+            .returning()
+            .then((result) => {
+              if (result.length === 0) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message: "There was an error accepting the FROG REQUEST.",
+                });
+              }
 
-            return result[0];
-          });
-      });
+              return result[0];
+            });
+        })
+        .then((updated) => {
+          if (updated) {
+            void recordPendingRequest(ctx.user.semaphoreIdBase64);
+          }
+
+          return updated;
+        });
     }),
 
   declineRequest: authedProcedure

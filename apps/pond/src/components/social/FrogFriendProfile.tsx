@@ -33,7 +33,7 @@ function FrogFriendProfile({
 
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-1">
-          <span className="font-semibold">Public Key</span>
+          <span className="font-semibold">Semaphore ID</span>
           <span>{shortCommitmentHex(frog.profileId)}</span>
 
           <span className="font-semibold">Telegram</span>
