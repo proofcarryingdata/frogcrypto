@@ -4,13 +4,13 @@ import {
   FROG_FREEROLLS,
   parseFrogPOD,
 } from "@frogcrypto/shared";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { podToPODData } from "@parcnet-js/podspec";
 import { TRPCClientError } from "@trpc/client";
 import _ from "lodash";
 import React, { useCallback, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { ViewportList } from "react-viewport-list";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
 import useFrogs, { isProfileFrogPOD } from "../hooks/useFrogs";
@@ -125,6 +125,7 @@ function SearchButton({
             getFrogAsync({
               feedId: feed.id,
               token: refTurnstile.current?.getResponse(),
+              version: "v2",
             })
           )
           .finally(() => {

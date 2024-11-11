@@ -42,6 +42,7 @@ export const feedsRouter = router({
       z.object({
         feedId: z.string(),
         token: z.string().optional(),
+        version: z.enum(["v1", "v2"]).optional(),
       })
     )
     .output(
@@ -51,7 +52,7 @@ export const feedsRouter = router({
     )
     .mutation(
       async ({
-        input: { feedId, token },
+        input: { feedId, token, version },
         ctx: {
           user: { semaphoreId },
           cfConnectingIp,
@@ -81,6 +82,7 @@ export const feedsRouter = router({
           logger.error("Turnstile validation failed", {
             turnstileOutcome,
             semaphoreId,
+            version,
           });
           if (process.env.THROW_ON_TURNSTILE_ERROR === "true") {
             throw new TRPCError({
