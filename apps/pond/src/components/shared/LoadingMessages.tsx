@@ -19,7 +19,7 @@ function LoadingMessages({ biome }: { biome: string }): JSX.Element {
       `Tip: Remember, rivers are trickier than they look. Watch out for those logs!`,
       `DID YOU KNOW? Frogs come in rarities: Common, Rare, Epic, Legendary, and Mythic.`,
       `DID YOU KNOW? Each Frog is a POD (Portable Object Data), with attributes securely signed by FrogCrypto, making them tamper-proof.`,
-      `DID YOU KNOW? End-to-end encryption protects your FrogPODs. Remember, your password is key and cannot be reset; without it, recovery is impossible.`,
+      `DID YOU KNOW? End-to-end encryption protects your FrogPODs.`,
     ],
     [biome]
   );
