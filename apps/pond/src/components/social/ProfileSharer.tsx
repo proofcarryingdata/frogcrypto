@@ -8,14 +8,13 @@ import { useMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useUserState } from "../../hooks/useUserState";
 import { Button } from "../shared/Button";
 import FrogImg from "../shared/FrogImg";
-import { SEARCH_PARAM_NECKLACE_QR } from "./FrogNecklace";
 
 export function ProfileSharer() {
   const myProfilePOD = useMyProfilePOD();
   const { data } = useUserState();
   const socialId = data?.myScore.socialId;
   const profileUrl = socialId
-    ? `${window.location.origin}/?${SEARCH_PARAM_NECKLACE_QR}=${encodeURIComponent(socialId)}`
+    ? `https://dc7.getfrogs.xyz/necklace/${encodeURIComponent(socialId)}`
     : undefined;
 
   const [, setLocation] = useLocation();
@@ -58,7 +57,14 @@ export function ProfileSharer() {
       <p className="mt-4 text-sm">
         {myProfilePOD.profileName} the {myProfilePOD.name}
       </p>
-      <p className="text-xs text-gray-500">{myProfilePOD.profileId}</p>
+      <a
+        href={profileUrl}
+        className="text-xs text-gray-500 underline"
+        target="_blank"
+        rel="noreferrer"
+      >
+        {myProfilePOD.profileId}
+      </a>
 
       <div className="relative">
         <QRCode value={profileUrl} size={250} />
