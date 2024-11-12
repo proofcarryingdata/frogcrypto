@@ -3,11 +3,14 @@ import {
   isSpiritFrogDataEqualish,
   type ProfileFrogPOD,
 } from "@frogcrypto/shared";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
 import { useSemaphoreIdBase64, useUserState } from "../../hooks/useUserState";
 
 function EnsureProfilePOD() {
+  // NB: temporary guard to prevent infinite loop
+  const setOnceRef = useRef(false);
+
   const myProfile = useMyProfilePOD();
   const { mutate: setMyProfile, isPending: isSettingMyProfile } =
     useSetMyProfilePOD();
@@ -38,6 +41,9 @@ function EnsureProfilePOD() {
     if (isSettingMyProfile) return;
     if (!templateFrog) return;
     if (!myProfile || !isSpiritFrogDataEqualish(myProfile, templateFrog)) {
+      if (setOnceRef.current) return;
+      setOnceRef.current = true;
+
       setMyProfile(templateFrog);
     }
   }, [isSettingMyProfile, myProfile, setMyProfile, templateFrog]);
