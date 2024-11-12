@@ -15,6 +15,13 @@
       "when": 1731406287804,
       "tag": "0001_grey_hardball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1731423693269,
+      "tag": "0002_silky_morlun",
+      "breakpoints": true
     }
   ]
 }

@@ -79,11 +79,12 @@ export const usersRouter = router({
         .insert(userScoresTable)
         .values({
           semaphoreId: String(ctx.user.semaphoreId),
+          eddsaPublicKey: ctx.user.eddsaPublicKey,
           devcon7TicketId,
         })
         .onConflictDoUpdate({
           target: userScoresTable.semaphoreId,
-          set: { devcon7TicketId },
+          set: { devcon7TicketId, eddsaPublicKey: ctx.user.eddsaPublicKey },
         });
     }),
   me: authedProcedure
@@ -112,6 +113,7 @@ export const usersRouter = router({
           socialId: z.string().nullable(),
           imgUrl: z.string(),
           devcon7TicketId: z.string().nullable(),
+          hasPk: z.boolean(),
         }),
         // FIXME: add zod schema for IFrogData
         spiritFrog: z.custom<IFrogData>().optional(),

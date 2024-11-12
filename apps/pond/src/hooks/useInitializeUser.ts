@@ -43,7 +43,7 @@ function useInitializeUser() {
   const { data: isPwtSet = false } = useQuery({
     queryKey: ["refreshToken", Boolean(z), String(zupassSemaphoreId)],
     queryFn: async () => {
-      if (!z || !zupassSemaphoreId) {
+      if (!zupassSemaphoreId) {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
@@ -83,7 +83,7 @@ function useInitializeUser() {
     queryKey: ["devcon7Ticket", Boolean(z), String(zupassSemaphoreId)],
     enabled: Boolean(z) && Boolean(zupassSemaphoreId),
     queryFn: async () => {
-      if (!z || !zupassSemaphoreId) {
+      if (!zupassSemaphoreId) {
         throw new Error("Missing zupassAPI, or semaphoreId");
       }
 
@@ -136,10 +136,6 @@ function useInitializeUser() {
   const utils = trpc.useUtils();
   const { mutate: initializeUser, error } = useMutation({
     mutationFn: async () => {
-      if (!z) {
-        throw new Error("Missing zupassAPI");
-      }
-
       await auth({
         ticket: devcon7Ticket
           ? POD.load(
@@ -171,16 +167,18 @@ function useInitializeUser() {
   );
   const hasIdentity = Boolean(userState);
   useEffect(() => {
-    if (meError) {
+    if (meError && !error) {
       initializeUser();
     }
-  }, [meError, initializeUser]);
-  const hasRemoteTicket = Boolean(userState?.myScore.devcon7TicketId);
+  }, [meError, initializeUser, error]);
+  const hasRemoteTicket =
+    Boolean(userState?.myScore.devcon7TicketId) &&
+    Boolean(userState?.myScore.hasPk);
   useEffect(() => {
-    if (hasIdentity && !hasRemoteTicket && devcon7Ticket) {
+    if (hasIdentity && !hasRemoteTicket && devcon7Ticket && !error) {
       initializeUser();
     }
-  }, [hasIdentity, hasRemoteTicket, initializeUser, devcon7Ticket]);
+  }, [hasIdentity, hasRemoteTicket, initializeUser, devcon7Ticket, error]);
 
   useEffect(() => {
     if (zupassSemaphoreId && !semaphoreIdBase64 && hasIdentity) {

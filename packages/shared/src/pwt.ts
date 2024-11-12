@@ -3,7 +3,7 @@ import { poseidon2 } from "poseidon-lite/poseidon2";
 import * as p from "@parcnet-js/podspec";
 import { decodePublicKey, POD } from "@pcd/pod";
 
-import { logger } from "./";
+import { compressBigInt, logger } from "./";
 
 export const POD_TYPE_FROGCRYPTO_PWT = "frogcrypto.pwt";
 
@@ -30,7 +30,10 @@ export const PwtSpec = p.entries({
   iss: { type: "cryptographic" },
 });
 
-export function verifyPwtAndGetSemaphoreId(pod: POD): bigint {
+export function verifyPwt(pod: POD): {
+  semaphoreIdBase64: string;
+  eddsaPublicKey: string;
+} {
   if (!pod.verifySignature()) {
     logger.error("Invalid PWT signature");
     throw new Error("Invalid PWT: invalid POD signature");
@@ -53,5 +56,8 @@ export function verifyPwtAndGetSemaphoreId(pod: POD): bigint {
     throw new Error("Invalid PWT: expired");
   }
 
-  return parsed.value.iss.value;
+  return {
+    semaphoreIdBase64: compressBigInt(parsed.value.iss.value),
+    eddsaPublicKey: pod.signerPublicKey,
+  };
 }

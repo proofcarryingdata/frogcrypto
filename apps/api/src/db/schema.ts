@@ -66,6 +66,7 @@ export const userScoresTable = pgTable(
   {
     id: serial("id").primaryKey(),
     semaphoreId: text("semaphore_id").notNull(),
+    eddsaPublicKey: text("eddsa_public_key"),
     score: integer("score").notNull().default(0),
     friendCount: integer("friend_count").notNull().default(0),
     isAdmin: boolean("is_admin").notNull().default(false),
@@ -78,6 +79,7 @@ export const userScoresTable = pgTable(
   },
   (table) => ({
     semaphoreId: unique().on(table.semaphoreId),
+    eddsaPublicKey: unique().on(table.eddsaPublicKey),
     socialId: unique().on(table.socialId),
   })
 );

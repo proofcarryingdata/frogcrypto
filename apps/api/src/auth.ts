@@ -1,8 +1,4 @@
-import {
-  compressBigInt,
-  logger,
-  verifyPwtAndGetSemaphoreId,
-} from "@frogcrypto/shared";
+import { decompressBigInt, logger, verifyPwt } from "@frogcrypto/shared";
 import { type JSONPOD, POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
@@ -15,6 +11,7 @@ export interface AuthSession {
   user: {
     semaphoreId: bigint;
     semaphoreIdBase64: string;
+    eddsaPublicKey: string;
     isLoggedIn: boolean;
     isAdmin: boolean;
     devcon7TicketId: string | null;
@@ -22,23 +19,33 @@ export interface AuthSession {
 }
 
 const memoizedDecodeAndVerifyPwt = async (token: string) => {
-  const cached = await redis.get<string>(`pwt:${token}`);
-  if (cached) {
-    return BigInt(cached);
+  try {
+    const cached = await redis.get<{
+      semaphoreIdBase64: string;
+      eddsaPublicKey: string;
+    }>(`pwt2:${token}`);
+    if (cached) {
+      return cached;
+    }
+  } catch (e) {
+    logger.error("Error getting PWT from cache", { error: e });
   }
 
   const pod = POD.fromJSON(JSON.parse(token) as JSONPOD);
-  const semaphoreId = verifyPwtAndGetSemaphoreId(pod);
-  void redis.set(`pwt:${token}`, semaphoreId.toString(), {
+  const res = verifyPwt(pod);
+  void redis.set(`pwt2:${token}`, JSON.stringify(res), {
     ex: 60 * 60, // 1 hour
   });
-  return semaphoreId;
+  return res;
 };
 
 async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
-  let semaphoreId: bigint;
+  let res: {
+    semaphoreIdBase64: string;
+    eddsaPublicKey: string;
+  };
   try {
-    semaphoreId = await memoizedDecodeAndVerifyPwt(token);
+    res = await memoizedDecodeAndVerifyPwt(token);
   } catch (e) {
     logger.error("Invalid PWT", e);
     throw new TRPCError({
@@ -46,6 +53,7 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
       message: "Invalid PWT",
     });
   }
+  const semaphoreId = decompressBigInt(res.semaphoreIdBase64);
 
   const [user] = await db
     .select({
@@ -58,7 +66,8 @@ async function decodeAndVerifyPwt(token: string): Promise<AuthSession> {
   return {
     user: {
       semaphoreId,
-      semaphoreIdBase64: compressBigInt(semaphoreId),
+      semaphoreIdBase64: res.semaphoreIdBase64,
+      eddsaPublicKey: res.eddsaPublicKey,
       isAdmin: Boolean(user?.isAdmin),
       isLoggedIn: Boolean(user),
       devcon7TicketId: user?.devcon7TicketId ?? null,
