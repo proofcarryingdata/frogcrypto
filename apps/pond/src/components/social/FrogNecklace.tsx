@@ -164,9 +164,11 @@ function ConnectedModal({
 function UnactivatedModal({
   onClose,
   socialId,
+  mySocialId,
 }: {
   onClose: () => void;
   socialId: string;
+  mySocialId: string;
 }) {
   return (
     <Modal isOpen={!processedSocialIds.has(socialId)} onClose={onClose}>
@@ -178,7 +180,8 @@ function UnactivatedModal({
         </div>
 
         <span className="text-xs text-center">
-          You&apos;ve scanned an unactivated FROG NECKLACE.
+          You&apos;ve scanned an unactivated FROG NECKLACE. You already have a
+          necklace ({mySocialId}).
         </span>
 
         <button
@@ -494,7 +497,13 @@ function FrogNecklace() {
   }
 
   if (mySocialId) {
-    return <UnactivatedModal onClose={onClose} socialId={socialId} />;
+    return (
+      <UnactivatedModal
+        onClose={onClose}
+        socialId={socialId}
+        mySocialId={mySocialId}
+      />
+    );
   }
 
   return <ActivationModal onClose={onClose} socialId={socialId} />;
