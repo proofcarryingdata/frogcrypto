@@ -3,25 +3,37 @@ import { podToPODData } from "@parcnet-js/podspec";
 import { type JSONPOD, POD } from "@pcd/pod";
 import _ from "lodash";
 import { useEffect, useMemo } from "react";
+import { useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { trpc } from "../trpc";
 import { useManageFrogs } from "./useFrogs";
 import { useOtherProfilePODs } from "./useProfilePOD";
 import { useSemaphoreIdBase64 } from "./useUserState";
 
+const savedFrogRequestsAtAtom = atomWithStorage<number>(
+  "savedFrogRequestsAt",
+  0
+);
+
 export function useAcceptedFrogRequests() {
   const semaphoreId = useSemaphoreIdBase64();
   const frogs = useManageFrogs();
+  const [savedFrogRequestsAt, setSavedFrogRequestsAt] = useAtom(
+    savedFrogRequestsAtAtom
+  );
 
   const otherProfilePODs = useOtherProfilePODs();
 
-  const { data: acceptedRequests } = trpc.social.getAcceptedRequests.useQuery();
+  const { data: acceptedRequests } = trpc.social.getAcceptedRequests.useQuery({
+    cutoff: savedFrogRequestsAt,
+  });
 
   const knownProfilePODs = useMemo(
     () => _.keyBy(otherProfilePODs, "profileId"),
     [otherProfilePODs]
   );
   useEffect(() => {
-    if (!acceptedRequests) {
+    if (!acceptedRequests || acceptedRequests.length === 0) {
       return;
     }
 
@@ -45,9 +57,19 @@ export function useAcceptedFrogRequests() {
       }
     });
 
+    setSavedFrogRequestsAt(
+      _.max(acceptedRequests.map((request) => request.updatedAt.getTime())) ?? 0
+    );
+
     void Promise.all([
       ...toDelete.map((pod) => frogs.delete(pod.signature)),
       ...toAdd.map((pod) => frogs.insert(podToPODData(pod))),
     ]);
-  }, [acceptedRequests, knownProfilePODs, semaphoreId, frogs]);
+  }, [
+    acceptedRequests,
+    knownProfilePODs,
+    semaphoreId,
+    frogs,
+    setSavedFrogRequestsAt,
+  ]);
 }

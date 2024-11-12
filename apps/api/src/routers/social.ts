@@ -246,34 +246,42 @@ export const socialRouter = router({
   /**
    * Get sent/received requests that have been accepted
    */
-  getAcceptedRequests: authedProcedure.query(async ({ ctx }) => {
-    const requests = await db
-      .select()
-      .from(socialRequestsTable)
-      .where(
-        and(
-          isNotNull(socialRequestsTable.party2POD),
-          isNotNull(socialRequestsTable.party1POD),
-          or(
-            eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
-            eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64)
-          ),
-          sql`${socialRequestsTable.updatedAt} > ${new Date(Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000)}`
-        )
-      );
+  getAcceptedRequests: authedProcedure
+    .input(z.object({ cutoff: z.number().optional() }))
+    .query(async ({ ctx, input: { cutoff } }) => {
+      const requests = await db
+        .select()
+        .from(socialRequestsTable)
+        .where(
+          and(
+            isNotNull(socialRequestsTable.party2POD),
+            isNotNull(socialRequestsTable.party1POD),
+            or(
+              eq(socialRequestsTable.party1, ctx.user.semaphoreIdBase64),
+              eq(socialRequestsTable.party2, ctx.user.semaphoreIdBase64)
+            ),
+            sql`${socialRequestsTable.updatedAt} >= ${
+              cutoff
+                ? new Date(cutoff)
+                : new Date(
+                    Date.now() - REQUEST_VISIBILITY_DAYS * 24 * 60 * 60 * 1000
+                  )
+            }`
+          )
+        );
 
-    return requests.map((request) => ({
-      ...request,
-      sentPOD:
-        request.party1 === ctx.user.semaphoreIdBase64
-          ? request.party1POD
-          : request.party2POD,
-      receivedPOD:
-        request.party1 === ctx.user.semaphoreIdBase64
-          ? request.party2POD
-          : request.party1POD,
-    }));
-  }),
+      return requests.map((request) => ({
+        ...request,
+        sentPOD:
+          request.party1 === ctx.user.semaphoreIdBase64
+            ? request.party1POD
+            : request.party2POD,
+        receivedPOD:
+          request.party1 === ctx.user.semaphoreIdBase64
+            ? request.party2POD
+            : request.party1POD,
+      }));
+    }),
 
   acceptRequest: authedProcedure
     .input(
