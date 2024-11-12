@@ -78,6 +78,7 @@ export const userScoresTable = pgTable(
   },
   (table) => ({
     semaphoreId: unique().on(table.semaphoreId),
+    socialId: unique().on(table.socialId),
   })
 );
 

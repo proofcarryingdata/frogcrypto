@@ -2,6 +2,7 @@ import {
   decompressBigInt,
   getUsernameFromHash,
   isSpiritFrogDataEqualish,
+  logger,
   parseProfileFrogPOD,
   userPublicKeyToUserId,
 } from "@frogcrypto/shared";
@@ -543,18 +544,29 @@ export const socialRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { socialId } = input;
 
-      const res = await db
-        .update(userScoresTable)
-        .set({
-          socialId,
-        })
-        .where(eq(userScoresTable.semaphoreId, String(ctx.user.semaphoreId)));
+      try {
+        const res = await db
+          .update(userScoresTable)
+          .set({
+            socialId,
+          })
+          .where(eq(userScoresTable.semaphoreId, String(ctx.user.semaphoreId)));
 
-      if (res.rowCount === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "User unexpectedly not found.",
-        });
+        if (res.rowCount === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User unexpectedly not found.",
+          });
+        }
+      } catch (e) {
+        if (e instanceof Error && e.message.includes("duplicate key")) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Social ID already claimed.",
+          });
+        }
+
+        logger.error("Error claiming social ID", { error: e });
       }
     }),
 });
