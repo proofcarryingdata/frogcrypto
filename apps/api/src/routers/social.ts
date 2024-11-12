@@ -540,17 +540,12 @@ export const socialRouter = router({
         .set({
           socialId,
         })
-        .where(
-          and(
-            eq(userScoresTable.semaphoreId, String(ctx.user.semaphoreId)),
-            isNull(userScoresTable.socialId)
-          )
-        );
+        .where(eq(userScoresTable.semaphoreId, String(ctx.user.semaphoreId)));
 
       if (res.rowCount === 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "You already claimed your profile",
+          message: "User unexpectedly not found.",
         });
       }
     }),

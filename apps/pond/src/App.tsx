@@ -87,9 +87,9 @@ function FrogCrypto() {
 
   return (
     <>
-      <CyberFrog />
-      <FrogNecklace />
       <PendingRequests />
+      <FrogNecklace />
+      <CyberFrog />
 
       <Score />
 

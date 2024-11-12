@@ -1,8 +1,4 @@
-import {
-  type IFrogData,
-  shortCommitment,
-  shortCommitmentHex,
-} from "@frogcrypto/shared";
+import { type IFrogData, shortSemaphoreId } from "@frogcrypto/shared";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import React, { useCallback, useState } from "react";
 import toast from "react-hot-toast";
@@ -84,7 +80,7 @@ function ConnectedModal({
 
             <span className="text-xs text-center">
               This Frog&apos;s QR code is now associated with your semaphore ID{" "}
-              {shortCommitmentHex(semaphoreIdBase64 ?? "")}
+              {shortSemaphoreId(semaphoreIdBase64 ?? "")}
             </span>
           </>
         )}
@@ -170,6 +166,21 @@ function UnactivatedModal({
   socialId: string;
   mySocialId: string;
 }) {
+  const utils = trpc.useUtils();
+  const { mutate: onActivate, isPending: isActivating } =
+    trpc.social.claimProfile.useMutation({
+      onSuccess: async () => {
+        await utils.users.getUser.invalidate({
+          id: socialId,
+          type: "socialId",
+        });
+        await utils.users.me.invalidate();
+      },
+      onError: (error) => {
+        toast.error(`Ribbit! ${error.message}`);
+      },
+    });
+
   return (
     <Modal isOpen={!processedSocialIds.has(socialId)} onClose={onClose}>
       <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-4 relative">
@@ -179,18 +190,35 @@ function UnactivatedModal({
           <img src={frogNecklaceDisabledSvg} alt="Frog Necklace" />
         </div>
 
-        <span className="text-xs text-center">
-          You&apos;ve scanned an unactivated FROG NECKLACE. You already have a
-          necklace ({mySocialId}).
+        <span className="text-xs">
+          You&apos;ve scanned an unactivated FROG NECKLACE, but you already have
+          a necklace ({mySocialId}).
+        </span>
+        <span className="text-xs">
+          By claiming this necklace, you will associate your semaphore ID with
+          this FROG NECKLACE. Your previous necklace will be voided.
         </span>
 
-        <button
-          type="button"
-          className="text-xs m-auto bg-green-600 text-white px-4 py-1 rounded-sm"
-          onClick={onClose}
-        >
-          Oh
-        </button>
+        <div className="flex gap-8 px-8 w-full">
+          <button
+            type="button"
+            className="text-xs bg-gray-200 text-gray-500 px-4 py-1 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
+            onClick={onClose}
+            disabled={isActivating}
+          >
+            Oh
+          </button>
+          <button
+            type="button"
+            className="text-xs bg-orange-500 text-white px-4 py-1 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
+            onClick={() => {
+              onActivate({ socialId });
+            }}
+            disabled={isActivating}
+          >
+            Claim
+          </button>
+        </div>
       </div>
     </Modal>
   );
@@ -376,7 +404,7 @@ function FrogRequestModal({
                   </span>
                 )
               }
-              subtitle={`0x${shortCommitment(semaphoreIdBase64)}'s ${frog.name}`}
+              subtitle={`${shortSemaphoreId(semaphoreIdBase64)}'s ${frog.name}`}
             />
 
             <button

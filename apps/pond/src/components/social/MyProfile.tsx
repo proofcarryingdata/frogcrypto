@@ -1,4 +1,8 @@
-import { getUsernameFromHash, shortCommitmentHex } from "@frogcrypto/shared";
+import {
+  getUsernameFromHash,
+  shortCommitmentHex,
+  shortSemaphoreId,
+} from "@frogcrypto/shared";
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { useMyProfilePOD, useSetMyProfilePOD } from "../../hooks/useProfilePOD";
@@ -66,7 +70,7 @@ function MyProfile() {
             </span>
 
             <span className="font-semibold">Semaphore ID</span>
-            <span>{shortCommitmentHex(myProfilePOD.ownerSemaphoreId)}</span>
+            <span>{shortSemaphoreId(myProfilePOD.ownerSemaphoreId)}</span>
 
             <span className="font-semibold">Telegram</span>
             <span>{myProfilePOD.telegramUsername || "<not set>"}</span>

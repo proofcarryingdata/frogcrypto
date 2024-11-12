@@ -1,9 +1,9 @@
-import { poseidon2 } from "poseidon-lite/poseidon2";
+import { poseidon2 } from 'poseidon-lite/poseidon2';
 
-import { decodePublicKey, encodePrivateKey, encodePublicKey } from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
+import { decodePublicKey, encodePrivateKey, encodePublicKey } from '@pcd/pod';
+import { Identity } from '@semaphore-protocol/identity';
 
-import { compressBigInt, decompressBigInt } from "./bigint";
+import { compressBigInt, decompressBigInt } from './bigint';
 
 export function semaphoreIdToUserId(id: Identity): {
   commitment: string;
@@ -35,4 +35,8 @@ export function shortCommitment(commitment: string): string {
 export function shortCommitmentHex(commitment: string): string {
   const bigint = decompressBigInt(commitment);
   return `0x${bigint.toString(16).slice(0, 6)}...${bigint.toString(16).slice(-4)}`;
+}
+
+export function shortSemaphoreId(semaphoreId: string): string {
+  return `${semaphoreId.slice(0, 4)}...${semaphoreId.slice(-2)}`;
 }

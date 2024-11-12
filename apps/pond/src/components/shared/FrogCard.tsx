@@ -9,6 +9,7 @@ import {
   Temperament,
   Biome,
   shortCommitmentHex,
+  shortSemaphoreId,
 } from "@frogcrypto/shared";
 import { isProfileFrogPOD } from "../../hooks/useFrogs";
 import FrogImg from "./FrogImg";
@@ -140,7 +141,7 @@ function FrogCard({
           title={profileFrog ? profileFrog.profileName : frog.name}
           subtitle={
             profileFrog
-              ? `0x${shortCommitment(profileFrog.profileId)}'s ${frog.name}`
+              ? `${shortSemaphoreId(profileFrog.profileId)}'s ${frog.name}`
               : undefined
           }
         />

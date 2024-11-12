@@ -1,4 +1,8 @@
-import { shortCommitmentHex, type ProfileFrogPOD } from "@frogcrypto/shared";
+import {
+  shortCommitmentHex,
+  shortSemaphoreId,
+  type ProfileFrogPOD,
+} from "@frogcrypto/shared";
 import React from "react";
 import { trpc } from "../../trpc";
 import Frog from "../shared/Frog";
@@ -34,7 +38,7 @@ function FrogFriendProfile({
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-1">
           <span className="font-semibold">Semaphore ID</span>
-          <span>{shortCommitmentHex(frog.profileId)}</span>
+          <span>{shortSemaphoreId(frog.profileId)}</span>
 
           <span className="font-semibold">Telegram</span>
           <span>{frog.telegramUsername || "<not set>"}</span>
