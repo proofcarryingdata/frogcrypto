@@ -43,6 +43,7 @@ export const FrogSpec = p.entries({
 
   timestampSigned: { type: "int" },
   owner: { type: "cryptographic", isOwnerID: true },
+  ownerPubKey: { type: "optional", innerType: { type: "eddsa_pubkey" } },
 });
 
 export function parseFrogPOD(pod: p.PODData): FrogPOD {
@@ -70,17 +71,25 @@ export function parseFrogPOD(pod: p.PODData): FrogPOD {
 
     timestampSigned: Number(parsed.timestampSigned.value),
     ownerSemaphoreId: compressBigInt(parsed.owner.value),
+    ownerEddsaPublicKey: parsed.ownerPubKey?.value ?? null,
 
     ..._.pick(pod, ["signature", "signerPublicKey"]),
   } satisfies FrogPOD;
 }
 
 export function toFrogPODEntries(frog: IFrogData): PODEntries {
+  console.log("toFrogPODEntries", frog);
+
   const res = FrogSpec.safeParse(
     {
       ...frog,
       pod_type: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
+      ...(frog.ownerEddsaPublicKey
+        ? {
+            ownerPubKey: frog.ownerEddsaPublicKey,
+          }
+        : {}),
       timestampSigned: Date.now(),
     },
     { coerce: true }
@@ -148,6 +157,11 @@ export function toProfileFrogPODEntries(frog: ProfileFrogPOD): PODEntries {
       ...frog,
       pod_type: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
+      ...(frog.ownerEddsaPublicKey
+        ? {
+            ownerPubKey: frog.ownerEddsaPublicKey,
+          }
+        : {}),
       profileId: decompressBigInt(frog.profileId),
       timestampSigned: Date.now(),
     },

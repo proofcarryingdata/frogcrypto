@@ -61,7 +61,8 @@ export async function sampleFrogData(
 }
 
 export async function getSpiritFrog(
-  semaphoreId: bigint
+  semaphoreId: bigint,
+  ownerEddsaPublicKey: string | null
 ): Promise<IFrogData | undefined> {
   const spiritFrogs = await getSpiritFrogs();
   const spiritFrogIndex = Math.abs(
@@ -72,12 +73,13 @@ export async function getSpiritFrog(
     return undefined;
   }
 
-  return generateFrogData(spiritFrog, semaphoreId);
+  return generateFrogData(spiritFrog, semaphoreId, ownerEddsaPublicKey);
 }
 
 export function generateFrogData(
   frogData: FrogCryptoFrogData,
-  ownerSemaphoreId: bigint
+  ownerSemaphoreId: bigint,
+  ownerEddsaPublicKey: string | null
 ): IFrogData {
   const rarity = parseFrogEnum(Rarity, frogData.rarity);
 
@@ -102,6 +104,7 @@ export function generateFrogData(
     ),
     timestampSigned: Date.now(),
     ownerSemaphoreId: compressBigInt(ownerSemaphoreId),
+    ownerEddsaPublicKey,
   };
 }
 

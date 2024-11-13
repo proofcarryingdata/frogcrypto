@@ -82,6 +82,7 @@ export interface IFrogData {
   beauty: number;
   timestampSigned: number;
   ownerSemaphoreId: string;
+  ownerEddsaPublicKey: string | null;
 }
 
 /**

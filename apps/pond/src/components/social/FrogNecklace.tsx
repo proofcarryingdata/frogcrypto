@@ -328,12 +328,14 @@ function FrogRequestModal({
   socialId,
   frog,
   semaphoreIdBase64,
+  eddsaPublicKey,
   profileName,
 }: {
   onClose: () => void;
   socialId: string;
   frog: IFrogData;
   semaphoreIdBase64: string;
+  eddsaPublicKey: string | null;
   profileName: string;
 }) {
   const { mutateAsync: onSendFrogRequest, isPending: isSendingFrogRequest } =
@@ -418,7 +420,10 @@ function FrogRequestModal({
                     requestPOD: frogRequest.party1POD ?? frogRequest.party2POD,
                   }).then(onClose);
                 } else {
-                  void onSendFrogRequest(semaphoreIdBase64).then(onClose);
+                  void onSendFrogRequest({
+                    semaphoreIdBase64,
+                    eddsaPublicKey,
+                  }).then(onClose);
                 }
               }}
               disabled={
@@ -518,6 +523,7 @@ function FrogNecklace() {
         onClose={onClose}
         frog={userState.spiritFrog}
         semaphoreIdBase64={userState.semaphoreIdBase64}
+        eddsaPublicKey={userState.eddsaPublicKey}
         profileName={userState.profileName}
         socialId={socialId}
       />

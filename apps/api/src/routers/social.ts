@@ -51,7 +51,22 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     });
   }
 
-  const spiritFrog = await getSpiritFrog(decompressBigInt(semaphoreIdBase64));
+  if (
+    profilePOD.ownerEddsaPublicKey &&
+    userPublicKeyToUserId(profilePOD.ownerEddsaPublicKey) !==
+      profilePOD.ownerSemaphoreId
+  ) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Invalid FROG REQUEST POD: owner public key does not match owner semaphore ID",
+    });
+  }
+
+  const spiritFrog = await getSpiritFrog(
+    decompressBigInt(semaphoreIdBase64),
+    profilePOD.ownerEddsaPublicKey
+  );
   if (!spiritFrog) {
     throw new TRPCError({
       code: "BAD_REQUEST",
@@ -88,6 +103,14 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Profile POD is too far in the future",
+    });
+  }
+
+  if (userPublicKeyToUserId(signerPk) !== semaphoreIdBase64) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Invalid FROG REQUEST POD: signer public key does not match profile ID",
     });
   }
 
@@ -468,7 +491,10 @@ export const socialRouter = router({
         .then((scores) => {
           return Promise.all(
             scores.map(async (score) => {
-              const frog = await getSpiritFrog(BigInt(score.semaphoreId));
+              const frog = await getSpiritFrog(
+                BigInt(score.semaphoreId),
+                score.eddsaPublicKey
+              );
               const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
                 frog?.name ?? "Unknown Toad"
               }`;
@@ -517,7 +543,10 @@ export const socialRouter = router({
           .then((scores) => {
             return Promise.all(
               scores.map(async (score) => {
-                const frog = await getSpiritFrog(BigInt(score.semaphoreId));
+                const frog = await getSpiritFrog(
+                  BigInt(score.semaphoreId),
+                  score.eddsaPublicKey
+                );
                 const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
                   frog?.name ?? "Unknown Toad"
                 }`;

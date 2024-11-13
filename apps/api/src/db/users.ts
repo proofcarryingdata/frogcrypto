@@ -127,7 +127,8 @@ export const userScoresView = db.$with("user_scores_view").as(
       friendCount: userScoresTable.friendCount,
       socialId: userScoresTable.socialId,
       devcon7TicketId: userScoresTable.devcon7TicketId,
-      hasPk: isNotNull(userScoresTable.eddsaPublicKey).as("hasPk"),
+      hasPk: isNotNull(userScoresTable.eddsaPublicKey).as<boolean>("hasPk"),
+      eddsaPublicKey: userScoresTable.eddsaPublicKey,
     })
     .from(userScoresTable)
 );
