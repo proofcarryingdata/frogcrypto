@@ -10,5 +10,5 @@ export const SERVER_URL =
 
 export const DEFAULT_ZUPASS_URL =
   process.env.NODE_ENV === "production"
-    ? "https://staging.zupass.org"
+    ? "https://zupass.org"
     : "https://staging.zupass.org";

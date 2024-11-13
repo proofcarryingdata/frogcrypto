@@ -108,9 +108,9 @@ export function PendingRequests() {
   return (
     <>
       {Boolean(requests?.length) && <EnsureProfilePOD />}
-      {requests?.map((request) => (
-        <PendingRequest key={request.id} request={request} />
-      ))}
+      {requests?.[0] ? (
+        <PendingRequest key={requests[0].id} request={requests[0]} />
+      ) : null}
     </>
   );
 }

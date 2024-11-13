@@ -171,14 +171,15 @@ function useInitializeUser() {
       initializeUser();
     }
   }, [meError, initializeUser, error]);
-  const hasRemoteTicket =
-    Boolean(userState?.myScore.devcon7TicketId) &&
-    Boolean(userState?.myScore.hasPk);
+  const canSendTicket =
+    userState && !userState.myScore.devcon7TicketId && devcon7Ticket;
+  const hasRemotePk = Boolean(userState?.myScore.hasPk);
+  const shouldReinitialize = !hasRemotePk || canSendTicket;
   useEffect(() => {
-    if (hasIdentity && !hasRemoteTicket && devcon7Ticket && !error) {
+    if (hasIdentity && shouldReinitialize && !error) {
       initializeUser();
     }
-  }, [hasIdentity, hasRemoteTicket, initializeUser, devcon7Ticket, error]);
+  }, [hasIdentity, shouldReinitialize, initializeUser, error]);
 
   useEffect(() => {
     if (zupassSemaphoreId && !semaphoreIdBase64 && hasIdentity) {
