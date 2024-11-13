@@ -23,7 +23,7 @@ import {
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { compareIds } from "../utils";
 
-const MAX_REQUESTS_PER_DAY = 500;
+const MAX_REQUESTS_PER_DAY = 1000;
 const REQUEST_VISIBILITY_DAYS = 30;
 
 async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
