@@ -156,8 +156,8 @@ function App() {
         await queryClient.refetchQueries({ type: "active" });
       }}
       className="bg-dot-pattern text-center"
-      pullDownThreshold={100}
-      maxPullDownDistance={150}
+      pullDownThreshold={200}
+      maxPullDownDistance={250}
     >
       <main className="flex justify-center w-screen max-w-full pt-6 pb-12 bg-dot-pattern overflow-auto">
         <div className="flex flex-col gap-4 w-full max-w-sm items-stretch px-4 flex-1">
