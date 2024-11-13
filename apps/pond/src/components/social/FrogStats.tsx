@@ -15,6 +15,10 @@ function FrogStats() {
       retry: false,
     }
   );
+  const { data: users } = trpc.admin.dumpAllUsers.useQuery(undefined, {
+    retry: false,
+  });
+  console.log("users", users);
 
   const [_, setLocation] = useLocation();
   const graphRef = useRef(new Graph());

@@ -1,5 +1,5 @@
 import { FrogCryptoFrogDataSchema, ServerFeedSchema } from "@frogcrypto/shared";
-import { inArray, sql, eq } from "drizzle-orm";
+import { inArray, sql, eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import {
@@ -118,5 +118,17 @@ export const adminRouter = router({
       .where(eq(socialRequestsTable.status, "connected"));
 
     return frogConnections;
+  }),
+
+  dumpAllUsers: adminProcedure.query(async () => {
+    const users = await db
+      .select({
+        semaphoreId: userScoresTable.semaphoreId,
+        score: userScoresTable.score,
+        friends: userScoresTable.friendCount,
+      })
+      .from(userScoresTable)
+      .orderBy(desc(userScoresTable.score));
+    return users;
   }),
 });
