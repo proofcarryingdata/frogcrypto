@@ -56,11 +56,18 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     userPublicKeyToUserId(profilePOD.ownerEddsaPublicKey) !==
       profilePOD.ownerSemaphoreId
   ) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message:
-        "Invalid FROG REQUEST POD: owner public key does not match owner semaphore ID.",
-    });
+    console.error(
+      "Invalid FROG REQUEST POD: owner public key does not match owner semaphore ID.",
+      {
+        profilePOD,
+      }
+    );
+
+    // throw new TRPCError({
+    //   code: "BAD_REQUEST",
+    //   message:
+    //     "Invalid FROG REQUEST POD: owner public key does not match owner semaphore ID.",
+    // });
   }
 
   const spiritFrog = await getSpiritFrog(
