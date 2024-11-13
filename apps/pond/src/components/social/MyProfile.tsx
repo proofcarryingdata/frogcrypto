@@ -80,6 +80,13 @@ function MyProfile() {
           </div>
 
           <div className="self-end flex gap-2">
+            <SocialButton
+              onClick={() => {
+                setLocation("/scan");
+              }}
+            >
+              Scan
+            </SocialButton>
             {userState.myScore.socialId ? (
               <SocialButton
                 onClick={() => {

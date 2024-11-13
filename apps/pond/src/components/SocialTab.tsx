@@ -10,6 +10,7 @@ import FrogFriends from "./social/FrogFriends";
 import FrogScore from "./social/FrogScore";
 import MyProfile from "./social/MyProfile";
 import ProfileSharer from "./social/ProfileSharer";
+import FrogScan from "./social/FrogScan";
 
 const FrogStats = lazy(() => import("./social/FrogStats"));
 
@@ -85,6 +86,7 @@ function SocialTab() {
             <Route path="/profile" component={MyProfile} />
             <Route path="/friends" component={FrogFriends} />
             <Route path="/share" component={ProfileSharer} />
+            <Route path="/scan" component={FrogScan} />
             <Route path="/stats" component={FrogStats} />
 
             <Route component={NotFound} />
