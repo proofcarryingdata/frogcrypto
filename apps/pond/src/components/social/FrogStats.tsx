@@ -43,7 +43,7 @@ function FrogStats() {
     Object.entries(nodes).forEach(([party, count]) => {
       graph.addNode(party, {
         label: party,
-        size: count,
+        size: Math.ceil(Math.sqrt(count)),
         color: frogScoreToLevel(count).curr.className.split("-")[1] ?? "black",
         x: Math.random(),
         y: Math.random(),
