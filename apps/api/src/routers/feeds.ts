@@ -54,7 +54,7 @@ export const feedsRouter = router({
       async ({
         input: { feedId, token, version },
         ctx: {
-          user: { semaphoreId },
+          user: { semaphoreId, eddsaPublicKey },
           cfConnectingIp,
         },
       }) => {
@@ -151,7 +151,8 @@ export const feedsRouter = router({
 
             const frogData = generateFrogData(
               frogDataSpec,
-              BigInt(semaphoreId)
+              BigInt(semaphoreId),
+              eddsaPublicKey
             );
 
             const { score: scoreAfterRoll } = await incrementScore(
@@ -218,7 +219,7 @@ export const feedsRouter = router({
       async ({
         input: { signature, nonce },
         ctx: {
-          user: { semaphoreId },
+          user: { semaphoreId, eddsaPublicKey },
         },
       }) => {
         const {
@@ -317,7 +318,8 @@ export const feedsRouter = router({
 
             const frogData = generateFrogData(
               frogDataSpec,
-              BigInt(semaphoreId)
+              BigInt(semaphoreId),
+              eddsaPublicKey
             );
 
             const { score: scoreAfterRoll } = await incrementScore(

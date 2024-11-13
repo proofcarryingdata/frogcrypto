@@ -1,11 +1,11 @@
-import _ from "lodash";
+import _ from 'lodash';
 
-import * as p from "@parcnet-js/podspec";
-import { POD_INT_MAX, PODEntries, PODIntValue } from "@pcd/pod";
+import * as p from '@parcnet-js/podspec';
+import { POD_INT_MAX, POD_INT_MIN, PODEntries } from '@pcd/pod';
 
-import { compressBigInt, decompressBigInt } from "../bigint";
-import { logger } from "../logger";
-import { Biome, IFrogData, Rarity, Temperament } from "./base";
+import { compressBigInt, decompressBigInt } from '../bigint';
+import { logger } from '../logger';
+import { Biome, IFrogData, Rarity, Temperament } from './base';
 
 export type FrogPOD = IFrogData & {
   signature: string;
@@ -14,12 +14,20 @@ export type FrogPOD = IFrogData & {
 
 export const POD_TYPE_FROGCRYPTO_FROG = "frogcrypto.frog";
 
-function enumToEntryList<T extends Record<string, number | string>>(
+function enumToRange<T extends Record<string, number | string>>(
   enumObj: T
-): PODIntValue[] {
-  return Object.values(enumObj)
+): { min: bigint; max: bigint } {
+  const values = Object.values(enumObj)
     .filter((x) => typeof x === "number")
-    .map((x) => ({ type: "int", value: BigInt(x) }));
+    .map((x) => BigInt(x));
+  if (values.length === 0) {
+    return { min: POD_INT_MIN, max: POD_INT_MAX };
+  }
+  const [min, max] = values.reduce(
+    ([min, max], x) => [x > min ? min : x, x < max ? max : x],
+    [values[0] ?? POD_INT_MAX, values[0] ?? POD_INT_MIN]
+  );
+  return { min, max };
 }
 
 export const FrogSpec = p.entries({
@@ -33,9 +41,9 @@ export const FrogSpec = p.entries({
   imageUrl: { type: "string" },
 
   frogId: { type: "int", inRange: { min: 0n, max: POD_INT_MAX } },
-  biome: { type: "int", isMemberOf: enumToEntryList(Biome) },
-  rarity: { type: "int", isMemberOf: enumToEntryList(Rarity) },
-  temperament: { type: "int", isMemberOf: enumToEntryList(Temperament) },
+  biome: { type: "int", inRange: enumToRange(Biome) },
+  rarity: { type: "int", inRange: enumToRange(Rarity) },
+  temperament: { type: "int", inRange: enumToRange(Temperament) },
   jump: { type: "int" },
   speed: { type: "int" },
   intelligence: { type: "int" },
@@ -43,6 +51,7 @@ export const FrogSpec = p.entries({
 
   timestampSigned: { type: "int" },
   owner: { type: "cryptographic", isOwnerID: true },
+  ownerPubKey: { type: "optional", innerType: { type: "eddsa_pubkey" } },
 });
 
 export function parseFrogPOD(pod: p.PODData): FrogPOD {
@@ -70,6 +79,7 @@ export function parseFrogPOD(pod: p.PODData): FrogPOD {
 
     timestampSigned: Number(parsed.timestampSigned.value),
     ownerSemaphoreId: compressBigInt(parsed.owner.value),
+    ownerEddsaPublicKey: parsed.ownerPubKey?.value ?? null,
 
     ..._.pick(pod, ["signature", "signerPublicKey"]),
   } satisfies FrogPOD;
@@ -81,6 +91,11 @@ export function toFrogPODEntries(frog: IFrogData): PODEntries {
       ...frog,
       pod_type: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
+      ...(frog.ownerEddsaPublicKey
+        ? {
+            ownerPubKey: frog.ownerEddsaPublicKey,
+          }
+        : {}),
       timestampSigned: Date.now(),
     },
     { coerce: true }
@@ -148,6 +163,11 @@ export function toProfileFrogPODEntries(frog: ProfileFrogPOD): PODEntries {
       ...frog,
       pod_type: POD_TYPE_FROGCRYPTO_FROG,
       owner: decompressBigInt(frog.ownerSemaphoreId),
+      ...(frog.ownerEddsaPublicKey
+        ? {
+            ownerPubKey: frog.ownerEddsaPublicKey,
+          }
+        : {}),
       profileId: decompressBigInt(frog.profileId),
       timestampSigned: Date.now(),
     },

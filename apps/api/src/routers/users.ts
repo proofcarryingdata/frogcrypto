@@ -138,7 +138,10 @@ export const usersRouter = router({
       }
 
       const allFeeds = getFeeds().filter((feed) => feedIds.includes(feed.id));
-      const spiritFrog = await getSpiritFrog(ctx.user.semaphoreId);
+      const spiritFrog = await getSpiritFrog(
+        ctx.user.semaphoreId,
+        ctx.user.eddsaPublicKey
+      );
 
       return {
         feeds: allFeeds.map((feed) =>
@@ -168,6 +171,7 @@ export const usersRouter = router({
         friendCount: z.number(),
         frogCount: z.number(),
         semaphoreIdBase64: z.string(),
+        eddsaPublicKey: z.string().nullable(),
         socialId: z.string().nullable(),
         profileName: z.string(),
         // FIXME: add zod schema for IFrogData
@@ -180,6 +184,7 @@ export const usersRouter = router({
         .select({
           semaphoreId: userScoresView.semaphoreId,
           semaphoreIdHash: userScoresView.semaphoreIdHash,
+          eddsaPublicKey: userScoresView.eddsaPublicKey,
           socialId: userScoresView.socialId,
           score: userScoresView.score,
           friendCount: userScoresView.friendCount,
@@ -198,7 +203,10 @@ export const usersRouter = router({
         });
       }
 
-      const spiritFrog = await getSpiritFrog(BigInt(user.semaphoreId));
+      const spiritFrog = await getSpiritFrog(
+        BigInt(user.semaphoreId),
+        user.eddsaPublicKey
+      );
       if (!spiritFrog) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -210,6 +218,7 @@ export const usersRouter = router({
         friendCount: user.friendCount,
         frogCount: user.score,
         semaphoreIdBase64: compressBigInt(BigInt(user.semaphoreId)),
+        eddsaPublicKey: user.eddsaPublicKey,
         socialId: user.socialId,
         profileName: getUsernameFromHash(user.semaphoreIdHash),
         spiritFrog,

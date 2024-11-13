@@ -29,7 +29,10 @@ const useSendFrogRequest = () => {
     });
 
   return useMutation({
-    mutationFn: async (otherPartyId: string) => {
+    mutationFn: async (otherParty: {
+      semaphoreIdBase64: string;
+      eddsaPublicKey: string | null;
+    }) => {
       if (!profilePOD) {
         // FIXME: we need to bring user to frog minter first
         throw new Error("Profile not found");
@@ -38,7 +41,8 @@ const useSendFrogRequest = () => {
       const requestPODData = await z.pod.sign(
         toProfileFrogPODEntries({
           ...profilePOD,
-          ownerSemaphoreId: otherPartyId,
+          ownerEddsaPublicKey: otherParty.eddsaPublicKey,
+          ownerSemaphoreId: otherParty.semaphoreIdBase64,
         })
       );
 
