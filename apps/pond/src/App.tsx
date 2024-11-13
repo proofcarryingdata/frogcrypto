@@ -154,7 +154,11 @@ function App() {
           <span>FrogCrypto</span>
         </h1>
 
-        <Suspense fallback={<Loader message="Connecting to Zupass..." />}>
+        <Suspense
+          fallback={
+            <Loader message="Refresh your page if this is taking too long..." />
+          }
+        >
           <AppWrapper />
         </Suspense>
       </div>
