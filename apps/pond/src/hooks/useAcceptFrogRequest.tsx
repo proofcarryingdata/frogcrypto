@@ -29,10 +29,19 @@ const useAcceptFrogRequest = () => {
         throw new Error("Profile not found");
       }
 
+      if (!pendingRequest.requestPOD) {
+        throw new Error("Request POD not found");
+      }
+      const podData = podToPODData(
+        POD.fromJSON(JSON.parse(pendingRequest.requestPOD) as JSONPOD)
+      );
+      const ownerPubKey = podData.entries.ownerPubKey?.value;
       const responsePOD = await z.pod.sign(
         toProfileFrogPODEntries({
           ...profilePOD,
           ownerSemaphoreId: pendingRequest.requestedBy,
+          ownerEddsaPublicKey:
+            typeof ownerPubKey === "string" ? ownerPubKey : null,
         })
       );
 
