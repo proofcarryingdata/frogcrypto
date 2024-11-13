@@ -182,7 +182,7 @@ function frogParser(data: string): FrogCryptoFrogData[] {
       uuid: rawFrog.uuid,
       name: rawFrog.name,
       description: rawFrog.description,
-      biome: rawFrog.biome,
+      biome: rawFrog.biome === "N/A" ? "Unknown" : rawFrog.biome,
       rarity: rawFrog.rarity,
       temperament: rawFrog.temperament || undefined,
       drop_weight: Number(rawFrog.dropWeight),
