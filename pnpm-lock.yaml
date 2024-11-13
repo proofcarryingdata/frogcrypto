@@ -313,6 +313,15 @@ importers:
       '@vercel/analytics':
         specifier: ^1.3.2
         version: 1.3.2(react@18.3.1)
+      graphology:
+        specifier: ^0.25.4
+        version: 0.25.4(graphology-types@0.24.7)
+      graphology-layout:
+        specifier: ^0.6.1
+        version: 0.6.1(graphology-types@0.24.7)
+      graphology-layout-forceatlas2:
+        specifier: ^0.10.1
+        version: 0.10.1(graphology-types@0.24.7)
       immer:
         specifier: ^10.1.1
         version: 10.1.1
@@ -358,6 +367,9 @@ importers:
       react-viewport-list:
         specifier: ^7.1.2
         version: 7.1.2(react@18.3.1)
+      sigma:
+        specifier: 3.0.0-beta.36
+        version: 3.0.0-beta.36(graphology-types@0.24.7)
       superjson:
         specifier: ^1.13.3
         version: 1.13.3
@@ -3710,6 +3722,29 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
+  graphology-layout-forceatlas2@0.10.1:
+    resolution: {integrity: sha512-ogzBeF1FvWzjkikrIFwxhlZXvD2+wlY54lqhsrWprcdPjopM2J9HoMweUmIgwaTvY4bUYVimpSsOdvDv1gPRFQ==}
+    peerDependencies:
+      graphology-types: '>=0.19.0'
+
+  graphology-layout@0.6.1:
+    resolution: {integrity: sha512-m9aMvbd0uDPffUCFPng5ibRkb2pmfNvdKjQWeZrf71RS1aOoat5874+DcyNfMeCT4aQguKC7Lj9eCbqZj/h8Ag==}
+    peerDependencies:
+      graphology-types: '>=0.19.0'
+
+  graphology-types@0.24.7:
+    resolution: {integrity: sha512-tdcqOOpwArNjEr0gNQKCXwaNCWnQJrog14nJNQPeemcLnXQUUGrsCWpWkVKt46zLjcS6/KGoayeJfHHyPDlvwA==}
+
+  graphology-utils@2.5.2:
+    resolution: {integrity: sha512-ckHg8MXrXJkOARk56ZaSCM1g1Wihe2d6iTmz1enGOz4W/l831MBCKSayeFQfowgF8wd+PQ4rlch/56Vs/VZLDQ==}
+    peerDependencies:
+      graphology-types: '>=0.23.0'
+
+  graphology@0.25.4:
+    resolution: {integrity: sha512-33g0Ol9nkWdD6ulw687viS8YJQBxqG5LWII6FI6nul0pq6iM2t5EKquOTFDbyTblRB3O9I+7KX4xI8u5ffekAQ==}
+    peerDependencies:
+      graphology-types: '>=0.24.0'
+
   handlebars@4.7.7:
     resolution: {integrity: sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==}
     engines: {node: '>=0.4.7'}
@@ -4478,6 +4513,9 @@ packages:
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
+  mnemonist@0.39.8:
+    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
+
   morgan@1.10.0:
     resolution: {integrity: sha512-AbegBVI4sh6El+1gNwvD5YIck7nSA36weD7xvIxG4in80j/UoK8AEGaWnnz8v1GxonMCltmlNs5ZKbGvl9b1XQ==}
     engines: {node: '>= 0.8.0'}
@@ -4598,6 +4636,9 @@ packages:
     resolution: {integrity: sha512-yBYjY9QX2hnRmZHAjG/f13MzmBzxzYgQhFrke06TTyKY5zSTEqkOeukBzIdVA3j3ulu8Qa3MbVFShV7T2RmGtQ==}
     engines: {node: '>= 0.4'}
 
+  obliterator@2.0.4:
+    resolution: {integrity: sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==}
+
   obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
 
@@ -4656,6 +4697,9 @@ packages:
 
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
+
+  pandemonium@2.4.1:
+    resolution: {integrity: sha512-wRqjisUyiUfXowgm7MFH2rwJzKIr20rca5FsHXCMNm1W5YPP1hCtrZfgmQ62kP7OZ7Xt+cR858aB28lu5NX55g==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -5205,6 +5249,9 @@ packages:
   side-channel@1.0.6:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
     engines: {node: '>= 0.4'}
+
+  sigma@3.0.0-beta.36:
+    resolution: {integrity: sha512-Ir60NbnZT2bMhU+1OxCVpMOSGxVqjbY6Gh5J6vqFNHDyp4BdG2lam9H/uZtTpWA9lQPMQmnKfya6EzicS0Q+dA==}
 
   signal-exit@3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
@@ -9527,6 +9574,29 @@ snapshots:
 
   graphemer@1.4.0: {}
 
+  graphology-layout-forceatlas2@0.10.1(graphology-types@0.24.7):
+    dependencies:
+      graphology-types: 0.24.7
+      graphology-utils: 2.5.2(graphology-types@0.24.7)
+
+  graphology-layout@0.6.1(graphology-types@0.24.7):
+    dependencies:
+      graphology-types: 0.24.7
+      graphology-utils: 2.5.2(graphology-types@0.24.7)
+      pandemonium: 2.4.1
+
+  graphology-types@0.24.7: {}
+
+  graphology-utils@2.5.2(graphology-types@0.24.7):
+    dependencies:
+      graphology-types: 0.24.7
+
+  graphology@0.25.4(graphology-types@0.24.7):
+    dependencies:
+      events: 3.3.0
+      graphology-types: 0.24.7
+      obliterator: 2.0.4
+
   handlebars@4.7.7:
     dependencies:
       minimist: 1.2.8
@@ -10450,6 +10520,10 @@ snapshots:
 
   mitt@3.0.1: {}
 
+  mnemonist@0.39.8:
+    dependencies:
+      obliterator: 2.0.4
+
   morgan@1.10.0:
     dependencies:
       basic-auth: 2.0.1
@@ -10590,6 +10664,8 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.0.0
 
+  obliterator@2.0.4: {}
+
   obuf@1.1.2: {}
 
   on-finished@2.3.0:
@@ -10651,6 +10727,10 @@ snapshots:
   package-json-from-dist@1.0.1: {}
 
   pako@1.0.11: {}
+
+  pandemonium@2.4.1:
+    dependencies:
+      mnemonist: 0.39.8
 
   parent-module@1.0.1:
     dependencies:
@@ -11231,6 +11311,13 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.2.4
       object-inspect: 1.13.2
+
+  sigma@3.0.0-beta.36(graphology-types@0.24.7):
+    dependencies:
+      events: 3.3.0
+      graphology-utils: 2.5.2(graphology-types@0.24.7)
+    transitivePeerDependencies:
+      - graphology-types
 
   signal-exit@3.0.7: {}
 

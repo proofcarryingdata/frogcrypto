@@ -1,8 +1,13 @@
 import { FrogCryptoFrogDataSchema, ServerFeedSchema } from "@frogcrypto/shared";
-import { inArray, sql } from "drizzle-orm";
+import { inArray, sql, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { feedsTable, frogsTable, userScoresTable } from "../db/schema";
+import {
+  feedsTable,
+  frogsTable,
+  socialRequestsTable,
+  userScoresTable,
+} from "../db/schema";
 import { adminProcedure, router } from "../trpc";
 import { refreshFeeds } from "../db/feeds";
 import { refreshFrogCache } from "../db/frog-cache";
@@ -100,5 +105,18 @@ export const adminRouter = router({
       .from(userScoresTable);
 
     return users;
+  }),
+
+  dumpFrogConnections: adminProcedure.query(async () => {
+    const frogConnections = await db
+      .select({
+        party1: socialRequestsTable.party1,
+        party2: socialRequestsTable.party2,
+        updatedAt: socialRequestsTable.updatedAt,
+      })
+      .from(socialRequestsTable)
+      .where(eq(socialRequestsTable.status, "connected"));
+
+    return frogConnections;
   }),
 });
