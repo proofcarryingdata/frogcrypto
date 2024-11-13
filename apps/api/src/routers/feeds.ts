@@ -71,24 +71,17 @@ export const feedsRouter = router({
           },
         });
         const turnstileOutcome = await turnstileResult.json();
-        if (
+        const turnstileError =
           typeof turnstileOutcome === "object" &&
           turnstileOutcome &&
           "success" in turnstileOutcome &&
-          !turnstileOutcome.success
-        ) {
+          !turnstileOutcome.success;
+        if (turnstileError) {
           logger.error("Turnstile validation failed", {
             turnstileOutcome,
             semaphoreId,
             version,
           });
-          if (process.env.THROW_ON_TURNSTILE_ERROR === "true") {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message:
-                "We couldn't tell if you are human or a cyber-amphibian. Please try again.",
-            });
-          }
         }
 
         const feed = getFeeds().find((f) => f.id === feedId);
@@ -139,7 +132,12 @@ export const feedsRouter = router({
               });
             }
 
-            const frogDataSpec = await sampleFrogData(feed.biomes);
+            const frogDataSpec = await sampleFrogData({
+              ...feed.biomes,
+              ...(turnstileError && process.env.THROW_ON_TURNSTILE_ERROR
+                ? { Unknown: { dropWeightScaler: 5 } }
+                : {}),
+            });
             if (!frogDataSpec) {
               throw new TRPCError({
                 code: "NOT_FOUND",
