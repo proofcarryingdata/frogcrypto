@@ -78,8 +78,6 @@ export function parseFrogPOD(pod: p.PODData): FrogPOD {
 }
 
 export function toFrogPODEntries(frog: IFrogData): PODEntries {
-  console.log("toFrogPODEntries", frog);
-
   const res = FrogSpec.safeParse(
     {
       ...frog,
