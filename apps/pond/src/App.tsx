@@ -1,6 +1,8 @@
 import React, { Suspense } from "react";
 import toast from "react-hot-toast";
 import { Link, Route, Switch, useLocation } from "wouter";
+import PullToRefresh from "react-simple-pull-to-refresh";
+import { useQueryClient } from "@tanstack/react-query";
 import { default as CyberFrog } from "./components/CyberFrog";
 import { DexTab } from "./components/DexTab";
 import GetFrogTab from "./components/GetFrogTab";
@@ -146,23 +148,33 @@ function AppWrapper() {
 function App() {
   useTsParticles();
   useConnectFrogStore();
+  const queryClient = useQueryClient();
 
   return (
-    <main className="flex justify-center w-screen max-w-full pt-6 pb-12 bg-dot-pattern overflow-auto">
-      <div className="flex flex-col gap-4 w-full max-w-sm items-stretch px-4 flex-1">
-        <h1 className="font-superfunky text-2xl self-center">
-          <span>FrogCrypto</span>
-        </h1>
+    <PullToRefresh
+      onRefresh={async () => {
+        await queryClient.refetchQueries({ type: "active" });
+      }}
+      className="bg-dot-pattern text-center"
+      pullDownThreshold={100}
+      maxPullDownDistance={150}
+    >
+      <main className="flex justify-center w-screen max-w-full pt-6 pb-12 bg-dot-pattern overflow-auto">
+        <div className="flex flex-col gap-4 w-full max-w-sm items-stretch px-4 flex-1">
+          <h1 className="font-superfunky text-2xl self-center">
+            <span>FrogCrypto</span>
+          </h1>
 
-        <Suspense
-          fallback={
-            <Loader message="Refresh your page if this is taking too long..." />
-          }
-        >
-          <AppWrapper />
-        </Suspense>
-      </div>
-    </main>
+          <Suspense
+            fallback={
+              <Loader message="Refresh your page if this is taking too long..." />
+            }
+          >
+            <AppWrapper />
+          </Suspense>
+        </div>
+      </main>
+    </PullToRefresh>
   );
 }
 
