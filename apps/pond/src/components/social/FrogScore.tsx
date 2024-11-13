@@ -1,10 +1,11 @@
 import { type FrogCryptoScore, getUsernameFromHash } from "@frogcrypto/shared";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import Frog, { FROG_LEVELS } from "../shared/Frog";
 import FrogImg from "../shared/FrogImg";
+import Countdown from "../shared/Countdown";
 import SocialContainer from "./SocialContainer";
 
 /**
@@ -12,7 +13,7 @@ import SocialContainer from "./SocialContainer";
  */
 function FrogScore(): JSX.Element {
   const { data: { myScore: score, spiritFrog } = {} } = useUserState();
-  const { data: { scores, totalUsers } = {} } =
+  const { data: { scores, totalUsers } = {}, dataUpdatedAt } =
     trpc.social.scoreboard2.useQuery(undefined, {
       refetchInterval: 30_000,
     });
@@ -22,7 +23,10 @@ function FrogScore(): JSX.Element {
   }
 
   return (
-    <SocialContainer title="Leaderboard">
+    <SocialContainer
+      title="Leaderboard"
+      countdownTargetTime={dataUpdatedAt + 30_000}
+    >
       <ScoreTable
         scores={[score]}
         getUsername={(id) =>
