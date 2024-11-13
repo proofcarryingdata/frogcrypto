@@ -13,7 +13,9 @@ import SocialContainer from "./SocialContainer";
 function FrogScore(): JSX.Element {
   const { data: { myScore: score, spiritFrog } = {} } = useUserState();
   const { data: { scores, totalUsers } = {} } =
-    trpc.social.scoreboard2.useQuery();
+    trpc.social.scoreboard2.useQuery(undefined, {
+      refetchInterval: 30_000,
+    });
 
   if (!score) {
     return <Loader />;
