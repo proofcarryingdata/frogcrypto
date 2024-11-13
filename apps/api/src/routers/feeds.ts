@@ -25,8 +25,6 @@ import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState, publicKeyToUUID } from "../utils";
 import { parseCyberfrogData } from "../cyberfrogs";
 
-const CYBERFROG_SEMAPHORE_ID = "_CYBERFROG_GLOBAL_DUMMY_ID_";
-
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
   throw new Error("ISSUER_PRIVATE_KEY is not set");
@@ -279,7 +277,7 @@ export const feedsRouter = router({
           .insert(userFeedsTable)
           .values({
             feedId,
-            semaphoreId: CYBERFROG_SEMAPHORE_ID,
+            semaphoreId: semaphoreId.toString(),
           })
           .onConflictDoNothing();
 
@@ -287,7 +285,7 @@ export const feedsRouter = router({
           .transaction(async (tx) => {
             const lastFetchedAt = await updateUserFeedState(
               tx,
-              CYBERFROG_SEMAPHORE_ID,
+              semaphoreId.toString(),
               feedId
             );
             if (!lastFetchedAt) {
