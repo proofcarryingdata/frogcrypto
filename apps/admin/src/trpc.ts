@@ -40,7 +40,9 @@ export const trpcClient = trpc.createClient({
         (opts.direction === "down" && opts.result instanceof Error),
     }),
     httpBatchLink({
-      url: `${SERVER_URL}/trpc`,
+      url: `${decodeURIComponent(
+        new URLSearchParams(window.location.search).get("api") ?? SERVER_URL
+      )}/trpc`,
       transformer: SuperJSON,
       headers() {
         if (!token) {

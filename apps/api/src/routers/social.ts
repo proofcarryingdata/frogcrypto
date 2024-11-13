@@ -47,7 +47,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Invalid FROG REQUEST POD: signer public key does not match profile ID",
+        "Invalid FROG REQUEST POD: signer public key does not match profile ID.",
     });
   }
 
@@ -59,7 +59,7 @@ async function validateFrogRequestPOD(pod: POD, semaphoreIdBase64: string) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Invalid FROG REQUEST POD: owner public key does not match owner semaphore ID",
+        "Invalid FROG REQUEST POD: owner public key does not match owner semaphore ID.",
     });
   }
 

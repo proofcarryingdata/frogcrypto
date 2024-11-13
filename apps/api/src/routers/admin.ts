@@ -2,7 +2,7 @@ import { FrogCryptoFrogDataSchema, ServerFeedSchema } from "@frogcrypto/shared";
 import { inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { feedsTable, frogsTable } from "../db/schema";
+import { feedsTable, frogsTable, userScoresTable } from "../db/schema";
 import { adminProcedure, router } from "../trpc";
 import { refreshFeeds } from "../db/feeds";
 import { refreshFrogCache } from "../db/frog-cache";
@@ -90,4 +90,15 @@ export const adminRouter = router({
 
       await refreshFeeds();
     }),
+
+  dumpUsers: adminProcedure.query(async () => {
+    const users = await db
+      .select({
+        semaphoreId: userScoresTable.semaphoreId,
+        eddsaPublicKey: userScoresTable.eddsaPublicKey,
+      })
+      .from(userScoresTable);
+
+    return users;
+  }),
 });
