@@ -1,11 +1,10 @@
 import { type FrogCryptoScore, getUsernameFromHash } from "@frogcrypto/shared";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
 import Frog, { FROG_LEVELS } from "../shared/Frog";
 import FrogImg from "../shared/FrogImg";
-import Countdown from "../shared/Countdown";
 import SocialContainer from "./SocialContainer";
 
 /**

@@ -49,7 +49,7 @@ export const RARITY_COLORS: Record<
   },
   [Rarity.Mythic]: {
     label: "MYTH",
-    shadow: "shadow-rarity-mythic gradient-border animate-rotate-gradient p-2",
+    shadow: "shadow-rarity-mythic",
     text: "text-rarity-mythic",
     color:
       "linear-gradient(261deg, #D1FFD3 2.82%, #EAF 39.21%, #5BFFFF 99.02%)",
@@ -127,10 +127,18 @@ function FrogCard({
 
   return (
     <div
-      className="w-full flex flex-col bg-white rounded-lg font-mono"
+      className={`w-full flex flex-col bg-white rounded-lg font-mono ${
+        frog.rarity === Rarity.Mythic
+          ? "gradient-border animate-rotate-gradient"
+          : ""
+      }`}
       style={style}
     >
-      <div className="w-full flex flex-col gap-4 items-center p-4">
+      <div
+        className={`w-full flex flex-col gap-4 items-center p-4 ${
+          frog.rarity === Rarity.Mythic ? "bg-white rounded-lg" : ""
+        }`}
+      >
         <FrogImg
           frog={frog}
           className={`rounded-lg shadow-frog ${RARITY_COLORS[frog.rarity].shadow || ""}`}

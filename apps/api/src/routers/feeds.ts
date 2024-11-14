@@ -98,7 +98,7 @@ export const feedsRouter = router({
         ) {
           const userScore = await getUserScore(semaphoreId);
 
-          if (userScore && userScore.score - userScore.friendCount > 40) {
+          if (userScore && userScore.score - userScore.friendCount >= 42) {
             return { feed: theCapital };
           }
         }
