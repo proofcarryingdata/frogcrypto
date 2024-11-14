@@ -1,8 +1,10 @@
 import { type IFrogData, shortSemaphoreId } from "@frogcrypto/shared";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useSwipeable } from "react-swipeable";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { useMutation } from "@tanstack/react-query";
 import frogNecklaceSvg from "../../assets/frog_necklace.svg?url";
 import frogNecklaceDisabledSvg from "../../assets/frog_necklace_disabled.svg?url";
 import useSearchParams from "../../hooks/useSearchParams";
@@ -370,6 +372,38 @@ function FrogRequestModal({
       Boolean(
         frogRequest.party2POD && frogRequest.party1 === semaphoreIdBase64
       ));
+  const refTurnstile = useRef<TurnstileInstance>(null);
+
+  const { mutate: onVerifyTurnstile, isPending: isVerifyingTurnstile } =
+    useMutation({
+      mutationFn: () =>
+        (
+          refTurnstile.current?.getResponsePromise() ??
+          new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          })
+        )
+          .then(() => {
+            if (hasPendingRequest) {
+              return onAcceptFrogRequest({
+                id: frogRequest.id,
+                requestedBy: semaphoreIdBase64,
+                requestPOD: frogRequest.party1POD ?? frogRequest.party2POD,
+              });
+            }
+
+            return onSendFrogRequest({
+              semaphoreIdBase64,
+              eddsaPublicKey,
+            });
+          })
+          .then(onClose)
+          .catch(() => {
+            toast.error(
+              `Ribbit! There was an error sending your FROG REQUEST. Please try again.`
+            );
+          }),
+    });
 
   if (isLoadingFrogRequest) {
     return null;
@@ -413,27 +447,25 @@ function FrogRequestModal({
               type="button"
               className="w-48 text-sm bg-green-500 text-white px-4 py-2 rounded-sm flex-1 disabled:opacity-50 disabled:cursor-wait"
               onClick={() => {
-                if (hasPendingRequest) {
-                  void onAcceptFrogRequest({
-                    id: frogRequest.id,
-                    requestedBy: semaphoreIdBase64,
-                    requestPOD: frogRequest.party1POD ?? frogRequest.party2POD,
-                  }).then(onClose);
-                } else {
-                  void onSendFrogRequest({
-                    semaphoreIdBase64,
-                    eddsaPublicKey,
-                  }).then(onClose);
-                }
+                onVerifyTurnstile();
               }}
               disabled={
                 isSendingFrogRequest ||
                 isAcceptingFrogRequest ||
+                isVerifyingTurnstile ||
                 hasDeclinedRequest
               }
             >
               {hasPendingRequest ? "accept" : "send"} FROG REQUEST
             </button>
+
+            <Turnstile
+              id={`turnstile-necklace-${socialId}`}
+              className="self-center"
+              color="light"
+              ref={refTurnstile}
+              siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+            />
 
             <span className="text-xs text-center px-8 text-gray-500">
               {isFriend
