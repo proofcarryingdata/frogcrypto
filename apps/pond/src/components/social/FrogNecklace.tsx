@@ -465,6 +465,9 @@ function FrogRequestModal({
               color="light"
               ref={refTurnstile}
               siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+              options={{
+                action: "send-frog-request",
+              }}
             />
 
             <span className="text-xs text-center px-8 text-gray-500">

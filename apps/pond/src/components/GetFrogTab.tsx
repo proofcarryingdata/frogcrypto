@@ -228,6 +228,9 @@ function SearchButton({
           color="light"
           ref={refTurnstile}
           siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+          options={{
+            action: "search-frog",
+          }}
         />
       ) : null}
     </>
