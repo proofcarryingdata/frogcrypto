@@ -72,7 +72,7 @@ function FrogScanner() {
           .getResponsePromise()
           .then((token) => getFrog({ feedId: feed.id, token, version: "v2" })),
         {
-          loading: "Scanning the void...",
+          loading: feed.description,
           success: (data) => {
             const frog = parseFrogPOD(podToPODData(data.pod));
             return `+1 🐸 ${frog.name} has entered your pond!`;
