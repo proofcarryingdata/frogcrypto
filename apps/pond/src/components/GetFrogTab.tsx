@@ -17,9 +17,10 @@ import useFrogs, { isProfileFrogPOD } from "../hooks/useFrogs";
 import useGetFrog from "../hooks/useGetFrog";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
-import { trpc } from "../trpc";
+import useScanFeeds from "../hooks/useScanFeeds";
 import {
   ActionButton,
+  CelestialPondSearchButton,
   FrogSearchButton,
   TheCapitalSearchButton,
 } from "./shared/Button";
@@ -36,20 +37,7 @@ function GetFrogTab() {
   const userStateByFeedId = useUserStateByFeedId();
   const frogs = useFrogs();
 
-  const { addSubscription } = useSubscriptions();
-  const { mutateAsync: scanFeedsAsync } = trpc.feeds.scan.useMutation({
-    onSuccess: ({ feed }) => {
-      if (feed) {
-        addSubscription(feed);
-      }
-    },
-  });
-  const scanFeeds = useCallback(async () => {
-    const { feed } = await scanFeedsAsync({
-      feedIds: subscriptions.map((s) => s.id),
-    });
-    return feed?.name;
-  }, [subscriptions, scanFeedsAsync]);
+  const scanFeeds = useScanFeeds();
 
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -147,10 +135,7 @@ function SearchButton({
       ])
         .then(async () => {
           if (feed.name === "Swamp") {
-            const feedName = await scanFeeds();
-            if (feedName) {
-              return `You found a secret passage to ${feedName}!`;
-            }
+            await scanFeeds();
           }
 
           return getFrogAsync({
@@ -204,6 +189,8 @@ function SearchButton({
     switch (feed.name) {
       case "The Capital":
         return TheCapitalSearchButton;
+      case "Celestial Pond":
+        return CelestialPondSearchButton;
       default:
         return FrogSearchButton;
     }

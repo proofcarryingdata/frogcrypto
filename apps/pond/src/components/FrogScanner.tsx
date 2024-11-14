@@ -9,6 +9,7 @@ import { useManageFrogs } from "../hooks/useFrogs";
 import useSearchParams from "../hooks/useSearchParams";
 import { useUserState } from "../hooks/useUserState";
 import { trpc } from "../trpc";
+import useScanFeeds from "../hooks/useScanFeeds";
 
 const SEARCH_PARAM_FROG_SCANNER_CODE = "scanner_code";
 
@@ -51,6 +52,7 @@ function FrogScanner() {
       await frogs.insert(podToPODData(data.pod));
     },
   });
+  const scanFeeds = useScanFeeds();
   const { mutate: scanFrog, isPending: isScanningFrog } = useMutation({
     mutationFn: async () => {
       if (!hasScore) {
@@ -70,7 +72,10 @@ function FrogScanner() {
       return toast.promise(
         refTurnstile.current
           .getResponsePromise()
-          .then((token) => getFrog({ feedId: feed.id, token, version: "v2" })),
+          .then((token) => getFrog({ feedId: feed.id, token, version: "v2" }))
+          .finally(() => {
+            void scanFeeds(feed.id);
+          }),
         {
           loading: feed.description,
           success: (data) => {

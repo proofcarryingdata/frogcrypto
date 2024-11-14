@@ -72,15 +72,34 @@ export const feedsRouter = router({
           user: { semaphoreId },
         },
       }) => {
-        const userScore = await getUserScore(semaphoreId);
-        if (userScore && userScore.score - userScore.friendCount > 40) {
-          const feed = getFeeds().find((f) => f.name === "The Capital");
-          if (
-            feed &&
-            feed.activeUntil > Date.now() / 1000 + 60 &&
-            !feedIds.includes(feed.id)
-          ) {
-            return { feed };
+        // if user has come across a hidden pond, we will give them the official pond
+        const celestialPond = getFeeds().find(
+          (f) => f.name === "Celestial Pond"
+        );
+        if (
+          celestialPond &&
+          celestialPond.activeUntil > Date.now() / 1000 + 60 &&
+          !feedIds.includes(celestialPond.id) &&
+          feedIds.find((id) =>
+            getFeeds()
+              .find((f) => f.id === id)
+              ?.name.startsWith("Celestial Pond [")
+          )
+        ) {
+          return { feed: celestialPond };
+        }
+
+        // if user has a score of 40 or more, they get the capital
+        const theCapital = getFeeds().find((f) => f.name === "The Capital");
+        if (
+          theCapital &&
+          theCapital.activeUntil > Date.now() / 1000 + 60 &&
+          !feedIds.includes(theCapital.id)
+        ) {
+          const userScore = await getUserScore(semaphoreId);
+
+          if (userScore && userScore.score - userScore.friendCount > 40) {
+            return { feed: theCapital };
           }
         }
 

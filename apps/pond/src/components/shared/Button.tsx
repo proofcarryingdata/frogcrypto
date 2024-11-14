@@ -10,7 +10,10 @@ import { ParallaxProvider, ParallaxBanner } from "react-scroll-parallax";
 import { ExternalLink } from "lucide-react";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
-import { useFrogParticles } from "../../hooks/useFrogParticles";
+import {
+  useCelestialPondParticles,
+  useFrogParticles,
+} from "../../hooks/useFrogParticles";
 
 /**
  * A button that shows a loading spinner while the action is in progress.
@@ -187,7 +190,8 @@ FrogSearchButton.displayName = "FrogSearchButton";
 
 export type FrogSearchButtonType =
   | typeof FrogSearchButton
-  | typeof TheCapitalSearchButton;
+  | typeof TheCapitalSearchButton
+  | typeof CelestialPondSearchButton;
 
 export const Button = forwardRef(
   (
@@ -281,6 +285,88 @@ export const TheCapitalSearchButton = forwardRef(
   }
 );
 TheCapitalSearchButton.displayName = "TheCapitalSearchButton";
+
+const TextureSearchButton = forwardRef(
+  (
+    {
+      backgroundImage,
+      children,
+      buttonStyle,
+      ...props
+    }: React.ComponentPropsWithRef<"button"> & {
+      pending?: boolean;
+      backgroundImage?: string;
+      buttonStyle?: React.CSSProperties;
+    },
+    buttonRef: React.Ref<HTMLButtonElement>
+  ) => {
+    return (
+      <FrogSearchButton
+        {...props}
+        ref={buttonRef}
+        style={{
+          backgroundImage,
+          backgroundRepeat: "repeat",
+          filter: props.disabled ? "brightness(70%) grayscale(80%)" : "",
+          padding: "8px",
+          ...buttonStyle,
+        }}
+      >
+        {children}
+      </FrogSearchButton>
+    );
+  }
+);
+TextureSearchButton.displayName = "TextureSearchButton";
+
+export const CelestialPondSearchButton = forwardRef(
+  (
+    {
+      children,
+      ...props
+    }: React.ComponentPropsWithRef<typeof TextureSearchButton>,
+    buttonRef: React.Ref<HTMLButtonElement>
+  ) => {
+    const ref = useRef<HTMLDivElement>(null);
+    useCelestialPondParticles(ref);
+
+    return (
+      <TextureSearchButton
+        ref={buttonRef}
+        buttonStyle={{
+          padding: 0,
+        }}
+        {...props}
+        backgroundImage="url(/images/celestialpond.jpg)"
+      >
+        <div style={{ position: "relative", width: "100%", height: "48px" }}>
+          <div
+            ref={ref}
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              left: 0,
+              right: 0,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "100%",
+              textAlign: "center",
+            }}
+          >
+            {children}
+          </div>
+        </div>
+      </TextureSearchButton>
+    );
+  }
+);
+CelestialPondSearchButton.displayName = "CelestialPondSearchButton";
 
 const visitedLabAtAtom = atomWithStorage<number>(
   "visitedLabAt",
