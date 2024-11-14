@@ -7,6 +7,9 @@ import React, {
 } from "react";
 import { useInView } from "react-intersection-observer";
 import { ParallaxProvider, ParallaxBanner } from "react-scroll-parallax";
+import { ExternalLink } from "lucide-react";
+import { atomWithStorage } from "jotai/utils";
+import { useAtom } from "jotai";
 import { useFrogParticles } from "../../hooks/useFrogParticles";
 
 /**
@@ -278,3 +281,35 @@ export const TheCapitalSearchButton = forwardRef(
   }
 );
 TheCapitalSearchButton.displayName = "TheCapitalSearchButton";
+
+const visitedLabAtAtom = atomWithStorage<number>(
+  "visitedLabAt",
+  Math.random() > 0.2 ? Date.now() : 0
+);
+export function useResetVisitedLabAt() {
+  const [, setVisitedLabAt] = useAtom(visitedLabAtAtom);
+  return () => {
+    setVisitedLabAt(0);
+  };
+}
+export function VisitLabButton() {
+  const [visitedLabAt, setVisitedLabAt] = useAtom(visitedLabAtAtom);
+
+  if (visitedLabAt) {
+    return null;
+  }
+
+  return (
+    <a
+      href="https://shulgin.engineering"
+      target="_blank"
+      rel="noreferrer"
+      onClick={() => {
+        setVisitedLabAt(Date.now());
+      }}
+      className="btn mx-auto bg-lab"
+    >
+      Visit Lab <ExternalLink className="inline w-4 h-4 mb-1" />
+    </a>
+  );
+}

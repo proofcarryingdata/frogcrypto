@@ -21,7 +21,7 @@ import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 import { useAcceptedFrogRequests } from "./hooks/useFrogRequests";
 import { scoreToEmoji } from "./components/social/FrogScore";
-import UnderConstruction from "./components/UnderConstruction";
+import { VisitLabButton } from "./components/shared/Button";
 
 function SocialTabButton() {
   const socialTabAvailable = useSocialTabAvailable();
@@ -115,6 +115,8 @@ function FrogCrypto() {
           {userState.myScore.devcon7TicketId ? <SocialTabButton /> : null}
         </nav>
       )}
+
+      <VisitLabButton />
 
       <Suspense fallback={<Loader />}>
         <Switch>

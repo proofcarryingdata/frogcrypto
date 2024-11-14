@@ -96,6 +96,11 @@ module.exports = {
           "0%": { filter: "blur(10px)", opacity: "0" },
           "100%": { filter: "blur(0)", opacity: "1" },
         },
+        "rotate-gradient": {
+          to: {
+            "--gradient-angle": "360deg",
+          },
+        },
       },
       animation: {
         fadeIn: "fadeIn 0.5s ease-in forwards",
@@ -105,15 +110,49 @@ module.exports = {
         bounce: "bounce 1s infinite",
         leap: "leap 1s ease-in-out",
         "blur-in": "blurIn 3s ease-in-out",
+        "rotate-gradient": "rotate-gradient 5s linear infinite",
       },
     },
   },
   plugins: [
-    function ({ addUtilities, theme }) {
+    function ({ addBase, addUtilities }) {
+      addBase({
+        "@property --gradient-angle": {
+          syntax: '"<angle>"',
+          inherits: "false",
+          initialValue: "0deg",
+        },
+      });
+
       const newUtilities = {
         ".bg-dot-pattern": {
           background:
             "linear-gradient( 90deg, #ececec calc(22px - 3px), transparent 1% ) center / 22px 22px, linear-gradient( #ececec calc(22px - 3px), transparent 1% ) center / 22px 22px, #e4e4e4",
+        },
+        ".bg-lab": {
+          background:
+            "radial-gradient(50% 172.05% at 50% 50%, #FE2A53 0%, #D88E3C 32.5%, #98BF1A 59%, #A290A0 79.5%, #A143FF 100%)",
+        },
+        ".gradient-border": {
+          "--border-width": "-1px",
+          margin: "1px",
+          position: "relative",
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            background: `
+            linear-gradient(var(--gradient-angle, 45deg), #ffd800, #ff552000 70.71%),
+            linear-gradient(calc(var(--gradient-angle, 45deg) + 90deg), #ff5520, #750cf200 70.71%),
+            linear-gradient(calc(var(--gradient-angle, 45deg) + 180deg), #750cf2, #0cbcf200 70.71%),
+            linear-gradient(calc(var(--gradient-angle, 45deg) + 270deg), #0cbcf2, #ffd80000 70.71%)`,
+            animation: "rotate-gradient 5s infinite linear",
+            top: "var(--border-width)",
+            left: "var(--border-width)",
+            right: "var(--border-width)",
+            bottom: "var(--border-width)",
+            borderRadius: "0.25rem",
+            zIndex: "-1",
+          },
         },
       };
       addUtilities(newUtilities, ["responsive", "hover"]);

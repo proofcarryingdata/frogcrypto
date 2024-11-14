@@ -49,7 +49,7 @@ export const RARITY_COLORS: Record<
   },
   [Rarity.Mythic]: {
     label: "MYTH",
-    shadow: "shadow-rarity-mythic",
+    shadow: "shadow-rarity-mythic gradient-border animate-rotate-gradient p-2",
     text: "text-rarity-mythic",
     color:
       "linear-gradient(261deg, #D1FFD3 2.82%, #EAF 39.21%, #5BFFFF 99.02%)",
