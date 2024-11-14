@@ -25,7 +25,7 @@ function FrogFriends(): React.ReactElement {
   return (
     <div>
       {friends.length > 0 ? (
-        <SocialContainer title="Your Friends">
+        <SocialContainer title={`Your Friends (${friends.length})`}>
           <div className="grid grid-cols-2 gap-3">
             {friends.map((friend) => (
               <FrogProfileBox

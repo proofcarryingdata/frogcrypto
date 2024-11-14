@@ -73,7 +73,7 @@ export const feedsRouter = router({
         },
       }) => {
         const userScore = await getUserScore(semaphoreId);
-        if (userScore && userScore.score - userScore.friendCount > 100) {
+        if (userScore && userScore.score - userScore.friendCount > 40) {
           const feed = getFeeds().find((f) => f.name === "The Capital");
           if (
             feed &&
@@ -181,7 +181,7 @@ export const feedsRouter = router({
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
                 code: "FORBIDDEN",
-                message: `Next fetch available at ${String(nextFetchAt)}`,
+                message: `Croak! The pond is running low. Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds! 🐸`,
               });
             }
 

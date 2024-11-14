@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import React, { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { TRPCClientError } from "@trpc/client";
 import { useManageFrogs } from "../hooks/useFrogs";
 import useSearchParams from "../hooks/useSearchParams";
 import { useUserState } from "../hooks/useUserState";
@@ -77,6 +78,21 @@ function FrogScanner() {
             return `+1 🐸 ${frog.name} has entered your pond!`;
           },
           error: (e: unknown) => {
+            if (e instanceof TRPCClientError) {
+              const fetchErrorMsg = e.message.toLowerCase();
+              if (fetchErrorMsg.includes("not active")) {
+                return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
+              }
+              if (fetchErrorMsg.includes("try again")) {
+                return e.message;
+              }
+              if (fetchErrorMsg.includes("faucet off")) {
+                return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";
+              }
+              if (fetchErrorMsg.includes("frog not found")) {
+                return "Alas, there is nothing but a lily pad here.";
+              }
+            }
             if (e instanceof Error) {
               return `Oops! ${e.message}`;
             }
