@@ -9,7 +9,17 @@ import {
 import { podToPODData } from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gt, isNotNull, isNull, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  getTableColumns,
+  gt,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { validate as uuidValidate } from "uuid";
 import { z } from "zod";
 import { db } from "../db";
@@ -474,52 +484,17 @@ export const socialRouter = router({
         .then((result) => result[0]);
     }),
 
-  scoreboard: publicProcedure
-    .output(
-      z.array(
-        z.object({
-          friendCount: z.number(),
-          rank: z.number(),
-          score: z.number(),
-          semaphoreIdHash: z.string(),
-          username: z.string(),
-          imgUrl: z.string(),
-        })
-      )
+  scoreboard2: authedProcedure
+    .input(
+      z.object({
+        orderBy: z.enum(["score", "friends", "collected"]),
+      })
     )
-    .query(async () => {
-      return db
-        .with(userScoresView)
-        .select()
-        .from(userScoresView)
-        .orderBy(desc(userScoresView.score))
-        .where(gt(userScoresView.score, 0))
-        .limit(50)
-        .then((scores) => {
-          return Promise.all(
-            scores.map(async (score) => {
-              const frog = await getSpiritFrog(
-                BigInt(score.semaphoreId),
-                score.eddsaPublicKey
-              );
-              const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
-                frog?.name ?? "Unknown Toad"
-              }`;
-
-              return {
-                ...score,
-                username,
-                imgUrl: frog?.imageUrl ?? "",
-              };
-            })
-          );
-        });
-    }),
-
-  scoreboard2: publicProcedure
     .output(
       z.object({
         totalUsers: z.number(),
+        myRank: z.number(),
+        myScore: z.number(),
         scores: z.array(
           z.object({
             friendCount: z.number(),
@@ -532,42 +507,91 @@ export const socialRouter = router({
         ),
       })
     )
-    .query(async () => {
-      return {
-        totalUsers: await db
-          .select({ count: sql<number>`count(*)` })
-          .from(userScoresTable)
-          .where(gt(userScoresTable.score, 0))
-          .then((result) => Number(result[0]?.count ?? 0)),
-
-        scores: await db
-          .with(userScoresView)
-          .select()
-          .from(userScoresView)
-          .orderBy(desc(userScoresView.score))
-          .where(gt(userScoresView.score, 0))
-          .limit(50)
-          .then((scores) => {
-            return Promise.all(
-              scores.map(async (score) => {
-                const frog = await getSpiritFrog(
-                  BigInt(score.semaphoreId),
-                  score.eddsaPublicKey
-                );
-                const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
-                  frog?.name ?? "Unknown Toad"
-                }`;
-
-                return {
-                  ...score,
-                  username,
-                  imgUrl: frog?.imageUrl ?? "",
-                };
-              })
+    .query(
+      async ({
+        ctx: {
+          user: { semaphoreId },
+        },
+        input: { orderBy },
+      }) => {
+        let scoreColumn = sql<number>`${userScoresView.score}`.as("score");
+        if (orderBy === "friends") {
+          scoreColumn = sql<number>`${userScoresView.friendCount}`.as("score");
+        }
+        if (orderBy === "collected") {
+          scoreColumn =
+            sql<number>`${userScoresView.score} - ${userScoresView.friendCount}`.as(
+              "score"
             );
-          }),
-      };
-    }),
+        }
+
+        return {
+          totalUsers: await db
+            .select({ count: sql<number>`count(*)` })
+            .from(userScoresTable)
+            .where(gt(userScoresTable.score, 0))
+            .then((result) => Number(result[0]?.count ?? 0)),
+
+          myRank: await db
+            .with(userScoresView)
+            .select({ count: sql<number>`count(*)` })
+            .from(userScoresView)
+            .where(
+              gt(
+                scoreColumn,
+                sql<number>`
+                (select ${scoreColumn} from ${userScoresView}
+                where ${userScoresView.semaphoreId} = ${String(semaphoreId)})`
+              )
+            )
+            .then((result) => Number(result[0]?.count ?? 0) + 1),
+
+          myScore: await db
+            .with(userScoresView)
+            .select({ score: scoreColumn })
+            .from(userScoresView)
+            .where(eq(userScoresView.semaphoreId, String(semaphoreId)))
+            .then((result) => Number(result[0]?.score ?? 0)),
+
+          scores: await db
+            .with(userScoresView)
+            .select({
+              semaphoreIdHash: userScoresView.semaphoreIdHash,
+              score: scoreColumn,
+              friendCount: userScoresView.friendCount,
+              rank: sql<number>`cast(rank() over (order by ${scoreColumn} desc) as int)`.as(
+                "rank"
+              ),
+              semaphoreId: userScoresView.semaphoreId,
+              eddsaPublicKey: userScoresView.eddsaPublicKey,
+            })
+            .from(userScoresView)
+            .orderBy(desc(scoreColumn))
+            .where(gt(userScoresView.score, 0))
+            .limit(50)
+            .then((scores) => {
+              return Promise.all(
+                scores.map(async (score, i) => {
+                  const frog = await getSpiritFrog(
+                    BigInt(score.semaphoreId),
+                    score.eddsaPublicKey
+                  );
+                  const username = `${getUsernameFromHash(score.semaphoreIdHash)} the ${
+                    frog?.name ?? "Unknown Toad"
+                  }`;
+
+                  return {
+                    ...score,
+                    rank: i + 1,
+                    username,
+                    imgUrl: frog?.imageUrl ?? "",
+                  };
+                })
+              );
+            }),
+        };
+      }
+    ),
 
   claimProfile: authedProcedure
     .input(

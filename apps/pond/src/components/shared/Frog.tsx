@@ -8,18 +8,18 @@ export const FROG_LEVELS = [
   { score: 10, className: "text-orange-500", emoji: "🟠", title: "JOURNEYMAN" },
   { score: 42, className: "text-red-500", emoji: "🔴", title: "EXPERT" },
   { score: 69, className: "text-purple-500", emoji: "🟣", title: "MASTER" },
-  { score: 420, className: "text-blue-500", emoji: "🔵", title: "GRANDMASTER" },
-  { score: 777, className: "text-green-500", emoji: "🟢", title: "LEGEND" },
-  { score: 1337, className: "text-gold-500", emoji: "👑", title: "SOVEREIGN" },
-  { score: 1729, className: "text-brown-500", emoji: "🦉", title: "SAGE" },
+  { score: 128, className: "text-blue-500", emoji: "🔵", title: "GRANDMASTER" },
+  { score: 420, className: "text-green-500", emoji: "🟢", title: "LEGEND" },
+  { score: 777, className: "text-gold-500", emoji: "👑", title: "SOVEREIGN" },
+  { score: 1024, className: "text-brown-500", emoji: "🦉", title: "SAGE" },
   {
-    score: 2028,
+    score: 1337,
     className: "text-lime-500",
     emoji: "🐸",
     title: "AVATAR OF FROGELION",
   },
   {
-    score: 4098,
+    score: 2048,
     className: "text-cyan-500",
     emoji: "⌨️",
     title: "<scripter />",
@@ -77,7 +77,6 @@ export function FrogEmoji({ className }: { className?: string }) {
       className={className ?? "h-full aspect-square inline-block"}
       draggable={false}
       onClick={() => {
-        console.log("mouse down");
         setPressed(true);
       }}
       role="button"

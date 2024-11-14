@@ -1,21 +1,85 @@
 import { type FrogCryptoScore, getUsernameFromHash } from "@frogcrypto/shared";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { ChartNoAxesColumn, Glasses, Search } from "lucide-react";
+import { orderBy } from "lodash";
 import { useUserState } from "../../hooks/useUserState";
 import { trpc } from "../../trpc";
 import Loader from "../shared/Loader";
-import Frog, { FROG_LEVELS } from "../shared/Frog";
+import Frog, { FROG_LEVELS, FrogEmoji } from "../shared/Frog";
 import FrogImg from "../shared/FrogImg";
 import SocialContainer from "./SocialContainer";
+
+const ORDER_BY_OPTIONS = [
+  {
+    index: 0,
+    label: "Overall",
+    value: "score",
+  },
+  {
+    index: 1,
+    label: "Social",
+    value: "friends",
+  },
+  {
+    index: 2,
+    label: "Collector",
+    value: "collected",
+  },
+] as const;
+
+function CustomFrog({
+  score,
+  type,
+}: {
+  score: number;
+  type: "score" | "friends" | "collected";
+}) {
+  if (type === "friends") {
+    return (
+      <div className="relative">
+        <Frog score={score} colorize className="justify-end text-sm" />
+        <div className="absolute -bottom-1 -right-1">
+          <FrogEmoji className="w-4 h-4" />
+        </div>
+      </div>
+    );
+  }
+
+  if (type === "collected") {
+    return (
+      <div className="relative">
+        <Frog score={score} colorize className="justify-end text-sm" />
+        <div className="absolute top-0 right-0">
+          <Glasses className="w-4 h-4 text-gray-400" />
+        </div>
+      </div>
+    );
+  }
+
+  return <Frog score={score} colorize className="justify-end text-sm" />;
+}
 
 /**
  * The Score tab shows the user their score and the leaderboard.
  */
 function FrogScore(): JSX.Element {
+  const [orderBy, setOrderBy] = useState(ORDER_BY_OPTIONS[0]);
+  const toggleOrder = () => {
+    setOrderBy(
+      // @ts-expect-error -- false alarm
+      (o) => ORDER_BY_OPTIONS[(o.index + 1) % ORDER_BY_OPTIONS.length]
+    );
+  };
+
   const { data: { myScore: score, spiritFrog } = {} } = useUserState();
-  const { data: { scores, totalUsers } = {}, dataUpdatedAt } =
-    trpc.social.scoreboard2.useQuery(undefined, {
-      refetchInterval: 30_000,
-    });
+  const { data: { scores, myRank, myScore, totalUsers } = {}, dataUpdatedAt } =
+    trpc.social.scoreboard2.useQuery(
+      { orderBy: orderBy.value },
+      {
+        refetchInterval: 30_000,
+        staleTime: 30_000,
+      }
+    );
 
   if (!score) {
     return <Loader />;
@@ -23,25 +87,38 @@ function FrogScore(): JSX.Element {
 
   return (
     <SocialContainer
-      title="Leaderboard"
+      title={`${orderBy.label} Leaderboard`}
+      link={
+        <button onClick={toggleOrder} type="button">
+          <ChartNoAxesColumn />
+        </button>
+      }
       countdownTargetTime={dataUpdatedAt + 30_000}
     >
-      <ScoreTable
-        scores={[score]}
-        getUsername={(id) =>
-          `${getUsernameFromHash(id)} the ${spiritFrog?.name ?? "Unknown Toad"}`
-        }
-      />
-
-      <div className="min-h-px max-h-px w-full bg-green-600 bg-opacity-30" />
-
       {scores ? (
-        <ScoreTable
-          scores={scores}
-          myScore={score}
-          getUsername={getUsernameFromHash}
-          totalUsers={totalUsers}
-        />
+        <>
+          <ScoreTable
+            scores={[
+              {
+                ...score,
+                rank: myRank ?? -1,
+                score: myScore ?? -1,
+              },
+            ]}
+            getUsername={(id) =>
+              `${getUsernameFromHash(id)} the ${spiritFrog?.name ?? "Unknown Toad"}`
+            }
+            orderBy={orderBy}
+          />
+          <div className="min-h-px max-h-px w-full bg-green-600 bg-opacity-30" />
+          <ScoreTable
+            scores={scores}
+            myScore={score}
+            getUsername={getUsernameFromHash}
+            totalUsers={totalUsers}
+            orderBy={orderBy}
+          />
+        </>
       ) : (
         <Loader />
       )}
@@ -54,16 +131,18 @@ function ScoreTable({
   myScore,
   getUsername,
   totalUsers,
+  orderBy,
 }: {
   getUsername: (semaphoreId: string) => string;
   scores: FrogCryptoScore[];
   myScore?: FrogCryptoScore;
   totalUsers?: number;
+  orderBy: (typeof ORDER_BY_OPTIONS)[number];
 }): JSX.Element {
   const scoresByLevel = useMemo(() => groupScores(scores), [scores]);
 
   return (
-    <table className="w-full">
+    <table className="w-full  text-left">
       <tbody>
         {scoresByLevel.map((group) => (
           <React.Fragment key={group.title}>
@@ -86,14 +165,16 @@ function ScoreTable({
                     fallback={<Loader className="w-8 h-8" />}
                   />
                 </td>
-                <td className="w-8">{score.rank}.</td>
+                <td className="w-8">
+                  {score.rank === -1 ? "?" : `${score.rank}.`}
+                </td>
                 <td>{score.username ?? getUsername(score.semaphoreIdHash)}</td>
                 <td className="text-right h-8">
-                  <Frog
-                    score={score.score}
-                    colorize
-                    className="justify-end text-sm"
-                  />
+                  {score.score === -1 ? (
+                    "?"
+                  ) : (
+                    <CustomFrog score={score.score} type={orderBy.value} />
+                  )}
                 </td>
               </tr>
             ))}

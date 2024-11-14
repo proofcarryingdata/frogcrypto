@@ -1,16 +1,15 @@
 import React, { Suspense, lazy } from "react";
 import { Link, Redirect, Route, Switch, useLocation } from "wouter";
-import { useAcceptedFrogRequests } from "../hooks/useFrogRequests";
-import { useMyProfilePOD, useOtherProfilePODs } from "../hooks/useProfilePOD";
+import { useMyProfilePOD } from "../hooks/useProfilePOD";
 import { useSocialTabAvailable } from "../hooks/useUserState";
 import NotFound from "./NotFound";
 import Loader from "./shared/Loader";
 import EnsureProfilePOD from "./social/EnsureProfilePOD";
 import FrogFriends from "./social/FrogFriends";
+import FrogScan from "./social/FrogScan";
 import FrogScore from "./social/FrogScore";
 import MyProfile from "./social/MyProfile";
 import ProfileSharer from "./social/ProfileSharer";
-import FrogScan from "./social/FrogScan";
 
 const FrogStats = lazy(() => import("./social/FrogStats"));
 
