@@ -162,6 +162,10 @@ const SpreadsheetFeedSchema = z.object({
   private: z.boolean(),
   activeUntil: z.string(),
   cooldown: z.number().int().positive(),
+  codes: z
+    .string()
+    .regex(/^[A-Za-z0-9,]*$/)
+    .optional(),
 });
 
 /**
@@ -201,6 +205,7 @@ function feedParser(data: string): ServerFeed[] {
         activeUntil: Math.round(new Date(feed.activeUntil).getTime() / 1000),
         cooldown: feed.cooldown,
         biomes: parseBiomes(raw),
+        secretCodes: feed.codes ? feed.codes.split(",") : [],
       } satisfies ServerFeed;
 
       return ServerFeedSchema.parse(feedData);
@@ -225,6 +230,7 @@ function feedUnparser(feeds: ServerFeed[]): string {
       private: feed.private,
       activeUntil: new Date(feed.activeUntil * 1000).toISOString(),
       cooldown: feed.cooldown,
+      codes: feed.secretCodes?.join(",") ?? undefined,
       ...Object.keys(Biome).reduce<Record<string, number>>((acc, biome) => {
         const biomeConfig = feed.biomes[biome];
         if (biomeConfig) {

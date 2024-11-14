@@ -6,12 +6,13 @@ import {
   logger,
   toFrogPODEntries,
 } from "@frogcrypto/shared";
-import { POD } from "@pcd/pod";
-import { TRPCError } from "@trpc/server";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex } from "@noble/hashes/utils";
+import { POD } from "@pcd/pod";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { parseCyberfrogData } from "../cyberfrogs";
 import { db } from "../db";
 import { getFeeds, updateUserFeedState } from "../db/feeds";
 import {
@@ -20,10 +21,10 @@ import {
   tryConsumeCyberfrogNullifier,
 } from "../db/frogs";
 import { userFeedsTable } from "../db/schema";
-import { incrementScore } from "../db/users";
+import { getUserScore, incrementScore } from "../db/users";
+import redis from "../redis";
 import { authedProcedure, publicProcedure, router } from "../trpc";
 import { computeUserFeedState, publicKeyToUUID } from "../utils";
-import { parseCyberfrogData } from "../cyberfrogs";
 
 const ISSUER_PRIVATE_KEY = process.env.ISSUER_PRIVATE_KEY;
 if (!ISSUER_PRIVATE_KEY) {
@@ -34,6 +35,58 @@ export const feedsRouter = router({
   list: publicProcedure.output(z.array(FeedSchema)).query(() => {
     return getFeeds().filter((f) => !f.private);
   }),
+
+  probe: authedProcedure
+    .input(z.object({ code: z.string() }))
+    .output(FeedSchema)
+    .query(async ({ input: { code }, ctx: { user } }) => {
+      const badProbeAtKey = `feed:badProbeAt:${user.semaphoreIdBase64}`;
+      const prev = await redis.set(badProbeAtKey, Date.now(), { get: true });
+      if (typeof prev === "number" && prev + 5_000 > Date.now()) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You recently scanned a secret code. Please wait a bit before trying again.",
+        });
+      }
+
+      const feed = getFeeds().find((f) => f.secretCodes?.includes(code));
+      if (feed) {
+        await redis.del(badProbeAtKey);
+        return feed;
+      }
+
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "We looked everywhere, but we don't recognize that code.",
+      });
+    }),
+
+  scan: authedProcedure
+    .input(z.object({ feedIds: z.array(z.string()) }))
+    .output(z.object({ feed: FeedSchema.optional() }))
+    .mutation(
+      async ({
+        input: { feedIds },
+        ctx: {
+          user: { semaphoreId },
+        },
+      }) => {
+        const userScore = await getUserScore(semaphoreId);
+        if (userScore && userScore.score - userScore.friendCount > 100) {
+          const feed = getFeeds().find((f) => f.name === "The Capital");
+          if (
+            feed &&
+            feed.activeUntil > Date.now() / 1000 + 60 &&
+            !feedIds.includes(feed.id)
+          ) {
+            return { feed };
+          }
+        }
+
+        return {};
+      }
+    ),
 
   search: authedProcedure
     .input(

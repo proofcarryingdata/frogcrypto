@@ -17,9 +17,15 @@ import useFrogs, { isProfileFrogPOD } from "../hooks/useFrogs";
 import useGetFrog from "../hooks/useGetFrog";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useUserState, useUserStateByFeedId } from "../hooks/useUserState";
-import { ActionButton, FrogSearchButton } from "./shared/Button";
+import { trpc } from "../trpc";
+import {
+  ActionButton,
+  FrogSearchButton,
+  TheCapitalSearchButton,
+} from "./shared/Button";
 import FrogCard from "./shared/FrogCard";
 import LoadingMessages from "./shared/LoadingMessages";
+import FrogScanner from "./FrogScanner";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
@@ -29,6 +35,21 @@ function GetFrogTab() {
   const { data: userState } = useUserState();
   const userStateByFeedId = useUserStateByFeedId();
   const frogs = useFrogs();
+
+  const { addSubscription } = useSubscriptions();
+  const { mutateAsync: scanFeedsAsync } = trpc.feeds.scan.useMutation({
+    onSuccess: ({ feed }) => {
+      if (feed) {
+        addSubscription(feed);
+      }
+    },
+  });
+  const scanFeeds = useCallback(async () => {
+    const { feed } = await scanFeedsAsync({
+      feedIds: subscriptions.map((s) => s.id),
+    });
+    return feed?.name;
+  }, [subscriptions, scanFeedsAsync]);
 
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -55,9 +76,11 @@ function GetFrogTab() {
               nextFetchAt={userFeedState.nextFetchAt}
               score={userState?.myScore.score}
               active={Boolean(userFeedState.active)}
+              scanFeeds={scanFeeds}
             />
           );
         })}
+        <FrogScanner />
       </div>
 
       {Boolean(visibleFrogs.length) && (
@@ -100,11 +123,13 @@ function SearchButton({
   nextFetchAt,
   score,
   active,
+  scanFeeds,
 }: {
   feed: Feed;
   nextFetchAt?: number;
   score: number | undefined;
   active: boolean;
+  scanFeeds: () => Promise<string | undefined>;
 }) {
   const countDown = useCountDown(nextFetchAt ?? 0);
   const canFetch = active && (!nextFetchAt || nextFetchAt < Date.now());
@@ -112,59 +137,77 @@ function SearchButton({
   const confetti = useFrogConfetti();
   const refTurnstile = useRef<TurnstileInstance>(null);
 
-  const onClick = useCallback(
-    () =>
-      toast.promise(
-        Promise.all([
-          new Promise<void>((resolve) => {
-            setTimeout(resolve, 4000);
-          }),
-          refTurnstile.current?.getResponsePromise(),
-        ])
-          .then(() =>
-            getFrogAsync({
-              feedId: feed.id,
-              token: refTurnstile.current?.getResponse(),
-              version: "v2",
-            })
-          )
-          .finally(() => {
-            refTurnstile.current?.reset();
-          }),
-        {
-          loading: <LoadingMessages biome={feed.name} />,
-          success: ({ pod }) => {
-            void confetti();
-            const frog = parseFrogPOD(podToPODData(pod));
-            if (frog.biome === Biome.Unknown) {
-              return `You found something strange in ${feed.name}. It doesn't appear to be a frog.`;
+  const onClick = useCallback(() => {
+    return toast.promise(
+      Promise.all([
+        new Promise<void>((resolve) => {
+          setTimeout(resolve, 4000);
+        }),
+        refTurnstile.current?.getResponsePromise(),
+      ])
+        .then(async () => {
+          if (feed.name === "Swamp") {
+            const feedName = await scanFeeds();
+            if (feedName) {
+              return `You found a secret passage to ${feedName}!`;
             }
-            return `You found a ${frog.name} in ${feed.name}!`;
-          },
-          error: (e) => {
-            if (e instanceof TRPCClientError) {
-              const fetchErrorMsg = e.message.toLowerCase();
-              if (fetchErrorMsg.includes("not active")) {
-                return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
-              }
-              if (fetchErrorMsg.includes("next fetch")) {
-                return `${feed.name} needs a moment to refill the pond. No double-dipping!`;
-              }
-              if (fetchErrorMsg.includes("faucet off")) {
-                return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";
-              }
-              if (fetchErrorMsg.includes("frog not found")) {
-                return "Alas, there is nothing but a lily pad here.";
-              }
+          }
+
+          return getFrogAsync({
+            feedId: feed.id,
+            token: refTurnstile.current?.getResponse(),
+            version: "v2",
+          });
+        })
+        .finally(() => {
+          refTurnstile.current?.reset();
+        }),
+      {
+        loading: <LoadingMessages biome={feed.name} />,
+        success: (res) => {
+          void confetti();
+
+          if (typeof res === "string") {
+            return res;
+          }
+
+          const frog = parseFrogPOD(podToPODData(res.pod));
+          if (frog.biome === Biome.Unknown) {
+            return `You found something strange in ${feed.name}. It doesn't appear to be a frog.`;
+          }
+          return `You found a ${frog.name} in ${feed.name}!`;
+        },
+        error: (e) => {
+          if (e instanceof TRPCClientError) {
+            const fetchErrorMsg = e.message.toLowerCase();
+            if (fetchErrorMsg.includes("not active")) {
+              return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
             }
-            return "Oopsie-toad! Something went wrong.";
-          },
-        }
-      ),
-    [confetti, feed.id, feed.name, getFrogAsync]
-  );
+            if (fetchErrorMsg.includes("next fetch")) {
+              return `${feed.name} needs a moment to refill the pond. No double-dipping!`;
+            }
+            if (fetchErrorMsg.includes("faucet off")) {
+              return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";
+            }
+            if (fetchErrorMsg.includes("frog not found")) {
+              return "Alas, there is nothing but a lily pad here.";
+            }
+          }
+          return "Oopsie-toad! Something went wrong.";
+        },
+      }
+    );
+  }, [confetti, feed.id, feed.name, getFrogAsync, scanFeeds]);
   const name = useMemo(() => `search ${_.upperCase(feed.name)}`, [feed.name]);
   const freerolls = FROG_FREEROLLS + 1 - (score ?? 0);
+  const ButtonComponent = useMemo(() => {
+    switch (feed.name) {
+      case "The Capital":
+        return TheCapitalSearchButton;
+      default:
+        return FrogSearchButton;
+    }
+  }, [feed.name]);
 
   return (
     <>
@@ -172,7 +215,7 @@ function SearchButton({
         key={feed.id}
         onClick={onClick}
         disabled={!canFetch}
-        ButtonComponent={FrogSearchButton}
+        ButtonComponent={ButtonComponent}
       >
         {canFetch ? frogSearchText({ freerolls, name }) : null}
         {!canFetch && (active ? `${name}${countDown}` : `${name} is closed`)}

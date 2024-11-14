@@ -361,6 +361,9 @@ importers:
       react-qr-code:
         specifier: ^2.0.15
         version: 2.0.15(react@18.3.1)
+      react-scroll-parallax:
+        specifier: ^3.4.5
+        version: 3.4.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-simple-pull-to-refresh:
         specifier: ^1.3.3
         version: 1.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2558,6 +2561,9 @@ packages:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
 
+  bezier-easing@2.1.0:
+    resolution: {integrity: sha512-gbIqZ/eslnUFC1tjEvtz0sgx+xTK20wDnYMIA27VA04R7w6xxXQPZDbibjA9DTWZRA2CXtwHykkVzlCaAJAZig==}
+
   bfj@7.1.0:
     resolution: {integrity: sha512-I6MMLkn+anzNdCUp9hMRyui1HaNEUCco50lxbvNS4+EyXg8lN3nJ48PjPWtbH8UVS9CuMoaKE9U2V3l29DaRQw==}
     engines: {node: '>= 8.0.0'}
@@ -4714,6 +4720,10 @@ packages:
   pandemonium@2.4.1:
     resolution: {integrity: sha512-wRqjisUyiUfXowgm7MFH2rwJzKIr20rca5FsHXCMNm1W5YPP1hCtrZfgmQ62kP7OZ7Xt+cR858aB28lu5NX55g==}
 
+  parallax-controller@1.7.1:
+    resolution: {integrity: sha512-facVMEBnUynzMN7hCSqyNpF6uyCpVIl4XAUyTR9D8q2JlhgyPY6bZtj/OkFk3+Cpka1TnYCppQb8BzDWHtSaZg==}
+    engines: {node: '>=12'}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -5061,6 +5071,13 @@ packages:
   react-refresh@0.14.2:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
     engines: {node: '>=0.10.0'}
+
+  react-scroll-parallax@3.4.5:
+    resolution: {integrity: sha512-4NLZQ8cZEUyxoA95DfrXWneOOUSFrFmpM0dZNzMErmuJ0LzY+CCw8Xw0hqB6xxHWxNknfs46AozyIPSWkZeucA==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: ^16.8.0-0 || >=17.0.1 || ^18.0.0
+      react-dom: ^16.8.0-0 || >=17.0.1 || ^18.0.0
 
   react-simple-pull-to-refresh@1.3.3:
     resolution: {integrity: sha512-6qXsa5RtNVmKJhLWvDLIX8UK51HFtCEGjdqQGf+M1Qjrcc4qH4fki97sgVpGEFBRwbY7DiVDA5N5p97kF16DTw==}
@@ -8181,6 +8198,8 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
+  bezier-easing@2.1.0: {}
+
   bfj@7.1.0:
     dependencies:
       bluebird: 3.7.2
@@ -10771,6 +10790,10 @@ snapshots:
     dependencies:
       mnemonist: 0.39.8
 
+  parallax-controller@1.7.1:
+    dependencies:
+      bezier-easing: 2.1.0
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -11081,6 +11104,12 @@ snapshots:
       react: 18.3.1
 
   react-refresh@0.14.2: {}
+
+  react-scroll-parallax@3.4.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      parallax-controller: 1.7.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   react-simple-pull-to-refresh@1.3.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:

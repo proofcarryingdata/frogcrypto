@@ -1,9 +1,9 @@
-import _ from 'lodash';
-import { z } from 'zod';
+import _ from "lodash";
+import { z } from "zod";
 
-import * as p from '@parcnet-js/podspec';
+import * as p from "@parcnet-js/podspec";
 
-import { Biome } from './frogs';
+import { Biome } from "./frogs";
 
 export const POD_TYPE_FROGCRYPTO_FEED = "frogcrypto.feed";
 
@@ -123,6 +123,10 @@ export const ServerFeedSchema = FeedSchema.extend({
    * Map of configs for Biome(s) where PODs can be issued from this feed
    */
   biomes: FeedBiomeConfigsSchema,
+  /**
+   * Map of secret codes that can be used to access this feed
+   */
+  secretCodes: z.array(z.string()).optional(),
 });
 
 export type ServerFeed = z.infer<typeof ServerFeedSchema>;

@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useInView } from "react-intersection-observer";
+import { ParallaxProvider, ParallaxBanner } from "react-scroll-parallax";
 import { useFrogParticles } from "../../hooks/useFrogParticles";
 
 /**
@@ -181,7 +182,9 @@ export const FrogSearchButton = forwardRef(
 );
 FrogSearchButton.displayName = "FrogSearchButton";
 
-export type FrogSearchButtonType = typeof FrogSearchButton;
+export type FrogSearchButtonType =
+  | typeof FrogSearchButton
+  | typeof TheCapitalSearchButton;
 
 export const Button = forwardRef(
   (
@@ -223,3 +226,55 @@ export function SocialButton({
   );
 }
 SocialButton.displayName = "SocialButton";
+
+export const TheCapitalSearchButton = forwardRef(
+  (
+    { children, ...props }: React.ComponentPropsWithRef<"button">,
+    buttonRef: React.Ref<HTMLButtonElement>
+  ) => {
+    return (
+      <ParallaxProvider>
+        <FrogSearchButton
+          {...props}
+          ref={buttonRef}
+          style={{
+            padding: 0,
+            filter: props.disabled ? "brightness(80%) grayscale(80%)" : "",
+          }}
+        >
+          <ParallaxBanner
+            layers={[
+              {
+                image: "/images/the_capital.webp",
+                speed: -15,
+                style: {
+                  filter: props.disabled
+                    ? "brightness(30%) grayscale(80%)"
+                    : "brightness(50%)",
+                },
+                shouldAlwaysCompleteAnimation: true,
+              },
+              {
+                children: (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    <div>{children}</div>
+                  </div>
+                ),
+              },
+            ]}
+            style={{ height: "48px", borderRadius: "4px" }}
+          />
+        </FrogSearchButton>
+      </ParallaxProvider>
+    );
+  }
+);
+TheCapitalSearchButton.displayName = "TheCapitalSearchButton";

@@ -21,6 +21,7 @@ import useTsParticles from "./hooks/useTsParticles";
 import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 import { useAcceptedFrogRequests } from "./hooks/useFrogRequests";
 import { scoreToEmoji } from "./components/social/FrogScore";
+import UnderConstruction from "./components/UnderConstruction";
 
 function SocialTabButton() {
   const socialTabAvailable = useSocialTabAvailable();

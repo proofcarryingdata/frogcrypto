@@ -132,6 +132,11 @@ const columns = [
       );
     },
   }),
+  // Codes Column
+  columnHelper.accessor("secretCodes", {
+    header: "Codes",
+    cell: (info) => info.getValue()?.join(", ") ?? "<undefined>",
+  }),
 ];
 
 function FeedTable({
