@@ -10,8 +10,8 @@ export const FROG_LEVELS = [
   { score: 69, className: "text-purple-500", emoji: "🟣", title: "MASTER" },
   { score: 128, className: "text-blue-500", emoji: "🔵", title: "GRANDMASTER" },
   { score: 420, className: "text-green-500", emoji: "🟢", title: "LEGEND" },
-  { score: 777, className: "text-gold-500", emoji: "👑", title: "SOVEREIGN" },
-  { score: 1024, className: "text-brown-500", emoji: "🦉", title: "SAGE" },
+  { score: 777, className: "text-violet-500", emoji: "👑", title: "SOVEREIGN" },
+  { score: 1024, className: "text-amber-500", emoji: "🦉", title: "SAGE" },
   {
     score: 1337,
     className: "text-lime-500",
