@@ -75,7 +75,10 @@ export const feedsRouter = router({
         });
       }
 
-      if (feed.secretCodes && !feed.secretCodes.includes(pod.signerPublicKey)) {
+      if (
+        feed.secretCodes?.length &&
+        !feed.secretCodes.includes(pod.signerPublicKey)
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "POD is not signed by authorized issuers",

@@ -1,5 +1,6 @@
 import {
   Biome,
+  CLOUDFLARE_TURNSTILE_SITE_KEY,
   type Feed,
   FROG_FREEROLLS,
   parseFrogPOD,
@@ -73,9 +74,7 @@ function GetFrogTab() {
           );
         })}
         {voidEnabled ? (
-          <WrithingVoidSearchButton disabled>
-            VOID awaits... silence ...
-          </WrithingVoidSearchButton>
+          <WrithingVoidSearchButton>into the VOID</WrithingVoidSearchButton>
         ) : null}
         <FrogScanner />
       </div>
@@ -223,7 +222,7 @@ function SearchButton({
           className="self-center"
           color="light"
           ref={refTurnstile}
-          siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+          siteKey={CLOUDFLARE_TURNSTILE_SITE_KEY}
           options={{
             action: "search-frog",
           }}

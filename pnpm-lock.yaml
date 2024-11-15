@@ -292,6 +292,9 @@ importers:
       '@tsparticles/interaction-external-trail':
         specifier: ^3.5.0
         version: 3.5.0
+      '@tsparticles/plugin-absorbers':
+        specifier: ^3.5.0
+        version: 3.5.0
       '@tsparticles/plugin-emitters':
         specifier: ^3.5.0
         version: 3.5.0
@@ -1943,6 +1946,9 @@ packages:
 
   '@tsparticles/move-parallax@3.5.0':
     resolution: {integrity: sha512-1NC2OGsbdLc5T4uiRqq7i24b9FIhfaLnx4wVtOQjX48jWfy/ZKOdIEYLFKOPHnaMI0MjinJTNXLi9i6zVNCobg==}
+
+  '@tsparticles/plugin-absorbers@3.5.0':
+    resolution: {integrity: sha512-ybSilBJRshMldHgKlK+fwap9DclPh6QJRT4SC1lSasTgYZd4XeS62Ww8v1BQB/bxeCZccZwB1IFggt9uB61Png==}
 
   '@tsparticles/plugin-easing-quad@3.5.0':
     resolution: {integrity: sha512-Pd44hTiVlaaeQZwRlP+ih8jKmWuIQdkpPUJS0Qwzeck2nfK01IAflDJoxXxGF53vA8QOrz/K6VdVQJShD8yCsg==}
@@ -7336,6 +7342,10 @@ snapshots:
       '@tsparticles/engine': 3.5.0
 
   '@tsparticles/move-parallax@3.5.0':
+    dependencies:
+      '@tsparticles/engine': 3.5.0
+
+  '@tsparticles/plugin-absorbers@3.5.0':
     dependencies:
       '@tsparticles/engine': 3.5.0
 

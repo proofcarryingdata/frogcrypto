@@ -438,14 +438,10 @@ export function useCelestialPondParticles(
   return container;
 }
 
-export function useWrithingVoidParticles(
-  ref: React.RefObject<HTMLDivElement> | null
-): () => Promise<Container | undefined> {
+export function useWrithingVoidParticles(): () => Promise<
+  Container | undefined
+> {
   const play = useCallback(async () => {
-    if (!ref) {
-      return;
-    }
-
     const absorberBaseSize =
       Math.min(window.innerWidth, window.innerHeight) / 5 ?? 50;
     const particles: RecursivePartial<ParticlesOptions> = {
@@ -532,7 +528,7 @@ export function useWrithingVoidParticles(
           detectRetina: true,
           fullScreen: {
             enable: true,
-            zIndex: 2000,
+            zIndex: 500,
           },
           particles: {
             ...particles,
@@ -548,12 +544,12 @@ export function useWrithingVoidParticles(
               outModes: "none",
             },
             number: {
-              value: 0,
+              value: 20,
             },
           },
           absorbers: {
             size: {
-              density: 15,
+              density: 10,
               value: absorberBaseSize,
               limit: {
                 radius: absorberBaseSize * 2,
@@ -668,7 +664,7 @@ export function useWrithingVoidParticles(
 
         return c;
       });
-  }, [ref]);
+  }, []);
 
   return play;
 }

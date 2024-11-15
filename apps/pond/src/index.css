@@ -117,5 +117,7 @@ body {
 }
 
 .animate-pulse-void {
-  animation: pulse 8s linear infinite;
+  animation:
+    pulse 8s linear infinite,
+    rotating 600s linear infinite;
 }

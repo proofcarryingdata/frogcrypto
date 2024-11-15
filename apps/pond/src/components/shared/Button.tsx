@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { POD } from "@pcd/pod";
 import toast from "react-hot-toast";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { CLOUDFLARE_TURNSTILE_SITE_KEY } from "@frogcrypto/shared";
 import {
   useCelestialPondParticles,
   useFrogParticles,
@@ -389,13 +390,10 @@ export const WrithingVoidSearchButton = forwardRef(
     >,
     buttonRef: React.Ref<HTMLButtonElement>
   ) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const animate = useWrithingVoidParticles(ref);
+    const animate = useWrithingVoidParticles();
 
     const [activated, setActivated] = useState(false);
     const [animating, setAnimating] = useState(false);
-    // required to ensure we don't race
-    const animatingRef = useRef(false);
 
     const { mutateAsync: surrender } = trpc.feeds.surrender.useMutation();
     const { mutateAsync: searchFrog } = useGetFrog();
@@ -403,15 +401,11 @@ export const WrithingVoidSearchButton = forwardRef(
 
     const { mutate: startAnimation, isPending } = useMutation({
       mutationFn: async ({ pod }: { pod: POD }) => {
-        if (animatingRef.current) {
-          return;
-        }
-        animatingRef.current = true;
-
         let container: Container | undefined;
         try {
           try {
             container = await animate();
+            console.log("container", container);
           } catch (e) {
             console.error("Unable to start animation", e);
           }
@@ -421,16 +415,17 @@ export const WrithingVoidSearchButton = forwardRef(
               const token = await refTurnstile.current?.getResponsePromise();
               const feed = await surrender({ pod });
 
-              await new Promise((resolve) => setTimeout(resolve, 4 * 1000));
-
               setAnimating(true);
-              await searchFrog({
+
+              await new Promise((resolve) => {
+                setTimeout(resolve, 30 * 1000);
+              });
+
+              return searchFrog({
                 feedId: feed.id,
                 version: "v2",
                 token,
               });
-
-              await new Promise((resolve) => setTimeout(resolve, 4 * 1000));
             })(),
             {
               loading: "Diving into the void...",
@@ -447,8 +442,11 @@ export const WrithingVoidSearchButton = forwardRef(
             console.debug("Failed to destroy container");
           }
 
+          await new Promise((resolve) => {
+            setTimeout(resolve, 4 * 1000);
+          });
+
           setAnimating(false);
-          animatingRef.current = false;
           setActivated(false);
         }
       },
@@ -466,21 +464,20 @@ export const WrithingVoidSearchButton = forwardRef(
             backgroundPosition: "center center",
           }}
           onClick={() => {
-            // setActivated(true);
+            setActivated(true);
           }}
           disabled={disabled ?? isPending}
           {...props}
           backgroundImage="url(/images/writhingvoid.png)"
         >
           <div className="relative w-full h-12">
-            <div ref={ref} className="absolute inset-0 w-full h-full" />
             <div className="absolute top-1/2 -translate-y-1/2 w-full text-center">
               {children}
             </div>
           </div>
         </TextureSearchButton>
         <div
-          className={`fixed inset-0 flex items-center justify-center transition-colors duration-[4000ms] z-[2000] ${
+          className={`fixed inset-0 flex items-center justify-center transition-colors duration-[4000ms] ${
             activated
               ? "bg-black pointer-events-auto"
               : "bg-transparent pointer-events-none delay-1000"
@@ -504,7 +501,7 @@ export const WrithingVoidSearchButton = forwardRef(
               className="self-center"
               color="dark"
               ref={refTurnstile}
-              siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+              siteKey={CLOUDFLARE_TURNSTILE_SITE_KEY}
               options={{
                 action: "surrender-frog",
               }}
@@ -527,6 +524,7 @@ export const WrithingVoidSearchButton = forwardRef(
                 }}
               >
                 <textarea
+                  spellCheck={false}
                   className="w-full h-full bg-transparent text-white m-2"
                   placeholder="Paste your pod here..."
                   rows={10}

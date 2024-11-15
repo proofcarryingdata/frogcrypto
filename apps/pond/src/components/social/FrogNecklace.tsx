@@ -1,4 +1,8 @@
-import { type IFrogData, shortSemaphoreId } from "@frogcrypto/shared";
+import {
+  CLOUDFLARE_TURNSTILE_SITE_KEY,
+  type IFrogData,
+  shortSemaphoreId,
+} from "@frogcrypto/shared";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import React, { useCallback, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -464,7 +468,7 @@ function FrogRequestModal({
               className="self-center"
               color="light"
               ref={refTurnstile}
-              siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+              siteKey={CLOUDFLARE_TURNSTILE_SITE_KEY}
               options={{
                 action: "send-frog-request",
               }}

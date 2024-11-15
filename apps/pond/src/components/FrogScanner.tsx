@@ -1,4 +1,7 @@
-import { parseFrogPOD } from "@frogcrypto/shared";
+import {
+  CLOUDFLARE_TURNSTILE_SITE_KEY,
+  parseFrogPOD,
+} from "@frogcrypto/shared";
 import { podToPODData } from "@parcnet-js/podspec";
 import { useMutation } from "@tanstack/react-query";
 import React, { useCallback, useEffect, useRef } from "react";
@@ -133,7 +136,7 @@ function FrogScanner() {
         className="self-center"
         color="light"
         ref={refTurnstile}
-        siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+        siteKey={CLOUDFLARE_TURNSTILE_SITE_KEY}
         options={{
           action: "scan-frog",
         }}

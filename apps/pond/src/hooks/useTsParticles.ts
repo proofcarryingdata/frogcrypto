@@ -1,5 +1,6 @@
 import { tsParticles } from "@tsparticles/engine";
 import { loadExternalTrailInteraction } from "@tsparticles/interaction-external-trail";
+import { loadAbsorbersPlugin } from "@tsparticles/plugin-absorbers";
 import { loadEmittersPlugin } from "@tsparticles/plugin-emitters";
 import { loadTextShape } from "@tsparticles/shape-text";
 import { loadSlim } from "@tsparticles/slim";
@@ -26,6 +27,7 @@ function useTsParticles(): boolean {
       await loadDestroyUpdater(tsParticles);
       await loadRollUpdater(tsParticles);
       await loadWobbleUpdater(tsParticles);
+      await loadAbsorbersPlugin(tsParticles);
       setReady(true);
     };
 

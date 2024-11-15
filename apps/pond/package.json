@@ -22,6 +22,7 @@
     "@trpc/react-query": "11.0.0-rc.502",
     "@tsparticles/engine": "^3.5.0",
     "@tsparticles/interaction-external-trail": "^3.5.0",
+    "@tsparticles/plugin-absorbers": "^3.5.0",
     "@tsparticles/plugin-emitters": "^3.5.0",
     "@tsparticles/shape-text": "^3.5.0",
     "@tsparticles/slim": "^3.5.0",
