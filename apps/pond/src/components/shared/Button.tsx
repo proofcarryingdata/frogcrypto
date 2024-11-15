@@ -397,7 +397,6 @@ export const WrithingVoidSearchButton = forwardRef(
 
     const { mutateAsync: surrender } = trpc.feeds.surrender.useMutation();
     const { mutateAsync: searchFrog } = useGetFrog();
-    const refTurnstile = useRef<TurnstileInstance>(null);
 
     const { mutate: startAnimation, isPending } = useMutation({
       mutationFn: async ({ pod }: { pod: POD }) => {
@@ -412,7 +411,6 @@ export const WrithingVoidSearchButton = forwardRef(
 
           await toast.promise(
             (async () => {
-              const token = await refTurnstile.current?.getResponsePromise();
               const feed = await surrender({ pod });
 
               setAnimating(true);
@@ -424,7 +422,6 @@ export const WrithingVoidSearchButton = forwardRef(
               return searchFrog({
                 feedId: feed.id,
                 version: "v2",
-                token,
               });
             })(),
             {
@@ -495,29 +492,16 @@ export const WrithingVoidSearchButton = forwardRef(
               }
             `}
           />
-          {activated ? (
-            <Turnstile
-              id="turnstile-writhing-void"
-              className="self-center"
-              color="dark"
-              ref={refTurnstile}
-              siteKey={CLOUDFLARE_TURNSTILE_SITE_KEY}
-              options={{
-                action: "surrender-frog",
-              }}
-            />
-          ) : null}
           {!isPending && activated ? (
             <div className="text-white text-center">
               <TypistText
                 onInit={(typewriter) => {
                   return typewriter
-                    .pauseFor(4_000)
-                    .typeString("welcome to the writhing void<br/>")
-                    .typeString("where darkness flows eternal<br/><br/>")
-                    .pauseFor(500)
+                    .changeDelay("natural")
+                    .pauseFor(2_000)
+                    .typeString("writhing void beckons<br/>")
                     .typeString("surrender your pod<br/>")
-                    .typeString("(seek the desert watcher's code)<br/><br/>")
+                    .typeString("seek the desert watcher's code<br/><br/>")
                     .pauseFor(500)
                     .typeString("the void hungers<br/>")
                     .typeString("and all must return to dark");

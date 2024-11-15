@@ -261,7 +261,9 @@ export const feedsRouter = router({
 
             const frogDataSpec = await sampleFrogData({
               ...feed.biomes,
-              ...(turnstileError && process.env.THROW_ON_TURNSTILE_ERROR
+              ...(turnstileError &&
+              !feed.name.includes("Void") &&
+              process.env.THROW_ON_TURNSTILE_ERROR
                 ? { Unknown: { dropWeightScaler: 5 } }
                 : {}),
             });
