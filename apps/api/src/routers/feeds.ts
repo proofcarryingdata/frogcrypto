@@ -50,6 +50,11 @@ export const feedsRouter = router({
           (e) =>
             e.value.type === "eddsa_pubkey" &&
             e.value.value === user.eddsaPublicKey
+        ) &&
+        !entries.find(
+          (e) =>
+            e.value.type === "cryptographic" &&
+            e.value.value === user.semaphoreId
         )
       ) {
         throw new TRPCError({
