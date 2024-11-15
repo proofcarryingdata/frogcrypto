@@ -15,7 +15,12 @@ import { useMutation } from "@tanstack/react-query";
 import { POD } from "@pcd/pod";
 import toast from "react-hot-toast";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
-import { CLOUDFLARE_TURNSTILE_SITE_KEY } from "@frogcrypto/shared";
+import {
+  CLOUDFLARE_TURNSTILE_SITE_KEY,
+  parseFrogPOD,
+} from "@frogcrypto/shared";
+import { podToPODData } from "@parcnet-js/podspec";
+import { TRPCClientError } from "@trpc/client";
 import {
   useCelestialPondParticles,
   useFrogParticles,
@@ -24,6 +29,7 @@ import {
 import { trpc } from "../../trpc";
 import useGetFrog from "../../hooks/useGetFrog";
 import TypistText from "./TypistText";
+import LoadingMessages from "./LoadingMessages";
 
 /**
  * A button that shows a loading spinner while the action is in progress.
@@ -409,25 +415,60 @@ export const WrithingVoidSearchButton = forwardRef(
             console.error("Unable to start animation", e);
           }
 
-          await toast.promise(
+          const feed = await toast.promise(
             (async () => {
-              const feed = await surrender({ pod });
+              const f = await surrender({ pod });
 
               setAnimating(true);
 
               await new Promise((resolve) => {
-                setTimeout(resolve, 30 * 1000);
+                setTimeout(resolve, 10_000);
               });
 
-              return searchFrog({
-                feedId: feed.id,
-                version: "v2",
-              });
+              return f;
             })(),
             {
               loading: "Diving into the void...",
               success: "Your sacrifice has been accepted.",
               error: "The void is displeased.",
+            }
+          );
+
+          await toast.promise(
+            Promise.all([
+              new Promise<void>((resolve) => {
+                setTimeout(resolve, 10_000);
+              }),
+            ]).then(async () => {
+              return searchFrog({
+                feedId: feed.id,
+                version: "v2",
+              });
+            }),
+            {
+              loading: <LoadingMessages biome="The Void" />,
+              success: (res) => {
+                const frog = parseFrogPOD(podToPODData(res.pod));
+                return `A ${frog.name} emerged from the void!`;
+              },
+              error: (e) => {
+                if (e instanceof TRPCClientError) {
+                  const fetchErrorMsg = e.message.toLowerCase();
+                  if (fetchErrorMsg.includes("not active")) {
+                    return `Ribbit! The void has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
+                  }
+                  if (fetchErrorMsg.includes("next fetch")) {
+                    return `The void had enough. Maybe something else will catch...`;
+                  }
+                  if (fetchErrorMsg.includes("faucet off")) {
+                    return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";
+                  }
+                  if (fetchErrorMsg.includes("frog not found")) {
+                    return "Alas, there is nothing but a lily pad here.";
+                  }
+                }
+                return "Oopsie-toad! Something went wrong.";
+              },
             }
           );
         } finally {
