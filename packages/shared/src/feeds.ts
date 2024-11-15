@@ -1,9 +1,11 @@
-import _ from "lodash";
-import { z } from "zod";
+import _ from 'lodash';
+import { z } from 'zod';
 
-import * as p from "@parcnet-js/podspec";
+import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex } from '@noble/hashes/utils';
+import * as p from '@parcnet-js/podspec';
 
-import { Biome } from "./frogs";
+import { Biome } from './frogs';
 
 export const POD_TYPE_FROGCRYPTO_FEED = "frogcrypto.feed";
 
@@ -130,3 +132,22 @@ export const ServerFeedSchema = FeedSchema.extend({
 });
 
 export type ServerFeed = z.infer<typeof ServerFeedSchema>;
+
+export function deriveFeedIdFromPodType(podType: string) {
+  if (!podType || typeof podType !== "string") {
+    throw new Error("Input must be a non-empty string");
+  }
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(podType);
+  const hash = bytesToHex(sha256(data));
+
+  // Use first 32 chars of SHA-256 hash
+  return [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    "4" + hash.slice(13, 16),
+    "8" + hash.slice(17, 20),
+    hash.slice(20, 32),
+  ].join("-");
+}

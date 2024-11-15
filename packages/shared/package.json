@@ -41,6 +41,7 @@
     "typescript": "~5.5.4"
   },
   "dependencies": {
+    "@noble/hashes": "^1.5.0",
     "@parcnet-js/podspec": "1.2.0",
     "@parcnet-js/ticket-spec": "1.1.9",
     "@pcd/pod": "0.5.0",

@@ -111,6 +111,12 @@ module.exports = {
         "blur-in": "blurIn 3s ease-in-out",
         "rotate-gradient": "rotate-gradient 30s linear infinite",
       },
+      zIndex: {
+        2000: "2000",
+      },
+      transitionDuration: {
+        4000: "4000ms",
+      },
     },
   },
   plugins: [

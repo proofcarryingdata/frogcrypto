@@ -10,10 +10,19 @@ import { ParallaxProvider, ParallaxBanner } from "react-scroll-parallax";
 import { ExternalLink } from "lucide-react";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
+import { type Container } from "@tsparticles/engine";
+import { useMutation } from "@tanstack/react-query";
+import { POD } from "@pcd/pod";
+import toast from "react-hot-toast";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import {
   useCelestialPondParticles,
   useFrogParticles,
+  useWrithingVoidParticles,
 } from "../../hooks/useFrogParticles";
+import { trpc } from "../../trpc";
+import useGetFrog from "../../hooks/useGetFrog";
+import TypistText from "./TypistText";
 
 /**
  * A button that shows a loading spinner while the action is in progress.
@@ -367,6 +376,184 @@ export const CelestialPondSearchButton = forwardRef(
   }
 );
 CelestialPondSearchButton.displayName = "CelestialPondSearchButton";
+
+export const WrithingVoidSearchButton = forwardRef(
+  (
+    {
+      children,
+      disabled,
+      ...props
+    }: Omit<
+      React.ComponentPropsWithRef<typeof TextureSearchButton>,
+      "backgroundImage" | "onClick"
+    >,
+    buttonRef: React.Ref<HTMLButtonElement>
+  ) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const animate = useWrithingVoidParticles(ref);
+
+    const [activated, setActivated] = useState(false);
+    const [animating, setAnimating] = useState(false);
+    // required to ensure we don't race
+    const animatingRef = useRef(false);
+
+    const { mutateAsync: surrender } = trpc.feeds.surrender.useMutation();
+    const { mutateAsync: searchFrog } = useGetFrog();
+    const refTurnstile = useRef<TurnstileInstance>(null);
+
+    const { mutate: startAnimation, isPending } = useMutation({
+      mutationFn: async ({ pod }: { pod: POD }) => {
+        if (animatingRef.current) {
+          return;
+        }
+        animatingRef.current = true;
+
+        let container: Container | undefined;
+        try {
+          try {
+            container = await animate();
+          } catch (e) {
+            console.error("Unable to start animation", e);
+          }
+
+          await toast.promise(
+            (async () => {
+              const token = await refTurnstile.current?.getResponsePromise();
+              const feed = await surrender({ pod });
+
+              await new Promise((resolve) => setTimeout(resolve, 4 * 1000));
+
+              setAnimating(true);
+              await searchFrog({
+                feedId: feed.id,
+                version: "v2",
+                token,
+              });
+
+              await new Promise((resolve) => setTimeout(resolve, 4 * 1000));
+            })(),
+            {
+              loading: "Diving into the void...",
+              success: "Your sacrifice has been accepted.",
+              error: "The void is displeased.",
+            }
+          );
+        } finally {
+          try {
+            if (container && !container.destroyed) {
+              container.destroy();
+            }
+          } catch {
+            console.debug("Failed to destroy container");
+          }
+
+          setAnimating(false);
+          animatingRef.current = false;
+          setActivated(false);
+        }
+      },
+    });
+
+    return (
+      <>
+        <TextureSearchButton
+          ref={buttonRef}
+          buttonStyle={{
+            padding: 0,
+            backgroundColor: "black",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center center",
+          }}
+          onClick={() => {
+            // setActivated(true);
+          }}
+          disabled={disabled ?? isPending}
+          {...props}
+          backgroundImage="url(/images/writhingvoid.png)"
+        >
+          <div className="relative w-full h-12">
+            <div ref={ref} className="absolute inset-0 w-full h-full" />
+            <div className="absolute top-1/2 -translate-y-1/2 w-full text-center">
+              {children}
+            </div>
+          </div>
+        </TextureSearchButton>
+        <div
+          className={`fixed inset-0 flex items-center justify-center transition-colors duration-[4000ms] z-[2000] ${
+            activated
+              ? "bg-black pointer-events-auto"
+              : "bg-transparent pointer-events-none delay-1000"
+          }`}
+        >
+          <div
+            className={`
+              bg-[url('/images/writhingvoid.png')] bg-cover bg-no-repeat bg-center
+              rounded-full animate-rotating
+              transition-all duration-[4000ms] ease-in-out
+              ${
+                animating
+                  ? "opacity-100 w-[min(80vw,80vh)] h-[min(80vw,80vh)] animate-pulse-void delay-[16000ms]"
+                  : "opacity-20 w-0 h-0"
+              }
+            `}
+          />
+          {activated ? (
+            <Turnstile
+              id="turnstile-writhing-void"
+              className="self-center"
+              color="dark"
+              ref={refTurnstile}
+              siteKey="0x4AAAAAAAzubSJu97uBvGuG"
+              options={{
+                action: "surrender-frog",
+              }}
+            />
+          ) : null}
+          {!isPending && activated ? (
+            <div className="text-white text-center">
+              <TypistText
+                onInit={(typewriter) => {
+                  return typewriter
+                    .pauseFor(4_000)
+                    .typeString("welcome to the writhing void<br/>")
+                    .typeString("where darkness flows eternal<br/><br/>")
+                    .pauseFor(500)
+                    .typeString("surrender your pod<br/>")
+                    .typeString("(seek the desert watcher's code)<br/><br/>")
+                    .pauseFor(500)
+                    .typeString("the void hungers<br/>")
+                    .typeString("and all must return to dark");
+                }}
+              >
+                <textarea
+                  className="w-full h-full bg-transparent text-white m-2"
+                  placeholder="Paste your pod here..."
+                  rows={10}
+                  onChange={(e) => {
+                    try {
+                      const pod = POD.fromJSON(JSON.parse(e.target.value));
+
+                      if (!pod.verifySignature()) {
+                        toast.error("Invalid pod signature");
+                        setActivated(false);
+                      }
+
+                      startAnimation({ pod });
+                    } catch {
+                      toast.error("Invalid pod");
+                    }
+                  }}
+                />
+              </TypistText>
+            </div>
+          ) : null}
+        </div>
+      </>
+    );
+  }
+);
+WrithingVoidSearchButton.displayName = "WrithingVoidSearchButton";
 
 const visitedLabAtAtom = atomWithStorage<number>(
   "visitedLabAt",

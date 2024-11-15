@@ -22,6 +22,7 @@ import { useSocialTabAvailable, useUserState } from "./hooks/useUserState";
 import { useAcceptedFrogRequests } from "./hooks/useFrogRequests";
 import { scoreToEmoji } from "./components/social/FrogScore";
 import { VisitLabButton } from "./components/shared/Button";
+import VoidPortal from "./components/VoidPortal";
 
 function SocialTabButton() {
   const socialTabAvailable = useSocialTabAvailable();
@@ -93,6 +94,7 @@ function FrogCrypto() {
       <PendingRequests />
       <FrogNecklace />
       <CyberFrog />
+      <VoidPortal />
 
       <Score />
 

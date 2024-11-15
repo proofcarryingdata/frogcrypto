@@ -11,6 +11,7 @@ import _ from "lodash";
 import React, { useCallback, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { ViewportList } from "react-viewport-list";
+import { useAtomValue } from "jotai";
 import useCountDown from "../hooks/useCountDown";
 import { useFrogConfetti } from "../hooks/useFrogParticles";
 import useFrogs, { isProfileFrogPOD } from "../hooks/useFrogs";
@@ -23,10 +24,12 @@ import {
   CelestialPondSearchButton,
   FrogSearchButton,
   TheCapitalSearchButton,
+  WrithingVoidSearchButton,
 } from "./shared/Button";
 import FrogCard from "./shared/FrogCard";
 import LoadingMessages from "./shared/LoadingMessages";
 import FrogScanner from "./FrogScanner";
+import { voidEnabledAtom } from "./VoidPortal";
 
 /**
  * The GetFrog tab allows users to get frogs from their subscriptions as well as view their frogs.
@@ -36,6 +39,7 @@ function GetFrogTab() {
   const { data: userState } = useUserState();
   const userStateByFeedId = useUserStateByFeedId();
   const frogs = useFrogs();
+  const voidEnabled = useAtomValue(voidEnabledAtom);
 
   const scanFeeds = useScanFeeds();
 
@@ -68,6 +72,11 @@ function GetFrogTab() {
             />
           );
         })}
+        {voidEnabled ? (
+          <WrithingVoidSearchButton disabled>
+            VOID awaits... silence ...
+          </WrithingVoidSearchButton>
+        ) : null}
         <FrogScanner />
       </div>
 

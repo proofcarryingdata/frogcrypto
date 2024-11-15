@@ -1,5 +1,6 @@
 import {
   Biome,
+  deriveFeedIdFromPodType,
   FeedSchema,
   FROG_FREEROLLS,
   FROG_SCORE_CAP,
@@ -36,6 +37,57 @@ export const feedsRouter = router({
     return getFeeds().filter((f) => !f.private);
   }),
 
+  /**
+   * Discover the void using one of the POD types
+   */
+  surrender: authedProcedure
+    .input(z.object({ pod: z.custom<POD>((x) => x instanceof POD) }))
+    .output(FeedSchema)
+    .mutation(async ({ input: { pod }, ctx: { user } }) => {
+      const entries = pod.content.listEntries();
+      if (
+        !entries.find(
+          (e) =>
+            e.value.type === "eddsa_pubkey" &&
+            e.value.value === user.eddsaPublicKey
+        )
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Pod is not assigned to this user",
+        });
+      }
+
+      const podType = entries.find((e) => e.name === "pod_type")?.value.value;
+      if (typeof podType !== "string") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Pod type not found",
+        });
+      }
+
+      const derivedFeedId = deriveFeedIdFromPodType(podType);
+      const feed = getFeeds().find((f) => f.id === derivedFeedId);
+      if (!feed) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Feed not found: ${derivedFeedId} for pod type ${podType}`,
+        });
+      }
+
+      if (feed.secretCodes && !feed.secretCodes.includes(pod.signerPublicKey)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "POD is not signed by authorized issuers",
+        });
+      }
+
+      return feed;
+    }),
+
+  /**
+   * Probe a feed with secret code
+   */
   probe: authedProcedure
     .input(z.object({ code: z.string() }))
     .output(FeedSchema)
