@@ -164,7 +164,7 @@ const SpreadsheetFeedSchema = z.object({
   cooldown: z.number().int().positive(),
   codes: z
     .string()
-    .regex(/^[A-Za-z0-9,]*$/)
+    .regex(/^[A-Za-z0-9+,]*$/)
     .optional(),
 });
 

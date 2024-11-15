@@ -260,7 +260,7 @@ export const feedsRouter = router({
             if (nextFetchAt > Date.now()) {
               throw new TRPCError({
                 code: "FORBIDDEN",
-                message: `Croak! The pond is running low. Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds! 🐸`,
+                message: `Try again in ${String(Math.floor((nextFetchAt - Date.now()) / 1000))} seconds! 🐸`,
               });
             }
 

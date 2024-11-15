@@ -176,7 +176,7 @@ function SearchButton({
             if (fetchErrorMsg.includes("not active")) {
               return `Ribbit! ${feed.name} has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
             }
-            if (fetchErrorMsg.includes("next fetch")) {
+            if (fetchErrorMsg.includes("try again in")) {
               return `${feed.name} needs a moment to refill the pond. No double-dipping!`;
             }
             if (fetchErrorMsg.includes("faucet off")) {

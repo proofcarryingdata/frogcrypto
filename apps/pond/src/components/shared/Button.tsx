@@ -457,8 +457,8 @@ export const WrithingVoidSearchButton = forwardRef(
                   if (fetchErrorMsg.includes("not active")) {
                     return `Ribbit! The void has vanished into a mist of mystery. It might return after a few bug snacks, or it might find new ponds to explore. Keep your eyes peeled for the next leap of adventure!`;
                   }
-                  if (fetchErrorMsg.includes("next fetch")) {
-                    return `The void had enough. Maybe something else will catch...`;
+                  if (fetchErrorMsg.includes("try again in")) {
+                    return `The void had enough. Maybe something new will catch...`;
                   }
                   if (fetchErrorMsg.includes("faucet off")) {
                     return "Froggy hall of fame! You've won... but your lily pad's full. No room for more buddies!";
